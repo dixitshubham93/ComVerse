@@ -198,55 +198,86 @@ export function VoiceCallRoom({
       <div className="relative z-10 flex h-screen" style={{ marginLeft: '64px' }}>
         {/* Main Voice Room Area */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
+          {/* Header - Premium Design */}
           <div
-            className="px-8 py-6 border-b"
+            className="px-8 py-5 border-b"
             style={{
-              background: 'rgba(4, 55, 47, 0.3)',
-              backdropFilter: 'blur(20px)',
-              borderColor: 'rgba(40, 245, 204, 0.15)',
+              background: 'linear-gradient(180deg, rgba(4, 55, 47, 0.4) 0%, rgba(4, 55, 47, 0.25) 100%)',
+              backdropFilter: 'blur(24px)',
+              borderColor: 'rgba(40, 245, 204, 0.12)',
             }}
           >
             <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <Volume2 className="w-6 h-6 text-[#28f5cc]" />
+              <div className="flex items-center gap-4">
+                {/* Icon Badge */}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.2), rgba(4, 173, 123, 0.15))',
+                    border: '1px solid rgba(40, 245, 204, 0.25)',
+                    boxShadow: '0 4px 12px rgba(40, 245, 204, 0.15)',
+                  }}
+                >
+                  <Volume2 className="w-5 h-5 text-[#28f5cc]" />
+                </div>
+
+                {/* Room Info */}
+                <div>
                   <h1 
-                    className="text-white"
+                    className="text-white font-semibold mb-0.5"
                     style={{
-                      textShadow: '0 0 20px rgba(40, 245, 204, 0.5)',
+                      fontSize: '1.125rem',
+                      letterSpacing: '-0.01em',
+                      lineHeight: '1.4',
                     }}
                   >
-                    ⚡ {currentRoomName}
+                    {currentRoomName}
                   </h1>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background: '#04ad7b',
+                        boxShadow: '0 0 6px rgba(4, 173, 123, 0.6)',
+                      }}
+                    />
+                    <p className="text-[#9aa0aa] text-xs font-medium tracking-wide uppercase" style={{ fontSize: '0.6875rem', letterSpacing: '0.05em' }}>
+                      Voice Channel
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[#747c88] text-sm">Real-time voice channel</p>
               </div>
 
-              {/* User Count Badge */}
+              {/* User Count Badge - Refined */}
               <div
-                className="px-4 py-2 rounded-full flex items-center gap-2"
+                className="px-3.5 py-2 rounded-lg flex items-center gap-2.5"
                 style={{
-                  background: 'rgba(40, 245, 204, 0.1)',
-                  border: '1px solid rgba(40, 245, 204, 0.3)',
+                  background: 'rgba(4, 55, 47, 0.5)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(40, 245, 204, 0.2)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                 }}
               >
                 <div className="flex -space-x-2">
                   {users.slice(0, 3).map((user, i) => (
                     <div
                       key={user.id}
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs border-2"
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs border-2 transition-transform duration-200 hover:scale-110"
                       style={{
-                        background: 'rgba(4, 55, 47, 0.8)',
-                        borderColor: '#000',
+                        background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.3), rgba(4, 173, 123, 0.2))',
+                        borderColor: 'rgba(0, 0, 0, 0.4)',
                         zIndex: 3 - i,
+                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
                       }}
                     >
                       {user.avatar}
                     </div>
                   ))}
                 </div>
-                <span className="text-[#28f5cc] text-sm">{users.length} connected</span>
+                <div className="h-4 w-px bg-[rgba(40,245,204,0.2)]" />
+                <span className="text-[#28f5cc] text-xs font-medium" style={{ fontSize: '0.75rem' }}>
+                  {users.length} <span className="text-[#9aa0aa] font-normal">active</span>
+                </span>
               </div>
             </div>
           </div>
@@ -338,14 +369,17 @@ export function VoiceCallRoom({
 
                   {/* User Name */}
                   <div
-                    className="px-4 py-2 rounded-xl text-center transition-all duration-300"
+                    className="px-3.5 py-2 rounded-lg text-center transition-all duration-200"
                     style={{
-                      background: 'rgba(4, 55, 47, 0.4)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(40, 245, 204, 0.2)',
+                      background: 'rgba(4, 55, 47, 0.5)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(40, 245, 204, 0.15)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     }}
                   >
-                    <span className="text-white text-sm">{user.name}</span>
+                    <span className="text-white text-sm font-medium" style={{ fontSize: '0.8125rem', letterSpacing: '-0.01em' }}>
+                      {user.name}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -355,58 +389,58 @@ export function VoiceCallRoom({
           {/* Control Bar - Floating at Bottom */}
           <div className="p-6 flex justify-center">
             <div
-              className="px-8 py-4 rounded-2xl flex items-center gap-6 transition-all duration-300"
+              className="px-6 py-3.5 rounded-xl flex items-center gap-5 transition-all duration-300"
               style={{
-                background: 'rgba(4, 55, 47, 0.7)',
-                backdropFilter: 'blur(20px)',
-                border: '1.5px solid rgba(40, 245, 204, 0.4)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(40, 245, 204, 0.2)',
+                background: 'linear-gradient(180deg, rgba(4, 55, 47, 0.8) 0%, rgba(4, 55, 47, 0.6) 100%)',
+                backdropFilter: 'blur(24px)',
+                border: '1px solid rgba(40, 245, 204, 0.25)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(40, 245, 204, 0.1) inset',
               }}
             >
               {!isInCall ? (
                 /* Join Call Button */
                 <button
                   onClick={handleJoinCall}
-                  className="px-8 py-4 rounded-xl flex items-center gap-3 transition-all duration-300 hover:scale-105"
+                  className="px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                    boxShadow: '0 0 30px rgba(40, 245, 204, 0.5)',
+                    boxShadow: '0 4px 16px rgba(40, 245, 204, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
                     animation: 'pulse-glow 2s ease-in-out infinite',
                   }}
                 >
-                  <Phone className="w-5 h-5 text-black" />
-                  <span className="text-black">Join Call</span>
+                  <Phone className="w-4.5 h-4.5 text-black" />
+                  <span className="text-black font-semibold text-sm" style={{ fontSize: '0.875rem' }}>Join Call</span>
                 </button>
               ) : (
                 <>
                   {/* Mute Toggle */}
                   <button
                     onClick={toggleMute}
-                    className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    className="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                     style={{
                       background: isMuted
-                        ? 'linear-gradient(135deg, rgba(220, 38, 38, 0.8), rgba(185, 28, 28, 0.8))'
-                        : 'rgba(40, 245, 204, 0.2)',
-                      border: `2px solid ${isMuted ? '#dc2626' : 'rgba(40, 245, 204, 0.5)'}`,
+                        ? 'linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9))'
+                        : 'rgba(40, 245, 204, 0.15)',
+                      border: `1px solid ${isMuted ? 'rgba(220, 38, 38, 0.5)' : 'rgba(40, 245, 204, 0.3)'}`,
                       boxShadow: isMuted
-                        ? '0 0 20px rgba(220, 38, 38, 0.5)'
-                        : '0 0 20px rgba(40, 245, 204, 0.3)',
+                        ? '0 4px 12px rgba(220, 38, 38, 0.4)'
+                        : '0 4px 12px rgba(40, 245, 204, 0.2)',
                     }}
                     title={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? (
-                      <MicOff className="w-6 h-6 text-white" />
+                      <MicOff className="w-5 h-5 text-white" />
                     ) : (
-                      <Mic className="w-6 h-6 text-[#28f5cc]" />
+                      <Mic className="w-5 h-5 text-[#28f5cc]" />
                     )}
                   </button>
 
                   {/* Volume Control */}
-                  <div className="flex items-center gap-3 px-6">
-                    <Volume2 className="w-5 h-5 text-[#28f5cc]" />
-                    <div className="relative w-32 h-2 rounded-full overflow-hidden"
+                  <div className="flex items-center gap-3 px-4">
+                    <Volume2 className="w-4 h-4 text-[#28f5cc]" />
+                    <div className="relative w-28 h-1.5 rounded-full overflow-hidden"
                       style={{
-                        background: 'rgba(116, 124, 136, 0.3)',
+                        background: 'rgba(116, 124, 136, 0.25)',
                       }}
                     >
                       <div
@@ -414,7 +448,7 @@ export function VoiceCallRoom({
                         style={{
                           width: `${volume}%`,
                           background: 'linear-gradient(90deg, #04ad7b 0%, #28f5cc 100%)',
-                          boxShadow: '0 0 10px rgba(40, 245, 204, 0.5)',
+                          boxShadow: '0 0 8px rgba(40, 245, 204, 0.4)',
                         }}
                       />
                       <input
@@ -426,21 +460,21 @@ export function VoiceCallRoom({
                         className="absolute inset-0 w-full opacity-0 cursor-pointer"
                       />
                     </div>
-                    <span className="text-[#28f5cc] text-sm w-8">{volume}%</span>
+                    <span className="text-[#28f5cc] text-xs font-medium w-7" style={{ fontSize: '0.75rem' }}>{volume}%</span>
                   </div>
 
                   {/* Leave Call Button */}
                   <button
                     onClick={handleLeaveCall}
-                    className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                    className="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.8), rgba(185, 28, 28, 0.8))',
-                      border: '2px solid #dc2626',
-                      boxShadow: '0 0 20px rgba(220, 38, 38, 0.5)',
+                      background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9))',
+                      border: '1px solid rgba(220, 38, 38, 0.5)',
+                      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
                     }}
                     title="Leave Call"
                   >
-                    <PhoneOff className="w-6 h-6 text-white" />
+                    <PhoneOff className="w-5 h-5 text-white" />
                   </button>
                 </>
               )}
@@ -450,75 +484,101 @@ export function VoiceCallRoom({
 
         {/* Right Side Panel - Voice Room List */}
         <div
-          className="w-72 h-full p-6 border-l flex flex-col"
+          className="w-72 h-full p-5 border-l flex flex-col"
           style={{
-            background: 'rgba(4, 55, 47, 0.25)',
-            backdropFilter: 'blur(20px)',
-            borderColor: 'rgba(40, 245, 204, 0.15)',
+            background: 'linear-gradient(180deg, rgba(4, 55, 47, 0.3) 0%, rgba(4, 55, 47, 0.2) 100%)',
+            backdropFilter: 'blur(24px)',
+            borderColor: 'rgba(40, 245, 204, 0.12)',
           }}
         >
           {/* Community Header */}
-          <div className="mb-6">
-            <h3 className="text-[#747c88] text-xs uppercase tracking-wider mb-2">Community</h3>
-            <h2 className="text-white">{communityName}</h2>
+          <div className="mb-6 pb-5 border-b" style={{ borderColor: 'rgba(40, 245, 204, 0.1)' }}>
+            <h3 className="text-[#9aa0aa] text-xs uppercase tracking-wider mb-2 font-medium" style={{ fontSize: '0.6875rem', letterSpacing: '0.1em' }}>
+              Community
+            </h3>
+            <h2 className="text-white font-semibold text-base" style={{ letterSpacing: '-0.01em' }}>
+              {communityName}
+            </h2>
           </div>
 
           {/* Current Room Indicator */}
-          <div className="mb-4">
-            <h3 className="text-[#747c88] text-xs uppercase tracking-wider mb-3">Voice Channels</h3>
+          <div className="mb-5">
+            <h3 className="text-[#9aa0aa] text-xs uppercase tracking-wider mb-3 font-medium" style={{ fontSize: '0.6875rem', letterSpacing: '0.1em' }}>
+              Voice Channels
+            </h3>
             
             {/* Voice Rooms List */}
-            {voiceRooms.map(room => {
-              const isActive = room.name === currentRoomName;
-              return (
-                <div
-                  key={room.id}
-                  className="p-3 rounded-xl mb-2 transition-all duration-300 cursor-pointer"
-                  style={{
-                    background: isActive ? 'rgba(40, 245, 204, 0.15)' : 'rgba(42, 52, 68, 0.3)',
-                    border: isActive ? '1.5px solid rgba(40, 245, 204, 0.5)' : '1px solid rgba(40, 245, 204, 0.15)',
-                    boxShadow: isActive ? '0 0 20px rgba(40, 245, 204, 0.2)' : 'none',
-                  }}
-                  onClick={() => handleRoomSwitch(room)}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'rgba(40, 245, 204, 0.08)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.background = 'rgba(42, 52, 68, 0.3)';
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Volume2 className={`w-4 h-4 ${isActive ? 'text-[#28f5cc]' : 'text-[#747c88]'}`} />
-                    <span className={`text-sm ${isActive ? 'text-white' : 'text-[#747c88]'}`}>{room.name}</span>
-                  </div>
-                  {isActive && (
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{
-                          background: '#04ad7b',
-                          boxShadow: '0 0 8px #04ad7b',
-                          animation: 'pulse 2s ease-in-out infinite',
-                        }}
-                      />
-                      <span className="text-[#04ad7b] text-xs">{room.activeUsers} in call</span>
+            <div className="space-y-1.5">
+              {voiceRooms.map(room => {
+                const isActive = room.name === currentRoomName;
+                return (
+                  <div
+                    key={room.id}
+                    className="px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer group"
+                    style={{
+                      background: isActive 
+                        ? 'linear-gradient(135deg, rgba(40, 245, 204, 0.12), rgba(4, 173, 123, 0.08))' 
+                        : 'rgba(42, 52, 68, 0.2)',
+                      border: isActive 
+                        ? '1px solid rgba(40, 245, 204, 0.3)' 
+                        : '1px solid rgba(40, 245, 204, 0.08)',
+                      boxShadow: isActive 
+                        ? '0 2px 8px rgba(40, 245, 204, 0.15), inset 0 1px 0 rgba(40, 245, 204, 0.1)' 
+                        : 'none',
+                    }}
+                    onClick={() => handleRoomSwitch(room)}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'rgba(40, 245, 204, 0.06)';
+                        e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.15)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'rgba(42, 52, 68, 0.2)';
+                        e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.08)';
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2.5">
+                        <Volume2 className={`w-3.5 h-3.5 ${isActive ? 'text-[#28f5cc]' : 'text-[#747c88]'} transition-colors duration-200`} />
+                        <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-[#9aa0aa]'} transition-colors duration-200`} style={{ fontSize: '0.8125rem' }}>
+                          {room.name}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                    {isActive && (
+                      <div className="flex items-center gap-1.5 ml-5">
+                        <div
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            background: '#04ad7b',
+                            boxShadow: '0 0 6px rgba(4, 173, 123, 0.6)',
+                            animation: 'pulse 2s ease-in-out infinite',
+                          }}
+                        />
+                        <span className="text-[#04ad7b] text-xs font-medium" style={{ fontSize: '0.6875rem' }}>
+                          {room.activeUsers} active
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Text Channels Preview */}
-          <div className="mt-auto pt-6 border-t" style={{ borderColor: 'rgba(40, 245, 204, 0.15)' }}>
-            <h3 className="text-[#747c88] text-xs uppercase tracking-wider mb-3">Text Channels</h3>
-            <div className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-[rgba(40,245,204,0.08)] transition-all">
-              <Hash className="w-4 h-4 text-[#747c88]" />
-              <span className="text-[#747c88] text-sm">general</span>
+          <div className="mt-auto pt-5 border-t" style={{ borderColor: 'rgba(40, 245, 204, 0.1)' }}>
+            <h3 className="text-[#9aa0aa] text-xs uppercase tracking-wider mb-3 font-medium" style={{ fontSize: '0.6875rem', letterSpacing: '0.1em' }}>
+              Text Channels
+            </h3>
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-[rgba(40,245,204,0.06)] group">
+              <Hash className="w-3.5 h-3.5 text-[#747c88] group-hover:text-[#9aa0aa] transition-colors duration-200" />
+              <span className="text-[#9aa0aa] text-sm font-medium group-hover:text-white transition-colors duration-200" style={{ fontSize: '0.8125rem' }}>
+                general
+              </span>
             </div>
           </div>
         </div>
