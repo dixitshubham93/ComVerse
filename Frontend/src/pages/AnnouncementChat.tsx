@@ -5,11 +5,15 @@ import { ChatMessage } from '../components/ChatMessage';
 import { EmojiPicker } from '../components/EmojiPicker';
 import { Send, Image as ImageIcon, Megaphone, Lock } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
+import { useRoomSocket, MessageDto } from '../hooks/useRoomSocket';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AnnouncementChatProps {
   communityName: string;
   communityAvatar: string;
   roomName: string;
+  roomId: number;
+  communityId: number;
   userRole: 'Owner' | 'Admin' | 'Member';
   currentUser: {
     name: string;
@@ -81,6 +85,8 @@ export function AnnouncementChat({
   communityName,
   communityAvatar,
   roomName,
+  roomId,
+  communityId,
   userRole,
   currentUser,
   onBack,
@@ -88,13 +94,59 @@ export function AnnouncementChat({
   onGoToUserSpace,
   onOpenDM,
 }: AnnouncementChatProps) {
-  const [messages, setMessages] = useState<Message[]>(MOCK_ANNOUNCEMENTS);
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [socketError, setSocketError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canPost = userRole === 'Owner' || userRole === 'Admin';
+
+  // Convert MessageDto to Message format
+  const convertMessageDto = (dto: MessageDto): Message => {
+    const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
+    const isCurrentUser = dto.userId === currentUserId;
+    
+    // Generate avatar from username if not available
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.username}`;
+    
+    return {
+      id: dto.id.toString(),
+      avatar: isCurrentUser ? currentUser.avatar : avatarUrl,
+      username: dto.username,
+      role: userRole, // TODO: Fetch actual role from membership API if needed
+      timestamp: new Date(dto.createdAt).toLocaleString(),
+      message: dto.content,
+      reactions: [],
+      userId: dto.userId.toString(),
+    };
+  };
+
+  // WebSocket connection
+  const { isConnected, error: wsError, sendMessage } = useRoomSocket(roomId, communityId, {
+    onMessage: (message: MessageDto) => {
+      setMessages((prev) => [...prev, convertMessageDto(message)]);
+    },
+    onMessageUpdated: (message: MessageDto) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
+      );
+    },
+    onMessageDeleted: (messageId: number) => {
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId.toString()));
+    },
+    onError: (error: string) => {
+      setSocketError(error);
+    },
+  });
+
+  useEffect(() => {
+    if (wsError) {
+      setSocketError(wsError);
+    }
+  }, [wsError]);
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
@@ -103,24 +155,28 @@ export function AnnouncementChat({
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!canPost || (!inputValue.trim() && !imagePreview)) return;
+    if (!isConnected) {
+      setSocketError('Not connected to server. Please wait...');
+      return;
+    }
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      avatar: currentUser.avatar,
-      username: currentUser.name,
-      role: userRole,
-      timestamp: 'Just now',
-      message: inputValue,
-      image: imagePreview || undefined,
-      reactions: [],
-      userId: 'user-current',
-    };
-
-    setMessages([...messages, newMessage]);
-    setInputValue('');
-    setImagePreview(null);
+    try {
+      setSocketError(null);
+      const contentType = imagePreview ? 'IMAGE' : 'TEXT';
+      const content = imagePreview ? `${inputValue}\n[IMAGE:${imagePreview}]` : inputValue;
+      
+      sendMessage(content, contentType);
+      setInputValue('');
+      setImagePreview(null);
+    } catch (error: any) {
+      if (error.message?.includes('403') || error.message?.includes('permission')) {
+        setSocketError('You do not have permission to send messages in this room.');
+      } else {
+        setSocketError(error.message || 'Failed to send message. Please try again.');
+      }
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -237,6 +293,7 @@ export function AnnouncementChat({
             <p className="text-[#747c88] text-sm flex items-center gap-2">
               <Lock className="w-3.5 h-3.5" />
               Only admins can post announcements
+              {!isConnected && <span className="text-yellow-400"> • Connecting...</span>}
             </p>
           </div>
         </div>
@@ -245,6 +302,12 @@ export function AnnouncementChat({
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-[calc(100vh-180px)]">
             <div ref={scrollRef} className="p-4">
+              {/* Socket Error Display */}
+              {socketError && (
+                <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+                  {socketError}
+                </div>
+              )}
               {messages.map((msg) => (
                 <div
                   key={msg.id}

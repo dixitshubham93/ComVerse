@@ -94,3 +94,64 @@ export const getCommunityRooms = async (communityId: number): Promise<RoomDto[]>
   }
 };
 
+/**
+ * Deletes a room
+ * @param roomId - The ID of the room to delete
+ * @returns Promise resolving to void
+ * @throws Error if the API call fails
+ */
+export const deleteRoom = async (roomId: number): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to delete room: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+  } catch (error) {
+    console.error('Error deleting room:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates a room
+ * @param roomId - The ID of the room to update
+ * @param data - Room update data
+ * @returns Promise resolving to RoomDto
+ * @throws Error if the API call fails
+ */
+export interface UpdateRoomRequest {
+  name?: string;
+  type?: RoomType;
+  config?: string | null;
+}
+
+export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promise<RoomDto> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to update room: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const roomData: RoomDto = await response.json();
+    return roomData;
+  } catch (error) {
+    console.error('Error updating room:', error);
+    throw error;
+  }
+};
+

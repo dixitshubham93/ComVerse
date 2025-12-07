@@ -14,6 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string, age: number, avatar: string, banner?: string) => Promise<void>;
+  setUserFromSignup: (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => void;
   logout: () => void;
   loginWithGoogle: () => Promise<void>;
 }
@@ -59,31 +60,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (username: string, email: string, password: string, age: number, avatar: string, banner?: string) => {
     try {
-      // Call backend API to create user
-      const userDto: UserDto = await createUser({
+      // Note: User creation is handled by the auth API (signupApi) in AuthCard
+      // This function is kept for backward compatibility but should not be used for new signups
+      // Use setUserFromSignup instead to avoid double API calls
+      
+      const newUser: User = {
+        id: 0, // This should be set from the backend response in AuthCard
         username,
         email,
-        password, // Will be ignored for now (no auth yet)
-        avatarUrl: avatar,
-        bannerUrl: banner,
-        age,
-      });
-
-      // Map backend UserDto to frontend User interface
-      const newUser: User = {
-        id: userDto.id,
-        username: userDto.username,
-        email: userDto.email,
-        avatar: userDto.avatarUrl || avatar,
-        age: userDto.age || undefined,
+        avatar: avatar,
+        age: age || undefined,
       };
       
       setUser(newUser);
       localStorage.setItem('comverse_user', JSON.stringify(newUser));
     } catch (error) {
-      console.error('Failed to create user:', error);
-      throw error; // Re-throw to let the component handle the error
+      console.error('Failed to set user in context:', error);
+      throw error;
     }
+  };
+
+  const setUserFromSignup = (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => {
+    const newUser: User = {
+      id: userData.id,
+      username: userData.username,
+      email: userData.email,
+      avatar: userData.avatar,
+      age: userData.age,
+    };
+    
+    setUser(newUser);
+    localStorage.setItem('comverse_user', JSON.stringify(newUser));
   };
 
   const loginWithGoogle = async () => {
@@ -112,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       login,
       signup,
+      setUserFromSignup,
       logout,
       loginWithGoogle,
     }}>

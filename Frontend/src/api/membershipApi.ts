@@ -221,3 +221,33 @@ export const getCommunityMembers = async (communityId: number): Promise<MemberIn
   }
 };
 
+/**
+ * Kick a member from a community
+ * @param userId - The ID of the user to kick
+ * @param communityId - The ID of the community
+ * @returns Promise resolving to void
+ * @throws Error if the API call fails
+ */
+export const kickMember = async (userId: number, communityId: number): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/memberships/kick`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        communityId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to kick member: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error kicking member:', error);
+    throw error;
+  }
+};
+

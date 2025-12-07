@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Mic, MicOff, Phone, PhoneOff, Volume2, Hash } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
+import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
+import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
+import { useAuth } from '../contexts/AuthContext';
 
 interface VoiceUser {
   id: string;
@@ -10,6 +13,7 @@ interface VoiceUser {
   isTalking: boolean;
   isMuted: boolean;
   isOnline: boolean;
+  userId: number;
 }
 
 interface VoiceRoom {
@@ -20,6 +24,8 @@ interface VoiceRoom {
 
 interface VoiceCallRoomProps {
   roomName: string;
+  roomId: number;
+  communityId: number;
   communityName: string;
   communityAvatar?: string;
   userRole: 'Owner' | 'Admin' | 'Member';
@@ -51,7 +57,9 @@ const currentUser = {
 };
 
 export function VoiceCallRoom({ 
-  roomName: initialRoomName, 
+  roomName: initialRoomName,
+  roomId,
+  communityId,
   communityName, 
   communityAvatar = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop',
   userRole,
@@ -59,15 +67,62 @@ export function VoiceCallRoom({
   onGoToHome,
   onGoToUserSpace,
 }: VoiceCallRoomProps) {
+  const { user } = useAuth();
   const [isInCall, setIsInCall] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(70);
-  const [users, setUsers] = useState<VoiceUser[]>(mockUsers);
+  const [users, setUsers] = useState<VoiceUser[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
 
-  // Simulate talking animation
+  // Convert UserDto to VoiceUser
+  const convertUserDto = (dto: UserDto): VoiceUser => {
+    return {
+      id: dto.id.toString(),
+      name: dto.username,
+      avatar: dto.avatarUrl || '👤',
+      isTalking: false,
+      isMuted: false,
+      isOnline: true,
+      userId: dto.id,
+    };
+  };
+
+  // Load initial voice room metadata (optional, presence handled via WebSocket)
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        setIsLoadingMetadata(true);
+        // Try to load metadata, but it's optional since presence is WebSocket-based
+        const metadata: VoiceRoomMetadata = await getVoiceRoomMetadata(roomId);
+        if (metadata.users.length > 0) {
+          const convertedUsers = metadata.users.map(convertUserDto);
+          setUsers(convertedUsers);
+        }
+      } catch (error) {
+        console.error('Error loading voice room metadata:', error);
+        // Not critical, presence will be updated via WebSocket
+      } finally {
+        setIsLoadingMetadata(false);
+      }
+    };
+
+    if (roomId) {
+      loadMetadata();
+    }
+  }, [roomId]);
+
+  // WebSocket connection for presence
+  const { isConnected, joinVoice, leaveVoice } = useRoomSocket(roomId, communityId, {
+    onPresence: (presenceUsers: UserDto[]) => {
+      const convertedUsers = presenceUsers.map(convertUserDto);
+      setUsers(convertedUsers);
+    },
+  });
+
+  // Simulate talking animation (only for visual effect, real audio will come later)
   useEffect(() => {
     const interval = setInterval(() => {
       setUsers(prevUsers =>
@@ -81,13 +136,45 @@ export function VoiceCallRoom({
     return () => clearInterval(interval);
   }, []);
 
+  // Join voice on mount if needed
+  useEffect(() => {
+    if (isConnected && isInCall) {
+      try {
+        joinVoice();
+      } catch (error) {
+        console.error('Error joining voice:', error);
+      }
+    }
+
+    return () => {
+      if (isInCall) {
+        try {
+          leaveVoice();
+        } catch (error) {
+          console.error('Error leaving voice:', error);
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, isInCall]);
+
   const handleJoinCall = () => {
-    setIsInCall(true);
+    try {
+      joinVoice();
+      setIsInCall(true);
+    } catch (error) {
+      console.error('Error joining voice call:', error);
+    }
   };
 
   const handleLeaveCall = () => {
-    setIsInCall(false);
-    setIsMuted(false);
+    try {
+      leaveVoice();
+      setIsInCall(false);
+      setIsMuted(false);
+    } catch (error) {
+      console.error('Error leaving voice call:', error);
+    }
   };
 
   const toggleMute = () => {
@@ -289,8 +376,18 @@ export function VoiceCallRoom({
               opacity: isTransitioning ? 0.5 : 1,
             }}
           >
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl w-full">
-              {users.map((user) => (
+            {isLoadingMetadata ? (
+              <div className="flex items-center justify-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#28f5cc]"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl w-full">
+                {users.length === 0 ? (
+                  <div className="col-span-full text-center text-[#747c88]">
+                    No users in voice channel
+                  </div>
+                ) : (
+                  users.map((user) => (
                 <div
                   key={user.id}
                   className="flex flex-col items-center gap-3 group transition-all duration-300"
@@ -382,8 +479,10 @@ export function VoiceCallRoom({
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* Control Bar - Floating at Bottom */}

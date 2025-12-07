@@ -1,3 +1,4 @@
+import React from 'react';
 interface JoinCommunityButtonProps {
   onJoin: () => void;
   isLoading?: boolean;

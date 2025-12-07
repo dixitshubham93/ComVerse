@@ -14,7 +14,8 @@ import { VoiceCallRoom } from './VoiceCallRoom';
 import { MemesPostsPage } from './MemesPostsPage';
 import { CreateRoomModal } from '../components/CreateRoomModal';
 import { getCommunityById, getCommunityStats, CommunityType, CommunityStatsDto } from '../api/communityApi';
-import { getCommunityRooms, RoomDto, RoomType } from '../api/roomApi';
+import { getCommunityRooms, RoomDto, RoomType, deleteRoom } from '../api/roomApi';
+import { ArrowLeft, Users, Trash2, Edit2, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserRole } from '../api/membershipApi';
 import { MembershipRole } from '../api/communityApi';
@@ -84,11 +85,13 @@ export function CommunityPage() {
       </div>
     );
   }
+
   const [currentPage, setCurrentPage] = useState<'main' | 'manage' | 'room' | 'generalChat' | 'announcementChat' | 'dmChat' | 'voiceCall' | 'memesPosts'>('main');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [dmTarget, setDmTarget] = useState<{ name: string; avatar: string; role: 'Owner' | 'Admin' | 'Member' } | null>(null);
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [expandedRoom, setExpandedRoom] = useState<RoomDto | null>(null);
 
   // State for fetched data
   const [community, setCommunity] = useState<{
@@ -143,6 +146,61 @@ export function CommunityPage() {
     }
   };
 
+  // Named handler to avoid inline async in JSX (prevents SWC parser confusion)
+  const handleCreateRoomModalCreate = async () => {
+    try {
+      await handleRoomCreated();
+      setIsCreateRoomModalOpen(false);
+    } catch (err) {
+      console.error('Error creating room via modal:', err);
+    }
+  };
+
+  // Handle room deletion
+  const handleDeleteRoom = async (roomId: number) => {
+    if (!window.confirm('Delete this room permanently?\nThis action cannot be undone.')) {
+      return;
+    }
+    try {
+      await deleteRoom(roomId);
+      const roomsData = await getCommunityRooms(communityId);
+      setRooms(roomsData);
+      if (expandedRoom?.id === roomId) {
+        setExpandedRoom(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete room:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete room');
+    }
+  };
+
+  // Handle join room - navigate to appropriate page
+  const handleJoinRoom = (room: RoomDto) => {
+    setExpandedRoom(null);
+    const frontendType = mapRoomTypeToFrontend(room.type);
+    const roomObj = {
+      id: room.id.toString(),
+      name: room.name,
+      description: room.config || '',
+      activeUsers: 0,
+      type: frontendType,
+      frontendType: frontendType,
+    };
+    setSelectedRoom(roomObj);
+    
+    if (frontendType === 'general') {
+      setCurrentPage('generalChat');
+    } else if (frontendType === 'announcements') {
+      setCurrentPage('announcementChat');
+    } else if (frontendType === 'voice') {
+      setCurrentPage('voiceCall');
+    } else if (frontendType === 'memes') {
+      setCurrentPage('memesPosts');
+    } else {
+      setCurrentPage('room');
+    }
+  };
+
   // Helper to convert MembershipRole to string for display
   const getRoleDisplay = (role: MembershipRole | null): 'Owner' | 'Admin' | 'Member' => {
     if (!role) return 'Member';
@@ -177,20 +235,20 @@ export function CommunityPage() {
   };
 
   const handleRoomSelect = (room: any) => {
-    setSelectedRoom(room);
-    
-    // Route to appropriate page based on room type
-    const frontendType = room.frontendType || mapRoomTypeToFrontend(room.type);
-    if (frontendType === 'general') {
-      setCurrentPage('generalChat');
-    } else if (frontendType === 'announcements') {
-      setCurrentPage('announcementChat');
-    } else if (frontendType === 'voice') {
-      setCurrentPage('voiceCall');
-    } else if (frontendType === 'memes') {
-      setCurrentPage('memesPosts');
+    // Find the actual RoomDto from rooms array
+    const roomDto = rooms.find(r => r.id.toString() === room.id || r.id === parseInt(room.id, 10));
+    if (roomDto) {
+      setExpandedRoom(roomDto);
     } else {
-      setCurrentPage('room');
+      // Fallback: create RoomDto from room object
+      setExpandedRoom({
+        id: parseInt(room.id, 10),
+        communityId: communityId,
+        name: room.name,
+        type: room.type === 'voice' ? RoomType.VOICE_CHAT : room.type === 'memes' ? RoomType.POSTS : RoomType.CHAT,
+        config: room.description || null,
+        isDefaultRoom: false,
+      });
     }
   };
 
@@ -274,11 +332,14 @@ export function CommunityPage() {
 
   // Render General Chat
   if (currentPage === 'generalChat' && selectedRoom) {
+    const roomId = parseInt(selectedRoom.id, 10);
     return (
       <GeneralChat
         communityName={community.name}
         communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         roomName={selectedRoom.name}
+        roomId={roomId}
+        communityId={communityId}
         userRole={getRoleString()}
         currentUser={currentUser}
         onBack={handleBackToMain}
@@ -291,11 +352,14 @@ export function CommunityPage() {
 
   // Render Announcement Chat
   if (currentPage === 'announcementChat' && selectedRoom) {
+    const roomId = parseInt(selectedRoom.id, 10);
     return (
       <AnnouncementChat
         communityName={community.name}
         communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         roomName={selectedRoom.name}
+        roomId={roomId}
+        communityId={communityId}
         userRole={getRoleString()}
         currentUser={currentUser}
         onBack={handleBackToMain}
@@ -325,9 +389,12 @@ export function CommunityPage() {
 
   // Render Voice Call Room
   if (currentPage === 'voiceCall' && selectedRoom) {
+    const roomId = parseInt(selectedRoom.id, 10);
     return (
       <VoiceCallRoom
         roomName={selectedRoom.name}
+        roomId={roomId}
+        communityId={communityId}
         communityName={community.name}
         communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         userRole={getRoleString()}
@@ -408,83 +475,233 @@ export function CommunityPage() {
       {showMembersPanel && (
         <CommunityMembersPanel
           communityId={communityId}
+          userRole={userRole}
           onClose={() => setShowMembersPanel(false)}
         />
       )}
 
-      {/* Main Content Area */}
-      <div className="relative ml-16 lg:ml-20 min-h-screen">
-        {/* Community Overview Header - Beautiful Banner Design */}
-        <div className="relative w-full h-60 overflow-hidden">
-          {/* Banner Background Image */}
-          {community.bannerUrl ? (
-            <img 
-              src={community.bannerUrl} 
-              alt={`${community.name} banner`}
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-          ) : (
-            <div 
-              className="absolute inset-0 w-full h-full"
-              style={{
-                background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15) 0%, rgba(4, 55, 47, 0.25) 100%)',
-              }}
-            />
-          )}
-          
-          {/* Dark Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80" />
-          
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-end h-full pb-6 px-4">
-            <h1 
-              className="text-white text-3xl font-bold mb-2"
-              style={{
-                textShadow: '0 0 20px rgba(40, 245, 204, 0.5), 0 2px 10px rgba(0, 0, 0, 0.8)',
-              }}
-            >
-              {community.name}
-            </h1>
+      {/* Full-Screen Room Expansion View */}
+      {expandedRoom && (
+        <ExpandedRoomView
+          room={expandedRoom}
+          communityName={community.name}
+          userRole={userRole}
+          stats={stats}
+          onClose={() => setExpandedRoom(null)}
+          onJoin={() => handleJoinRoom(expandedRoom)}
+          onDelete={() => handleDeleteRoom(expandedRoom.id)}
+        />
+      )}
+
+      {/* Main Content Area - Hide when room is expanded */}
+      {!expandedRoom && (
+        <div className="relative ml-16 lg:ml-20 min-h-screen">
+          {/* Community Overview Header - Clean Banner Design */}
+          <div className="relative w-full h-64 overflow-hidden">
+            {/* Banner Background Image - Full Width */}
+            {community.bannerUrl ? (
+              <img 
+                src={community.bannerUrl} 
+                alt={`${community.name} banner`}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+            ) : (
+              <div 
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15) 0%, rgba(4, 55, 47, 0.25) 100%)',
+                }}
+              />
+            )}
             
-            <div 
-              className="flex items-center gap-4 text-[#28f5cc] text-sm flex-wrap justify-center"
-              style={{
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
-              }}
-            >
-              <span className="font-medium">{mapTypeToCategory(community.type)}</span>
-              <span className="opacity-50">•</span>
-              {stats && (
-                <>
-                  <span>Active: {stats.activeMembers}</span>
-                  <span className="opacity-50">•</span>
-                  <span>Total: {stats.totalMembers}</span>
-                </>
-              )}
+            {/* Soft Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/60 to-black/70" />
+            
+            {/* Content - Centered and Clean */}
+            <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
+              {/* Community Name - ONE TIME */}
+              <h1 
+                className="text-white text-4xl font-bold mb-4 text-center"
+                style={{
+                  textShadow: '0 2px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(40, 245, 204, 0.3)',
+                }}
+              >
+                {community.name}
+              </h1>
+              
+              {/* Community Type Badge + Member Stats */}
+              <div className="flex items-center gap-6 flex-wrap justify-center">
+                {/* Community Type Badge */}
+                <span 
+                  className="px-4 py-1.5 rounded-full text-sm font-medium"
+                  style={{
+                    background: 'rgba(40, 245, 204, 0.2)',
+                    border: '1px solid rgba(40, 245, 204, 0.4)',
+                    color: '#28f5cc',
+                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
+                  }}
+                >
+                  {mapTypeToCategory(community.type)}
+                </span>
+                
+                {/* Member Stats */}
+                {stats && (
+                  <>
+                    <div className="flex items-center gap-2 text-white text-sm">
+                      <span className="text-[#747c88]">Total Members:</span>
+                      <span className="font-semibold">{stats.totalMembers}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white text-sm">
+                      <span className="text-[#747c88]">Active Members:</span>
+                      <span className="font-semibold text-[#28f5cc]">{stats.activeMembers}</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Stacked Room Cards - Expanded Space */}
-        <div className="relative" style={{ height: 'calc(100vh - 15rem)' }}>
-          <StackedRoomCards 
-            onRoomSelect={handleRoomSelect}
-            rooms={mappedRooms}
-            onCreateRoom={() => setIsCreateRoomModalOpen(true)}
-            canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
-          />
+          {/* Stacked Room Cards - Expanded Space */}
+          <div className="relative" style={{ height: 'calc(100vh - 15rem)' }}>
+            <StackedRoomCards 
+              onRoomSelect={handleRoomSelect}
+              rooms={mappedRooms}
+              onCreateRoom={() => setIsCreateRoomModalOpen(true)}
+              canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Create Room Modal */}
       <CreateRoomModal
         isOpen={isCreateRoomModalOpen}
         onClose={() => setIsCreateRoomModalOpen(false)}
-        onCreateRoom={async () => {
-          await handleRoomCreated();
-        }}
+        onCreateRoom={handleCreateRoomModalCreate}
         communityId={communityId}
       />
+    </div>
+  );
+}
+
+// Expanded Room View Component
+interface ExpandedRoomViewProps {
+  room: RoomDto;
+  communityName: string;
+  userRole: MembershipRole | null;
+  stats: CommunityStatsDto | null;
+  onClose: () => void;
+  onJoin: () => void;
+  onDelete: () => void;
+}
+
+function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoin, onDelete }: ExpandedRoomViewProps) {
+  const isOwner = userRole === MembershipRole.OWNER;
+  const roomType = mapRoomTypeToFrontend(room.type);
+  
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{
+        background: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(12px)',
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl animate-in zoom-in-95 duration-300"
+        style={{
+          background: 'rgba(4, 55, 47, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(40, 245, 204, 0.3)',
+          boxShadow: '0 0 40px rgba(40, 245, 204, 0.2), 0 8px 32px rgba(0, 0, 0, 0.5)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Back Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 left-4 z-10 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-colors"
+        >
+          <ArrowLeft className="w-6 h-6 text-[#28f5cc]" />
+        </button>
+
+        {/* Content */}
+        <div className="p-8">
+          {/* Room Name */}
+          <h2 className="text-white text-3xl font-bold mb-4 pr-12">{room.name}</h2>
+
+          {/* Description */}
+          <p className="text-[#747c88] text-lg mb-6">
+            {room.config || 'No description available.'}
+          </p>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="glassmorphism rounded-xl p-4" style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}>
+              <p className="text-[#747c88] text-sm mb-1">Active Members</p>
+              <p className="text-white text-2xl font-bold">{stats?.activeMembers || 0}</p>
+            </div>
+            <div className="glassmorphism rounded-xl p-4" style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}>
+              <p className="text-[#747c88] text-sm mb-1">Total Members</p>
+              <p className="text-white text-2xl font-bold">{stats?.totalMembers || 0}</p>
+            </div>
+          </div>
+
+          {/* Room Type Tag */}
+          <div className="mb-6">
+            <span
+              className="inline-block px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                background: 'rgba(40, 245, 204, 0.2)',
+                border: '1px solid rgba(40, 245, 204, 0.4)',
+                color: '#28f5cc',
+              }}
+            >
+              {roomType === 'voice' ? 'Voice Chat' : roomType === 'memes' ? 'Memes & Posts' : roomType === 'announcements' ? 'Announcements' : 'General Chat'}
+            </span>
+          </div>
+
+          {/* Last Activity - Placeholder */}
+          <div className="mb-6 text-[#747c88] text-sm">
+            Last activity: Recently active
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={onJoin}
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform"
+              style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
+            >
+              <LogIn className="w-5 h-5" />
+              Join Room
+            </button>
+
+            {isOwner && (
+              <>
+                <button
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-[#28f5cc] text-[#28f5cc] hover:bg-[rgba(40,245,204,0.1)] transition-colors"
+                >
+                  <Edit2 className="w-5 h-5" />
+                  Edit Room
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-red-500/50 text-red-400 hover:bg-[rgba(239,68,68,0.1)] transition-colors"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Delete Room
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

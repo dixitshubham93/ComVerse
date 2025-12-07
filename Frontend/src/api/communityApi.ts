@@ -246,3 +246,28 @@ export const getCommunityStats = async (id: number): Promise<CommunityStatsDto> 
   }
 };
 
+/**
+ * Deletes a community
+ * @param id - The ID of the community to delete
+ * @returns Promise resolving to void
+ * @throws Error if the API call fails
+ */
+export const deleteCommunity = async (id: number): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/communities/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to delete community: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting community:', error);
+    throw error;
+  }
+};
+

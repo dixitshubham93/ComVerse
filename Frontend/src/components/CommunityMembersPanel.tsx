@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { X, Users } from 'lucide-react';
-import { getCommunityMembers, MemberInfo } from '../api/membershipApi';
+import { X, Users, UserMinus } from 'lucide-react';
+import { getCommunityMembers, MemberInfo, kickMember } from '../api/membershipApi';
 import { MembershipRole } from '../api/communityApi';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CommunityMembersPanelProps {
   communityId: number;
+  userRole: MembershipRole | null;
   onClose: () => void;
 }
 
-export function CommunityMembersPanel({ communityId, onClose }: CommunityMembersPanelProps) {
+export function CommunityMembersPanel({ communityId, userRole, onClose }: CommunityMembersPanelProps) {
+  const { user } = useAuth();
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -62,6 +66,60 @@ export function CommunityMembersPanel({ communityId, onClose }: CommunityMembers
     if (role === MembershipRole.OWNER) return 'Owner';
     if (role === MembershipRole.ADMIN) return 'Admin';
     return 'Member';
+  };
+
+  // Check if current user can kick a member
+  const canKickMember = (member: MemberInfo): boolean => {
+    if (!user || !userRole) return false;
+    const currentUserId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    
+    // Can't kick yourself
+    if (member.userId === currentUserId) return false;
+    
+    // Owner can kick Admins and Members
+    if (userRole === MembershipRole.OWNER) {
+      return member.role === MembershipRole.ADMIN || member.role === MembershipRole.MEMBER;
+    }
+    
+    // Admin can kick Members only
+    if (userRole === MembershipRole.ADMIN) {
+      return member.role === MembershipRole.MEMBER;
+    }
+    
+    // Members can't kick anyone
+    return false;
+  };
+
+  const handleKickMember = async (member: MemberInfo) => {
+    if (!window.confirm(`Are you sure you want to remove ${member.username} from this community?`)) {
+      return;
+    }
+
+    try {
+      setKickingMemberId(member.userId);
+      await kickMember(member.userId, communityId);
+      // Refresh members list
+      const membersData = await getCommunityMembers(communityId);
+      const sorted = membersData.sort((a, b) => {
+        const order = { [MembershipRole.OWNER]: 0, [MembershipRole.ADMIN]: 1, [MembershipRole.MEMBER]: 2 };
+        return (order[a.role] ?? 3) - (order[b.role] ?? 3);
+      });
+      setMembers(sorted);
+    } catch (err) {
+      console.error('Error kicking member:', err);
+      alert(err instanceof Error ? err.message : 'Failed to kick member');
+    } finally {
+      setKickingMemberId(null);
+    }
+  };
+
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return 'Unknown';
+    }
   };
 
   return (
@@ -145,15 +203,30 @@ export function CommunityMembersPanel({ communityId, onClose }: CommunityMembers
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold truncate">{member.username}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span
                         className="text-xs px-2.5 py-1 rounded-full font-medium"
                         style={getRoleBadgeStyle(member.role)}
                       >
                         {getRoleLabel(member.role)}
                       </span>
+                      <span className="text-[#747c88] text-xs">
+                        Joined {formatDate(member.joinedAt)}
+                      </span>
                     </div>
                   </div>
+
+                  {/* Kick Button */}
+                  {canKickMember(member) && (
+                    <button
+                      onClick={() => handleKickMember(member)}
+                      disabled={kickingMemberId === member.userId}
+                      className="p-2 rounded-lg hover:bg-[rgba(239,68,68,0.15)] transition-colors disabled:opacity-50"
+                      title="Remove member from community"
+                    >
+                      <UserMinus className="w-5 h-5 text-red-400" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

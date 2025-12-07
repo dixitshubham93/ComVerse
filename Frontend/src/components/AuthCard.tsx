@@ -1,6 +1,7 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { X, Mail, Lock, User, Calendar, Eye, EyeOff } from 'lucide-react';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,7 +40,7 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, signup, setUserFromSignup, loginWithGoogle } = useAuth();
 
   // Reset form when modal opens/closes or mode changes
   useEffect(() => {
@@ -91,7 +92,15 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
     try {
       const response: ApiResponse<any> = await loginApi({ email, password });
       if (response.success && response.data) {
-        await login(email, password);
+        // Use the user data from the backend response (which has the correct avatar URL)
+        const userData = response.data;
+        setUserFromSignup({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || '', // Use backend avatar URL
+          age: userData.age || undefined,
+        });
         onClose();
       } else {
         setError(response.message || 'Invalid email or password');
@@ -171,7 +180,18 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
       });
 
       if (response.success && response.data) {
-        await signup(username, signupEmail, signupPassword, parseInt(age), avatarUrl || '', bannerUrl || '');
+        // Use the user data from the backend response (which has the processed avatar URL from Cloudinary)
+        const userData = response.data;
+        
+        // Set user in context directly (avoiding double API call to createUser)
+        setUserFromSignup({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || avatarUrl || '', // Use backend-processed avatar URL (Cloudinary)
+          age: userData.age || parseInt(age),
+        });
+        
         onClose();
       } else {
         setError(response.message || 'Failed to create account. Please try again.');
@@ -228,6 +248,18 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
           >
             <X className="w-5 h-5" />
           </button>
+
+          {/* Dialog Title and Description for accessibility */}
+          <DialogTitle className="sr-only">
+            {mode === 'signin' ? 'Sign In' : signupStep === 1 ? 'Create Account' : 'Complete Sign Up'}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {mode === 'signin' 
+              ? 'Welcome back to ComVerse' 
+              : signupStep === 1 
+                ? 'Start your cosmic journey' 
+                : 'Final step to join the universe'}
+          </DialogDescription>
 
           {/* Header */}
           <div className="text-center mb-8">

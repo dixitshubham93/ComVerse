@@ -534,8 +534,8 @@ export function StackedRoomCards({
                           </div>
                           
                           <h4 className="text-white mb-2.5" style={{ fontWeight: '600' }}>{stackRooms[0]?.name || 'No rooms'}</h4>
-                          <p className="text-[#747c88] mb-5" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
-                            {stackRooms[0]?.description || (stackRooms[0]?.type === 'announcements' ? 'Announcements and important updates for this community.' : '')}
+                          <p className="text-[#747c88] mb-5 text-center" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
+                            {stackRooms[0]?.description || (stackRooms[0]?.type === 'announcements' ? 'Welcome to the community! Important announcements and updates will appear here.' : '')}
                           </p>
                           <div className="mt-auto flex items-center gap-2.5">
                             <div 

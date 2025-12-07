@@ -1,15 +1,20 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { ChatMessage } from '../components/ChatMessage';
 import { EmojiPicker } from '../components/EmojiPicker';
 import { Send, Image as ImageIcon, Hash } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
+import { useRoomSocket, MessageDto } from '../hooks/useRoomSocket';
+import { getRoomMessages, MessagePage } from '../api/messageApi';
+import { useAuth } from '../contexts/AuthContext';
 
 interface GeneralChatProps {
   communityName: string;
   communityAvatar: string;
   roomName: string;
+  roomId: number;
+  communityId: number;
   userRole: 'Owner' | 'Admin' | 'Member';
   currentUser: {
     name: string;
@@ -97,6 +102,8 @@ export function GeneralChat({
   communityName,
   communityAvatar,
   roomName,
+  roomId,
+  communityId,
   userRole,
   currentUser,
   onBack,
@@ -104,37 +111,169 @@ export function GeneralChat({
   onGoToUserSpace,
   onOpenDM,
 }: GeneralChatProps) {
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [socketError, setSocketError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isLoadingMoreRef = useRef(false);
+
+  // Convert MessageDto to Message format
+  const convertMessageDto = (dto: MessageDto): Message => {
+    const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
+    const isCurrentUser = dto.userId === currentUserId;
+    
+    // Generate avatar from username if not available
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.username}`;
+    
+    return {
+      id: dto.id.toString(),
+      avatar: isCurrentUser ? currentUser.avatar : avatarUrl,
+      username: dto.username,
+      role: userRole, // TODO: Fetch actual role from membership API if needed
+      timestamp: new Date(dto.createdAt).toLocaleString(),
+      message: dto.content,
+      reactions: [],
+      userId: dto.userId.toString(),
+    };
+  };
+
+  // Load initial messages
+  useEffect(() => {
+    const loadInitialMessages = async () => {
+      try {
+        setIsLoadingMessages(true);
+        const messagePage: MessagePage = await getRoomMessages(communityId, roomId, 0, 50);
+        const convertedMessages = messagePage.content.map(convertMessageDto).reverse();
+        setMessages(convertedMessages);
+        setHasMoreMessages(!messagePage.last);
+        setCurrentPage(0);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        setSocketError('Failed to load messages');
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+
+    if (roomId && communityId) {
+      loadInitialMessages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, communityId]);
+
+  // Load older messages on scroll
+  const loadOlderMessages = useCallback(async () => {
+    if (isLoadingMoreRef.current || !hasMoreMessages) return;
+
+    try {
+      isLoadingMoreRef.current = true;
+      const nextPage = currentPage + 1;
+      const messagePage: MessagePage = await getRoomMessages(communityId, roomId, nextPage, 50);
+      const convertedMessages = messagePage.content.map(convertMessageDto).reverse();
+      setMessages((prev) => [...convertedMessages, ...prev]);
+      setHasMoreMessages(!messagePage.last);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error('Error loading older messages:', error);
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
+  }, [roomId, communityId, currentPage, hasMoreMessages]);
+
+  // Handle scroll for pagination
+  useEffect(() => {
+    // Find the ScrollArea viewport element
+    const findViewport = () => {
+      if (!scrollRef.current) return null;
+      return scrollRef.current.closest('[data-slot="scroll-area"]')?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
+    };
+
+    const viewport = findViewport();
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      // Check if scrolled to top (with 50px threshold)
+      if (viewport.scrollTop <= 50 && hasMoreMessages && !isLoadingMoreRef.current) {
+        const previousScrollHeight = viewport.scrollHeight;
+        loadOlderMessages().then(() => {
+          // Maintain scroll position after loading
+          setTimeout(() => {
+            const newScrollHeight = viewport.scrollHeight;
+            viewport.scrollTop = newScrollHeight - previousScrollHeight;
+          }, 0);
+        });
+      }
+    };
+
+    viewport.addEventListener('scroll', handleScroll);
+    return () => viewport.removeEventListener('scroll', handleScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMoreMessages]);
+
+  // WebSocket connection
+  const { isConnected, error: wsError, sendMessage } = useRoomSocket(roomId, communityId, {
+    onMessage: (message: MessageDto) => {
+      setMessages((prev) => [...prev, convertMessageDto(message)]);
+    },
+    onMessageUpdated: (message: MessageDto) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
+      );
+    },
+    onMessageDeleted: (messageId: number) => {
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId.toString()));
+    },
+    onError: (error: string) => {
+      setSocketError(error);
+    },
+  });
 
   useEffect(() => {
-    // Auto-scroll to bottom on new messages
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (wsError) {
+      setSocketError(wsError);
+    }
+  }, [wsError]);
+
+  useEffect(() => {
+    // Auto-scroll to bottom on new messages (only if not loading older messages)
+    if (!isLoadingMoreRef.current && scrollRef.current) {
+      const viewport = scrollRef.current.closest('[data-slot="scroll-area"]')?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
+      if (viewport) {
+        // Only auto-scroll if already near bottom
+        const isNearBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 100;
+        if (isNearBottom) {
+          setTimeout(() => {
+            viewport.scrollTop = viewport.scrollHeight;
+          }, 0);
+        }
+      }
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim() && !imagePreview) return;
+    if (!isConnected) {
+      setSocketError('Not connected to server. Please wait...');
+      return;
+    }
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      avatar: currentUser.avatar,
-      username: currentUser.name,
-      role: userRole,
-      timestamp: 'Just now',
-      message: inputValue,
-      image: imagePreview || undefined,
-      reactions: [],
-      userId: 'user-current',
-    };
-
-    setMessages([...messages, newMessage]);
-    setInputValue('');
-    setImagePreview(null);
+    try {
+      setSocketError(null);
+      const contentType = imagePreview ? 'IMAGE' : 'TEXT';
+      const content = imagePreview ? `${inputValue}\n[IMAGE:${imagePreview}]` : inputValue;
+      
+      sendMessage(content, contentType);
+      setInputValue('');
+      setImagePreview(null);
+    } catch (error: any) {
+      setSocketError(error.message || 'Failed to send message. Please try again.');
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -255,6 +394,20 @@ export function GeneralChat({
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-[calc(100vh-180px)]">
             <div ref={scrollRef} className="p-4">
+              {/* Loading State */}
+              {isLoadingMessages && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#28f5cc]"></div>
+                </div>
+              )}
+
+              {/* Socket Error Display */}
+              {socketError && (
+                <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+                  {socketError}
+                </div>
+              )}
+
               {messages.map((msg) => (
                 <ChatMessage
                   key={msg.id}
