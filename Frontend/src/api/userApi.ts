@@ -4,7 +4,8 @@
  */
 
 // Base API URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+
 
 /**
  * User DTO matching backend structure
@@ -68,10 +69,12 @@ export const createUser = async (data: CreateUserRequest): Promise<UserDto> => {
  */
 export const getUser = async (id: number): Promise<UserDto> => {
   try {
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
 

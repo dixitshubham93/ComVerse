@@ -58,7 +58,7 @@ export function UserProfile() {
           id: user.id,
           username: user.username,
           email: user.email,
-          avatarUrl: user.avatarUrl,
+          avatarUrl: user.avatarUrl || user.avatar, // Handle both avatarUrl and avatar properties
           bannerUrl: user.bannerUrl || null,
           age: user.age,
         });
@@ -105,7 +105,7 @@ export function UserProfile() {
           id: user.id,
           username: user.username,
           email: user.email,
-          avatarUrl: user.avatarUrl,
+          avatarUrl: user.avatarUrl || user.avatar, // Handle both avatarUrl and avatar properties
           bannerUrl: user.bannerUrl || null,
           age: user.age,
         });

@@ -4,7 +4,8 @@
  */
 
 // Base API URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+
 
 /**
  * API Response structure matching backend
@@ -56,7 +57,7 @@ export interface UserDto {
  */
 export const signup = async (data: SignupRequest): Promise<ApiResponse<UserDto>> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

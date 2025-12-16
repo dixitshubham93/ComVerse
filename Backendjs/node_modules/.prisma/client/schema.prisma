@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/////////////////////
+// ENUMS (MUST COME FIRST)
+/////////////////////
+
+enum CommunityType {
+  PUBLIC
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum RoomType {
+  ANNOUNCEMENT
+  GENERAL
+  VOICE
+}
+
+enum PostType {
+  IMAGE
+  VIDEO
+}
+
+/////////////////////
+// USER
+/////////////////////
+model User {
+  id        BigInt  @id @default(autoincrement())
+  username  String  @unique
+  email     String  @unique
+  password  String?
+  avatarUrl String?
+  bannerUrl String?
+  age       Int?
+
+  posts       Post[]
+  comments    Comment[]
+  likes       PostLike[]
+  messages    Message[]
+  sentDMs     DirectMessage[] @relation("sentMessages")
+  receivedDMs DirectMessage[] @relation("receivedMessages")
+  memberships Membership[]
+
+  @@map("users")
+}
+
+/////////////////////
+// COMMUNITY
+/////////////////////
+model Community {
+  id          BigInt        @id @default(autoincrement())
+  name        String        @unique
+  description String?
+  bannerUrl   String?
+  type        CommunityType
+
+  rooms       Room[]
+  memberships Membership[]
+
+  @@map("communities")
+}
+
+/////////////////////
+// MEMBERSHIP
+/////////////////////
+model Membership {
+  id       BigInt         @id @default(autoincrement())
+  role     MembershipRole
+  joinedAt DateTime?
+
+  userId      BigInt
+  communityId BigInt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
+  @@map("memberships")
+}
+
+/////////////////////
+// ROOM
+/////////////////////
+model Room {
+  id            BigInt    @id @default(autoincrement())
+  name          String
+  type          RoomType
+  config        String?
+  isDefaultRoom Boolean   @default(false)
+  readOnly      Boolean   @default(false)
+  adminOnly     Boolean   @default(false)
+  locked        Boolean   @default(false)
+  createdAt     DateTime?
+
+  communityId BigInt
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  posts    Post[]
+  messages Message[]
+
+  @@map("rooms")
+}
+
+/////////////////////
+// POST
+/////////////////////
+model Post {
+  id        BigInt    @id @default(autoincrement())
+  mediaUrl  String
+  type      PostType
+  createdAt DateTime?
+
+  roomId BigInt
+  userId BigInt
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+  likes    PostLike[]
+
+  @@map("posts")
+}
+
+/////////////////////
+// COMMENT
+/////////////////////
+model Comment {
+  id        BigInt    @id @default(autoincrement())
+  content   String
+  createdAt DateTime?
+
+  postId BigInt
+  userId BigInt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+/////////////////////
+// POST LIKE
+/////////////////////
+model PostLike {
+  id BigInt @id @default(autoincrement())
+
+  postId BigInt
+  userId BigInt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+/////////////////////
+// ROOM MESSAGE
+/////////////////////
+model Message {
+  id          BigInt    @id @default(autoincrement())
+  content     String?
+  contentType String?
+  createdAt   DateTime?
+
+  roomId BigInt
+  userId BigInt
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+/////////////////////
+// DIRECT MESSAGE
+/////////////////////
+model DirectMessage {
+  id        BigInt    @id @default(autoincrement())
+  content   String?
+  createdAt DateTime?
+  read      Boolean   @default(false)
+
+  senderId   BigInt
+  receiverId BigInt
+
+  sender   User @relation("sentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("receivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("direct_messages")
+}
