@@ -202,7 +202,7 @@ export function useDMSocket(
     return () => {
       disconnect();
     };
-  }, [user?.id, otherUserId, connect, disconnect]);
+  }, [user?.id, otherUserId]);
 
   return {
     isConnected,
