@@ -37,7 +37,7 @@ export interface PostDto {
  */
 export const getUserPosts = async (userId: number): Promise<PostDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/posts`, {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/posts`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export const getUserPosts = async (userId: number): Promise<PostDto[]> => {
  */
 export const getUserRecentPosts = async (userId: number): Promise<PostDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/recent-posts`, {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/recent-posts`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -40,7 +40,7 @@ export interface CreateUserRequest {
  */
 export const createUser = async (data: CreateUserRequest): Promise<UserDto> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users`, {
+    const response = await fetch(`${API_BASE_URL}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export const createUser = async (data: CreateUserRequest): Promise<UserDto> => {
 export const getUser = async (id: number): Promise<UserDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export const getUser = async (id: number): Promise<UserDto> => {
  */
 export const getUserCommunities = async (userId: number) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/communities`, {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/communities`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ export const getUserCommunities = async (userId: number) => {
  */
 export const getUserCommunitiesWithDetails = async (userId: number) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/communities/details`, {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/communities/details`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

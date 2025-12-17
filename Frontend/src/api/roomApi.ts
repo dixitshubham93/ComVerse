@@ -49,7 +49,7 @@ export interface CreateRoomRequest {
 export const createRoom = async (communityId: number, data: CreateRoomRequest): Promise<RoomDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/rooms/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/rooms/${communityId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export const createRoom = async (communityId: number, data: CreateRoomRequest): 
  */
 export const getCommunityRooms = async (communityId: number): Promise<RoomDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/rooms/community/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/rooms/community/${communityId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export const getCommunityRooms = async (communityId: number): Promise<RoomDto[]>
 export const deleteRoom = async (roomId: number): Promise<void> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export interface UpdateRoomRequest {
 
 export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promise<RoomDto> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

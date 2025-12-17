@@ -40,7 +40,7 @@ export const getRoomMessages = async (
   try {
     const token = localStorage.getItem('authToken');
     const response = await fetch(
-      `${API_BASE_URL}/api/messages/${roomId}?limit=${limit}&offset=${offset}`,
+      `${API_BASE_URL}/messages/${roomId}?limit=${limit}&offset=${offset}`,
       {
         method: 'GET',
         headers: {
@@ -81,7 +81,7 @@ export const sendMessage = async (
 ): Promise<MessageDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/messages/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/messages/${roomId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ interface ChatMessageProps {
   onReply?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
-  onUserClick?: (username: string, avatar: string) => void;
+  onUserClick?: (username: string, avatar: string, userId?: string) => void;
 }
 
 export function ChatMessage({
@@ -115,7 +115,7 @@ export function ChatMessage({
               style={{
                 color: isAdmin ? '#28f5cc' : '#ffffff',
               }}
-              onClick={() => onUserClick?.(username, avatar)}
+              onClick={() => onUserClick?.(username, avatar, id)}
             >
               {username}
             </span>

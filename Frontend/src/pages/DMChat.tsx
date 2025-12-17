@@ -5,11 +5,14 @@ import { ChatMessage } from '../components/ChatMessage';
 import { EmojiPicker } from '../components/EmojiPicker';
 import { Send, Image as ImageIcon, X, User } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
+import { useDMSocket } from '../hooks/useDMSocket';
+import { getDMHistory, markDMsAsRead, sendDM } from '../api/dmApi';
 
 interface DMChatProps {
   communityName: string;
   communityAvatar: string;
   targetUser: {
+    id?: string;
     name: string;
     avatar: string;
     role: 'Owner' | 'Admin' | 'Member';
@@ -39,6 +42,15 @@ interface Message {
   isSent: boolean; // true = current user sent, false = received
 }
 
+interface DirectMessage {
+  id: bigint;
+  senderId: bigint;
+  receiverId: bigint;
+  content: string;
+  createdAt: string;
+  read: boolean;
+}
+
 export function DMChat({
   communityName,
   communityAvatar,
@@ -50,45 +62,86 @@ export function DMChat({
   onGoToHome,
   onGoToUserSpace,
 }: DMChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      avatar: targetUser.avatar,
-      username: targetUser.name,
-      role: targetUser.role,
-      timestamp: 'Yesterday at 5:42 PM',
-      message: 'Hey! Thanks for reaching out. How can I help you today?',
-      reactions: [],
-      userId: 'target-user',
-      isSent: false,
-    },
-    {
-      id: '2',
-      avatar: currentUser.avatar,
-      username: currentUser.name,
-      role: userRole,
-      timestamp: 'Yesterday at 5:45 PM',
-      message: 'Hi! I had a question about the project we discussed earlier.',
-      reactions: [],
-      userId: 'current-user',
-      isSent: true,
-    },
-    {
-      id: '3',
-      avatar: targetUser.avatar,
-      username: targetUser.name,
-      role: targetUser.role,
-      timestamp: 'Yesterday at 5:47 PM',
-      message: 'Of course! Let me know what you need clarification on.',
-      reactions: [{ emoji: '👍', count: 1, users: ['current-user'] }],
-      userId: 'target-user',
-      isSent: false,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Convert targetUser.id to BigInt for API calls
+  const otherUserId = targetUser.id ? BigInt(targetUser.id) : 0n;
+
+  // Setup WebSocket connection for real-time DMs
+  const { isConnected, sendDM: sendDMSocket } = useDMSocket(otherUserId, {
+    onMessageReceived: (dm) => {
+      // Add received message to UI
+      const newMessage: Message = {
+        id: dm.id.toString(),
+        avatar: targetUser.avatar,
+        username: targetUser.name,
+        role: targetUser.role,
+        timestamp: new Date(dm.createdAt).toLocaleString(),
+        message: dm.content,
+        reactions: [],
+        userId: dm.senderId.toString(),
+        isSent: false,
+      };
+      setMessages(prev => [...prev, newMessage]);
+    },
+    onMessageSent: (dm) => {
+      // Message was confirmed sent, could update UI if needed
+      console.log('DM confirmed sent:', dm);
+    },
+    onError: (error) => {
+      console.error('DM Socket Error:', error);
+    }
+  });
+
+  // Load message history
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        setLoading(true);
+        // Fetch DM history from API
+        const dmHistory = await getDMHistory({
+          otherUserId: otherUserId,
+          limit: 50,
+          offset: 0
+        });
+
+        // Convert DirectMessage[] to Message[]
+        const formattedMessages: Message[] = dmHistory.map(dm => ({
+          id: dm.id.toString(),
+          avatar: dm.senderId.toString() === otherUserId.toString() ? targetUser.avatar : currentUser.avatar,
+          username: dm.senderId.toString() === otherUserId.toString() ? targetUser.name : currentUser.name,
+          role: dm.senderId.toString() === otherUserId.toString() ? targetUser.role : userRole,
+          timestamp: new Date(dm.createdAt).toLocaleString(),
+          message: dm.content,
+          reactions: [],
+          userId: dm.senderId.toString(),
+          isSent: dm.senderId.toString() !== otherUserId.toString(),
+        }));
+
+        setMessages(formattedMessages);
+        
+        // Mark messages as read
+        if (dmHistory.length > 0) {
+          await markDMsAsRead(otherUserId);
+        }
+      } catch (error) {
+        console.error('Error loading DM history:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (otherUserId) {
+      loadMessages();
+    }
+  }, [otherUserId, targetUser, currentUser, userRole]);
+
+  // No need for polling since we're using WebSockets
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
@@ -97,25 +150,58 @@ export function DMChat({
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim() && !imagePreview) return;
+    if (!otherUserId) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      avatar: currentUser.avatar,
-      username: currentUser.name,
-      role: userRole,
-      timestamp: 'Just now',
-      message: inputValue,
-      image: imagePreview || undefined,
-      reactions: [],
-      userId: 'current-user',
-      isSent: true,
-    };
+    // Prefer WebSocket for sending if connected, fallback to REST API
+    if (isConnected && sendDMSocket) {
+      sendDMSocket(inputValue);
+      
+      // Optimistically add to UI
+      const tempId = 'temp_' + Date.now();
+      const newMessage: Message = {
+        id: tempId,
+        avatar: currentUser.avatar,
+        username: currentUser.name,
+        role: userRole,
+        timestamp: new Date().toLocaleString(),
+        message: inputValue,
+        reactions: [],
+        userId: otherUserId.toString(),
+        isSent: true,
+      };
+      
+      setMessages(prev => [...prev, newMessage]);
+      setInputValue('');
+      setImagePreview(null);
+    } else {
+      // Fallback to REST API
+      try {
+        const sentMessage = await sendDM(otherUserId, inputValue);
 
-    setMessages([...messages, newMessage]);
-    setInputValue('');
-    setImagePreview(null);
+        // Add to UI with real data
+        const newMessage: Message = {
+          id: sentMessage.id.toString(),
+          avatar: currentUser.avatar,
+          username: currentUser.name,
+          role: userRole,
+          timestamp: new Date(sentMessage.createdAt).toLocaleString(),
+          message: sentMessage.content,
+          reactions: [],
+          userId: sentMessage.senderId.toString(),
+          isSent: true,
+        };
+
+        setMessages(prev => [...prev, newMessage]);
+      } catch (error) {
+        console.error('Failed to send DM:', error);
+        // TODO: Show error to user
+      } finally {
+        setInputValue('');
+        setImagePreview(null);
+      }
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -284,6 +370,13 @@ export function DMChat({
                 </p>
               </div>
 
+              {/* Loading indicator */}
+              {loading && (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#28f5cc]"></div>
+                </div>
+              )}
+              
               {/* Messages */}
               {messages.map((msg) => (
                 <ChatMessage
@@ -366,6 +459,14 @@ export function DMChat({
               >
                 <ImageIcon className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
               </button>
+
+              {/* Connection Status Indicator */}
+              {/* {!isConnected && (
+                <div className="flex items-center text-yellow-400 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-yellow-400 mr-1 animate-pulse"></div>
+                  Connecting...
+                </div>
+              )} */}
 
               {/* Send Button */}
               <button

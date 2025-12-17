@@ -32,10 +32,11 @@ export const getDMHistory = async ({
 };
 
 export const markDMsAsRead = async ({ senderId, receiverId }) => {
+  // Mark all messages from senderId to receiverId as read
   return prisma.directMessage.updateMany({
     where: {
-      senderId,
-      receiverId,
+      senderId: senderId,
+      receiverId: receiverId,
       read: false,
     },
     data: { read: true },

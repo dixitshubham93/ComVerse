@@ -41,7 +41,7 @@ export interface MemberInfo {
  */
 export const checkMembership = async (userId: number, communityId: number): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/check/${userId}/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/check/${userId}/${communityId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const checkMembership = async (userId: number, communityId: number): Prom
  */
 export const getUserRole = async (userId: number, communityId: number): Promise<MembershipRole | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/role/${userId}/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/role/${userId}/${communityId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export const getUserRole = async (userId: number, communityId: number): Promise<
 export const joinCommunity = async (userId: number, communityId: number): Promise<MembershipDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/memberships/join/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/join/${communityId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export const joinCommunity = async (userId: number, communityId: number): Promis
  */
 export const leaveCommunity = async (userId: number, communityId: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/leave`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/leave`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ export const leaveCommunity = async (userId: number, communityId: number): Promi
  */
 export const getCommunityMembers = async (communityId: number): Promise<MemberInfo[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/community/${communityId}`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/community/${communityId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export const getCommunityMembers = async (communityId: number): Promise<MemberIn
  */
 export const kickMember = async (userId: number, communityId: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/kick`, {
+    const response = await fetch(`${API_BASE_URL}/memberships/kick`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

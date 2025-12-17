@@ -88,7 +88,7 @@ export function CommunityPage() {
 
   const [currentPage, setCurrentPage] = useState<'main' | 'manage' | 'room' | 'generalChat' | 'announcementChat' | 'dmChat' | 'voiceCall' | 'memesPosts'>('main');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
-  const [dmTarget, setDmTarget] = useState<{ name: string; avatar: string; role: 'Owner' | 'Admin' | 'Member' } | null>(null);
+  const [dmTarget, setDmTarget] = useState<{ id?: string; name: string; avatar: string; role: 'Owner' | 'Admin' | 'Member' } | null>(null);
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [expandedRoom, setExpandedRoom] = useState<RoomDto | null>(null);
@@ -256,8 +256,9 @@ export function CommunityPage() {
     setIs3DViewOpen(false);
   };
 
-  const handleOpenDM = (username: string, avatar: string) => {
+  const handleOpenDM = (username: string, avatar: string, userId?: string) => {
     setDmTarget({
+      id: userId,
       name: username,
       avatar: avatar,
       role: 'Member',

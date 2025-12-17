@@ -66,7 +66,7 @@ export const createCommunity = async (
 ): Promise<CommunityDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/communities`, {
+    const response = await fetch(`${API_BASE_URL}/communities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export const createCommunity = async (
 export const getAllCommunities = async (): Promise<CommunityDto[]> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/communities`, {
+    const response = await fetch(`${API_BASE_URL}/communities`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ export const getAllCommunities = async (): Promise<CommunityDto[]> => {
 export const getCommunityById = async (id: number): Promise<CommunityDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/communities/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/communities/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ export interface CommunityStatsDto {
 export const getCommunityStats = async (id: number): Promise<CommunityStatsDto> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/communities/${id}/stats`, {
+    const response = await fetch(`${API_BASE_URL}/communities/${id}/stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ export const getCommunityStats = async (id: number): Promise<CommunityStatsDto> 
 export const deleteCommunity = async (id: number): Promise<{ message: string }> => {
   try {
     const token = localStorage.getItem('authToken');
-    const response = await fetch(`${API_BASE_URL}/api/communities/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/communities/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

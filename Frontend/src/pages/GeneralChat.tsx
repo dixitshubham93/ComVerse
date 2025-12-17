@@ -23,7 +23,7 @@ interface GeneralChatProps {
   onBack: () => void;
   onGoToHome?: () => void;
   onGoToUserSpace?: () => void;
-  onOpenDM?: (username: string, avatar: string) => void;
+  onOpenDM?: (username: string, avatar: string, userId?: string) => void;
 }
 
 interface Message {
@@ -444,7 +444,7 @@ export function GeneralChat({
                   onReply={(id) => console.log('Reply to', id)}
                   onDelete={handleDelete}
                   onReact={handleReact}
-                  onUserClick={onOpenDM}
+                  onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
                 />
               ))}
             </div>

@@ -22,7 +22,7 @@ interface AnnouncementChatProps {
   onBack: () => void;
   onGoToHome?: () => void;
   onGoToUserSpace?: () => void;
-  onOpenDM?: (username: string, avatar: string) => void;
+  onOpenDM?: (username: string, avatar: string, userId?: string) => void;
 }
 
 interface Message {
@@ -329,7 +329,7 @@ export function AnnouncementChat({
                     onReply={(id) => console.log('Reply to', id)}
                     onDelete={canPost ? handleDelete : undefined}
                     onReact={handleReact}
-                    onUserClick={onOpenDM}
+                    onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
                   />
                 </div>
               ))}
