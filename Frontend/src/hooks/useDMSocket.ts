@@ -2,7 +2,20 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 
-const WS_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
+// Socket.IO must connect to the server *origin* (no "/api" path), otherwise it is treated as a namespace.
+const WS_BASE_URL = (() => {
+  const explicitWsUrl = (import.meta as any).env?.VITE_WS_URL as string | undefined;
+  if (explicitWsUrl) return explicitWsUrl;
+
+  try {
+    return new URL(API_URL).origin;
+  } catch {
+    // Fallback: strip a trailing /api
+    return API_URL.replace(/\/?api\/?$/, '');
+  }
+})();
 
 export interface DirectMessage {
   id: number;
