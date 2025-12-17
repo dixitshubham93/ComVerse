@@ -17,7 +17,17 @@ export const getHistory = async (req, res, next) => {
       offset: Number(offset),
     });
 
-    res.json({ success: true, messages });
+    // Convert BigInt to Number for JSON serialization
+    const serializedMessages = messages.map(msg => ({
+      id: Number(msg.id),
+      senderId: Number(msg.senderId),
+      receiverId: Number(msg.receiverId),
+      content: msg.content,
+      createdAt: msg.createdAt,
+      read: msg.read,
+    }));
+
+    res.json({ success: true, messages: serializedMessages });
   } catch (err) {
     next(err);
   }

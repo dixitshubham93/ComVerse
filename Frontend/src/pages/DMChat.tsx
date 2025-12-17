@@ -20,6 +20,7 @@ interface DMChatProps {
   };
   userRole: 'Owner' | 'Admin' | 'Member';
   currentUser: {
+    id?: string | number;
     name: string;
     avatar: string;
   };
@@ -43,9 +44,9 @@ interface Message {
 }
 
 interface DirectMessage {
-  id: bigint;
-  senderId: bigint;
-  receiverId: bigint;
+  id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
   createdAt: string;
   read: boolean;
@@ -69,12 +70,18 @@ export function DMChat({
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Convert targetUser.id to BigInt for API calls
-  const otherUserId = targetUser.id ? BigInt(targetUser.id) : 0n;
+  // Get other user ID for API calls
+  const otherUserId = targetUser.id ? targetUser.id.toString() : '0';
 
   // Setup WebSocket connection for real-time DMs
   const { isConnected, sendDM: sendDMSocket } = useDMSocket(otherUserId, {
     onMessageReceived: (dm) => {
+      // Only show messages from the other user (not from ourselves)
+      const currentUserId = currentUser.id ? currentUser.id.toString() : '';
+      if (dm.senderId.toString() === currentUserId) {
+        return; // Skip messages we sent
+      }
+      
       // Add received message to UI
       const newMessage: Message = {
         id: dm.id.toString(),
@@ -110,18 +117,24 @@ export function DMChat({
           offset: 0
         });
 
-        // Convert DirectMessage[] to Message[]
-        const formattedMessages: Message[] = dmHistory.map(dm => ({
-          id: dm.id.toString(),
-          avatar: dm.senderId.toString() === otherUserId.toString() ? targetUser.avatar : currentUser.avatar,
-          username: dm.senderId.toString() === otherUserId.toString() ? targetUser.name : currentUser.name,
-          role: dm.senderId.toString() === otherUserId.toString() ? targetUser.role : userRole,
-          timestamp: new Date(dm.createdAt).toLocaleString(),
-          message: dm.content,
-          reactions: [],
-          userId: dm.senderId.toString(),
-          isSent: dm.senderId.toString() !== otherUserId.toString(),
-        }));
+          // Get current user ID
+          const currentUserId = currentUser.id ? currentUser.id.toString() : '';
+          
+          // Convert DirectMessage[] to Message[]
+          const formattedMessages: Message[] = dmHistory.map(dm => {
+            const isSentByCurrentUser = dm.senderId.toString() === currentUserId;
+            return {
+              id: dm.id.toString(),
+              avatar: isSentByCurrentUser ? currentUser.avatar : targetUser.avatar,
+              username: isSentByCurrentUser ? currentUser.name : targetUser.name,
+              role: isSentByCurrentUser ? userRole : targetUser.role,
+              timestamp: new Date(dm.createdAt).toLocaleString(),
+              message: dm.content,
+              reactions: [],
+              userId: dm.senderId.toString(),
+              isSent: isSentByCurrentUser,
+            };
+          });
 
         setMessages(formattedMessages);
         
@@ -158,19 +171,19 @@ export function DMChat({
     if (isConnected && sendDMSocket) {
       sendDMSocket(inputValue);
       
-      // Optimistically add to UI
-      const tempId = 'temp_' + Date.now();
-      const newMessage: Message = {
-        id: tempId,
-        avatar: currentUser.avatar,
-        username: currentUser.name,
-        role: userRole,
-        timestamp: new Date().toLocaleString(),
-        message: inputValue,
-        reactions: [],
-        userId: otherUserId.toString(),
-        isSent: true,
-      };
+        // Optimistically add to UI
+        const tempId = 'temp_' + Date.now();
+        const newMessage: Message = {
+          id: tempId,
+          avatar: currentUser.avatar,
+          username: currentUser.name,
+          role: userRole,
+          timestamp: new Date().toLocaleString(),
+          message: inputValue,
+          reactions: [],
+          userId: currentUser.id?.toString() || '',
+          isSent: true,
+        };
       
       setMessages(prev => [...prev, newMessage]);
       setInputValue('');

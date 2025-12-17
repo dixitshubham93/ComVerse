@@ -309,9 +309,11 @@ export function CommunityPage() {
   }
 
   const currentUser = user ? {
+    id: user.id,
     name: user.username,
     avatar: user.avatar,
   } : {
+    id: undefined,
     name: 'Guest',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=guest',
   };

@@ -16,9 +16,9 @@ const getAuthHeaders = () => {
 };
 
 export interface DirectMessage {
-  id: bigint;
-  senderId: bigint;
-  receiverId: bigint;
+  id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
   createdAt: string;
   read: boolean;

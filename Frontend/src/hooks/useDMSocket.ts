@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import SockJS from 'sockjs-client';
-import { Client, IMessage } from '@stomp/stompjs';
+import { io, Socket } from 'socket.io-client';
 
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8080';
+const WS_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export interface DirectMessage {
-  id: bigint;
-  senderId: bigint;
-  receiverId: bigint;
+  id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
   createdAt: string;
   read: boolean;
@@ -27,7 +26,7 @@ export function useDMSocket(
   const { user } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const clientRef = useRef<Client | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
@@ -41,6 +40,11 @@ export function useDMSocket(
       reconnectTimeoutRef.current = null;
     }
 
+    // Disconnect existing socket if any
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -48,79 +52,94 @@ export function useDMSocket(
         return;
       }
 
-      const socket = new SockJS(`${WS_BASE_URL}/socket`);
-      const client = new Client({
-        webSocketFactory: () => socket,
-        connectHeaders: {
-          Authorization: `Bearer ${token}`
+      // Create Socket.IO connection
+      const socket = io(WS_BASE_URL, {
+        auth: {
+          token: token
         },
-        debug: (str) => {
-          console.log('STOMP Debug:', str);
-        },
-        onConnect: () => {
-          console.log('Connected to DM WebSocket');
-          setIsConnected(true);
-          setError(null);
-          reconnectAttempts.current = 0;
+        transports: ['websocket', 'polling']
+      });
 
-          // Join DM room
-          client.subscribe(`/user/dm:${user.id}`, (message: IMessage) => {
-            try {
-              const dm: DirectMessage = JSON.parse(message.body);
-              callbacks.onMessageReceived?.(dm);
-            } catch (err) {
-              console.error('Error parsing DM message:', err);
-            }
-          });
+      socket.on('connect', () => {
+        console.log('Connected to DM Socket.IO');
+        setIsConnected(true);
+        setError(null);
+        reconnectAttempts.current = 0;
 
-          // Listen for sent messages confirmation
-          client.subscribe(`/user/dm:sent:${user.id}`, (message: IMessage) => {
-            try {
-              const dm: DirectMessage = JSON.parse(message.body);
-              callbacks.onMessageSent?.(dm);
-            } catch (err) {
-              console.error('Error parsing sent DM message:', err);
-            }
-          });
+        // Join DM room
+        socket.emit('dm:join');
+      });
 
-          // Join the DM channel
-          client.publish({
-            destination: '/app/dm:join',
-            body: JSON.stringify({})
-          });
-        },
-        onStompError: (frame) => {
-          console.error('Broker reported error: ' + frame.headers['message']);
-          console.error('Additional details: ' + frame.body);
-          setError('Connection error: ' + frame.headers['message']);
-        },
-        onDisconnect: () => {
-          console.log('Disconnected from DM WebSocket');
-          setIsConnected(false);
-        },
-        onWebSocketClose: () => {
-          console.log('WebSocket connection closed');
-          setIsConnected(false);
+      socket.on('disconnect', () => {
+        console.log('Disconnected from DM Socket.IO');
+        setIsConnected(false);
+        
+        // Attempt to reconnect with exponential backoff
+        if (reconnectAttempts.current < maxReconnectAttempts) {
+          const delay = Math.min(1000 * 2 ** reconnectAttempts.current, 10000);
+          reconnectAttempts.current++;
           
-          // Attempt to reconnect with exponential backoff
-          if (reconnectAttempts.current < maxReconnectAttempts) {
-            const delay = Math.min(1000 * 2 ** reconnectAttempts.current, 10000);
-            reconnectAttempts.current++;
-            
-            reconnectTimeoutRef.current = setTimeout(() => {
-              console.log(`Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})`);
-              connect();
-            }, delay);
-          } else {
-            setError('Failed to reconnect after maximum attempts');
-          }
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log(`Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})`);
+            socket.connect();
+          }, delay);
+        } else {
+          setError('Failed to reconnect after maximum attempts');
         }
       });
 
-      client.activate();
-      clientRef.current = client;
+      socket.on('connect_error', (err) => {
+        console.error('Connection error:', err);
+        setError('Failed to connect to messaging service');
+        setIsConnected(false);
+      });
+
+      // Listen for incoming DMs
+      socket.on('dm:receive', (message: any) => {
+        try {
+          console.log('Received DM:', message);
+          const dm: DirectMessage = {
+            id: Number(message.id),
+            senderId: Number(message.senderId),
+            receiverId: Number(message.receiverId),
+            content: message.content,
+            createdAt: message.createdAt,
+            read: message.read || false
+          };
+          callbacks.onMessageReceived?.(dm);
+        } catch (err) {
+          console.error('Error parsing DM message:', err);
+        }
+      });
+
+      // Listen for sent message confirmation
+      socket.on('dm:sent', (message: any) => {
+        try {
+          console.log('DM sent confirmation:', message);
+          const dm: DirectMessage = {
+            id: Number(message.id),
+            senderId: Number(message.senderId),
+            receiverId: Number(message.receiverId),
+            content: message.content,
+            createdAt: message.createdAt,
+            read: message.read || false
+          };
+          callbacks.onMessageSent?.(dm);
+        } catch (err) {
+          console.error('Error parsing sent DM message:', err);
+        }
+      });
+
+      // Listen for errors
+      socket.on('dm:error', (errorMessage: any) => {
+        console.error('DM error:', errorMessage);
+        setError(errorMessage.message || 'Unknown error');
+        callbacks.onError?.(errorMessage.message || 'Unknown error');
+      });
+
+      socketRef.current = socket;
     } catch (err) {
-      console.error('Error connecting to WebSocket:', err);
+      console.error('Error connecting to Socket.IO:', err);
       setError('Failed to connect to messaging service');
     }
   }, [user?.id, otherUserId, callbacks]);
@@ -130,17 +149,17 @@ export function useDMSocket(
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    if (clientRef.current) {
-      clientRef.current.deactivate();
-      clientRef.current = null;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
     setIsConnected(false);
   }, []);
 
   const sendDM = useCallback(
     (content: string) => {
-      if (!clientRef.current || !clientRef.current.connected) {
-        console.warn('Cannot send DM: Not connected to WebSocket');
+      if (!socketRef.current || !socketRef.current.connected) {
+        console.warn('Cannot send DM: Not connected to Socket.IO');
         return;
       }
 
@@ -150,15 +169,12 @@ export function useDMSocket(
       }
 
       try {
-        clientRef.current.publish({
-          destination: '/app/dm:send',
-          body: JSON.stringify({
-            receiverId: otherUserId.toString(),
-            content
-          })
+        socketRef.current.emit('dm:send', {
+          receiverId: otherUserId.toString(),
+          content
         });
       } catch (err) {
-        console.error('Error sending DM via WebSocket:', err);
+        console.error('Error sending DM via Socket.IO:', err);
         callbacks.onError?.('Failed to send message');
       }
     },
