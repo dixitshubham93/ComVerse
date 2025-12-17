@@ -391,24 +391,25 @@ export function DMChat({
               )}
               
               {/* Messages */}
-              {messages.map((msg) => (
-                <ChatMessage
-                  key={msg.id}
-                  id={msg.id}
-                  avatar={msg.avatar}
-                  username={msg.username}
-                  role={msg.role}
-                  timestamp={msg.timestamp}
-                  message={msg.message}
-                  image={msg.image}
-                  reactions={msg.reactions}
-                  isCurrentUser={msg.isSent}
-                  onReply={(id) => console.log('Reply to', id)}
-                  onDelete={msg.isSent ? handleDelete : undefined}
-                  onReact={handleReact}
-                  onUserClick={() => {}}
-                />
-              ))}
+                {messages.map((msg) => (
+                  <ChatMessage
+                    key={msg.id}
+                    id={msg.id}
+                    avatar={msg.avatar}
+                    username={msg.username}
+                    role={msg.role}
+                    timestamp={msg.timestamp}
+                    message={msg.message}
+                    image={msg.image}
+                    reactions={msg.reactions}
+                    isCurrentUser={msg.isSent}
+                    userId={msg.userId}
+                    onReply={(id) => console.log('Reply to', id)}
+                    onDelete={msg.isSent ? handleDelete : undefined}
+                    onReact={handleReact}
+                    onUserClick={() => {}}
+                  />
+                ))}
             </div>
           </ScrollArea>
         </div>

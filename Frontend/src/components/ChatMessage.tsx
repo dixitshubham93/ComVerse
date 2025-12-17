@@ -12,6 +12,7 @@ interface ChatMessageProps {
   image?: string;
   reactions?: { emoji: string; count: number; users: string[] }[];
   isCurrentUser?: boolean;
+  userId?: string;
   onReply?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
@@ -28,6 +29,7 @@ export function ChatMessage({
   image,
   reactions = [],
   isCurrentUser = false,
+  userId,
   onReply,
   onDelete,
   onReact,
@@ -56,10 +58,10 @@ export function ChatMessage({
         {/* Avatar with Hover Card */}
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <div
-              className="relative flex-shrink-0 cursor-pointer"
-              onClick={() => onUserClick?.(username, avatar)}
-            >
+              <div
+                className="relative flex-shrink-0 cursor-pointer"
+                onClick={() => onUserClick?.(username, avatar, userId)}
+              >
               <div
                 className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#04372f] hover:ring-[#28f5cc] transition-all duration-200"
                 style={{
@@ -95,13 +97,13 @@ export function ChatMessage({
                   <p className="text-[#747c88] text-sm">{role}</p>
                 </div>
               </div>
-              <button
-                className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black hover:opacity-90 transition-opacity"
-                style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)' }}
-                onClick={() => onUserClick?.(username, avatar)}
-              >
-                Send DM
-              </button>
+                <button
+                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black hover:opacity-90 transition-opacity"
+                  style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)' }}
+                  onClick={() => onUserClick?.(username, avatar, userId)}
+                >
+                  Send DM
+                </button>
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -110,15 +112,15 @@ export function ChatMessage({
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center gap-3 mb-1">
-            <span
-              className="cursor-pointer hover:underline"
-              style={{
-                color: isAdmin ? '#28f5cc' : '#ffffff',
-              }}
-              onClick={() => onUserClick?.(username, avatar, id)}
-            >
-              {username}
-            </span>
+              <span
+                className="cursor-pointer hover:underline"
+                style={{
+                  color: isAdmin ? '#28f5cc' : '#ffffff',
+                }}
+                onClick={() => onUserClick?.(username, avatar, userId)}
+              >
+                {username}
+              </span>
             {isAdmin && (
               <span className="px-2 py-0.5 rounded text-xs bg-[#04ad7b]/20 text-[#28f5cc] border border-[#04ad7b]/30">
                 {role}

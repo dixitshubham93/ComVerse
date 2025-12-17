@@ -316,21 +316,23 @@ export function AnnouncementChat({
                     borderLeft: msg.role === 'Owner' || msg.role === 'Admin' ? '3px solid rgba(255, 215, 0, 0.3)' : 'none',
                   }}
                 >
-                  <ChatMessage
-                    id={msg.id}
-                    avatar={msg.avatar}
-                    username={msg.username}
-                    role={msg.role}
-                    timestamp={msg.timestamp}
-                    message={msg.message}
-                    image={msg.image}
-                    reactions={msg.reactions}
-                    isCurrentUser={msg.userId === 'user-current'}
-                    onReply={(id) => console.log('Reply to', id)}
-                    onDelete={canPost ? handleDelete : undefined}
-                    onReact={handleReact}
-                    onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
-                  />
+                    <ChatMessage
+                      key={msg.id}
+                      id={msg.id}
+                      avatar={msg.avatar}
+                      username={msg.username}
+                      role={msg.role}
+                      timestamp={msg.timestamp}
+                      message={msg.message}
+                      image={msg.image}
+                      reactions={msg.reactions}
+                      isCurrentUser={msg.userId === 'user-current'}
+                      userId={msg.userId}
+                      onReply={(id) => console.log('Reply to', id)}
+                      onDelete={canPost ? handleDelete : undefined}
+                      onReact={handleReact}
+                      onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
+                    />
                 </div>
               ))}
             </div>

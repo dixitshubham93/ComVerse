@@ -429,24 +429,25 @@ export function GeneralChat({
                 </div>
               )}
 
-              {messages.map((msg) => (
-                <ChatMessage
-                  key={msg.id}
-                  id={msg.id}
-                  avatar={msg.avatar}
-                  username={msg.username}
-                  role={msg.role}
-                  timestamp={msg.timestamp}
-                  message={msg.message}
-                  image={msg.image}
-                  reactions={msg.reactions}
-                  isCurrentUser={msg.userId === 'user-current'}
-                  onReply={(id) => console.log('Reply to', id)}
-                  onDelete={handleDelete}
-                  onReact={handleReact}
-                  onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
-                />
-              ))}
+                {messages.map((msg) => (
+                  <ChatMessage
+                    key={msg.id}
+                    id={msg.id}
+                    avatar={msg.avatar}
+                    username={msg.username}
+                    role={msg.role}
+                    timestamp={msg.timestamp}
+                    message={msg.message}
+                    image={msg.image}
+                    reactions={msg.reactions}
+                    isCurrentUser={msg.userId === 'user-current'}
+                    userId={msg.userId}
+                    onReply={(id) => console.log('Reply to', id)}
+                    onDelete={handleDelete}
+                    onReact={handleReact}
+                    onUserClick={(username, avatar, userId) => onOpenDM?.(username, avatar, userId)}
+                  />
+                ))}
             </div>
           </ScrollArea>
         </div>
