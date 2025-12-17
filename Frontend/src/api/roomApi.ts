@@ -11,9 +11,10 @@ const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost
  * Room Type enum matching backend
  */
 export enum RoomType {
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  GENERAL = 'GENERAL',
   VOICE_CHAT = 'VOICE_CHAT',
   POSTS = 'POSTS',
-  CHAT = 'CHAT',
 }
 
 /**
@@ -47,10 +48,12 @@ export interface CreateRoomRequest {
  */
 export const createRoom = async (communityId: number, data: CreateRoomRequest): Promise<RoomDto> => {
   try {
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/api/rooms/${communityId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
       body: JSON.stringify(data),
     });
@@ -60,8 +63,12 @@ export const createRoom = async (communityId: number, data: CreateRoomRequest): 
       throw new Error(`Failed to create room: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const roomData: RoomDto = await response.json();
-    return roomData;
+    const result = await response.json();
+    // Backend returns { success, data: RoomDto }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error('Invalid response from server');
   } catch (error) {
     console.error('Error creating room:', error);
     throw error;
@@ -87,11 +94,15 @@ export const getCommunityRooms = async (communityId: number): Promise<RoomDto[]>
       throw new Error(`Failed to fetch community rooms: ${response.status} ${response.statusText}`);
     }
 
-    const data: RoomDto[] = await response.json();
-    return data;
+    const result = await response.json();
+    // Backend returns { success, message, data: RoomDto[] }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching community rooms:', error);
-    throw error;
+    return [];
   }
 };
 
@@ -103,10 +114,12 @@ export const getCommunityRooms = async (communityId: number): Promise<RoomDto[]>
  */
 export const deleteRoom = async (roomId: number): Promise<void> => {
   try {
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
 

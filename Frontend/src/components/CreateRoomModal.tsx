@@ -7,29 +7,17 @@ import { createRoom, RoomType } from '../api/roomApi';
 
 // Map frontend display names to backend RoomType enum
 const ROOM_TYPE_MAP: Record<string, RoomType> = {
-  'General Chat': RoomType.CHAT,
-  'Announcements': RoomType.CHAT,
-  'Voice Channel': RoomType.VOICE_CHAT,
-  'Memes & Fun': RoomType.POSTS,
-  'Project Discussion': RoomType.CHAT,
-  'Events & Meetups': RoomType.CHAT,
-  'Support & Help': RoomType.CHAT,
-  'Off-Topic': RoomType.CHAT,
-  'Resources': RoomType.CHAT,
-  'Q&A': RoomType.CHAT,
+  'Announcement': RoomType.ANNOUNCEMENT,
+  'General Chat': RoomType.GENERAL,
+  'Voice Call': RoomType.VOICE_CHAT,
+  'Meme & Post': RoomType.POSTS,
 };
 
 const ROOM_TYPES = [
+  'Announcement',
   'General Chat',
-  'Announcements',
-  'Voice Channel',
-  'Memes & Fun',
-  'Project Discussion',
-  'Events & Meetups',
-  'Support & Help',
-  'Off-Topic',
-  'Resources',
-  'Q&A',
+  'Voice Call',
+  'Meme & Post',
 ];
 
 interface CreateRoomModalProps {

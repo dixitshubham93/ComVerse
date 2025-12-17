@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.post("/", authenticate, create);
 router.get("/", getAll);
+router.get("/:id/stats", getStats); // More specific route must come first
 router.get("/:id", getById);
-router.get("/:id/stats", getStats);
 router.delete("/:id", authenticate, deleteComm);
 
 export default router;

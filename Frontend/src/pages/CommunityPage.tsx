@@ -21,18 +21,18 @@ import { getUserRole } from '../api/membershipApi';
 import { MembershipRole } from '../api/communityApi';
 
 // Helper to map CommunityType to category string
-const mapTypeToCategory = (type: CommunityType): string => {
-  const typeMap: Record<CommunityType, string> = {
-    [CommunityType.GAMING]: 'Gaming',
-    [CommunityType.ART]: 'Art & Design',
-    [CommunityType.MUSIC]: 'Music',
-    [CommunityType.TECHNOLOGY]: 'Technology',
-    [CommunityType.SPORTS]: 'Sports',
-    [CommunityType.FINANCE]: 'Finance',
-    [CommunityType.LIFESTYLE]: 'Lifestyle',
-    [CommunityType.TRAVEL]: 'Travel',
-    [CommunityType.EDUCATION]: 'Education',
-    [CommunityType.OTHER]: 'Other',
+const mapTypeToCategory = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    'GAMING': 'Gaming',
+    'ART': 'Art & Design',
+    'MUSIC': 'Music',
+    'TECHNOLOGY': 'Technology',
+    'SPORTS': 'Sports',
+    'FINANCE': 'Finance',
+    'LIFESTYLE': 'Lifestyle',
+    'TRAVEL': 'Travel',
+    'EDUCATION': 'Education',
+    'OTHER': 'Other',
   };
   return typeMap[type] || 'Other';
 };
@@ -44,7 +44,7 @@ const mapRoomTypeToFrontend = (type: RoomType): 'voice' | 'memes' | 'general' | 
       return 'voice';
     case RoomType.POSTS:
       return 'memes';
-    case RoomType.CHAT:
+    case RoomType.GENERAL:
       return 'general';
     default:
       return 'general';
@@ -92,14 +92,15 @@ export function CommunityPage() {
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
   const [showMembersPanel, setShowMembersPanel] = useState(false);
   const [expandedRoom, setExpandedRoom] = useState<RoomDto | null>(null);
+  const [is3DViewOpen, setIs3DViewOpen] = useState(false); // Track 3D view status
 
   // State for fetched data
   const [community, setCommunity] = useState<{
     id: number;
     name: string;
-    description: string;
+    description: string | null;
     bannerUrl: string | null;
-    type: CommunityType;
+    type: string;
   } | null>(null);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -245,11 +246,14 @@ export function CommunityPage() {
         id: parseInt(room.id, 10),
         communityId: communityId,
         name: room.name,
-        type: room.type === 'voice' ? RoomType.VOICE_CHAT : room.type === 'memes' ? RoomType.POSTS : RoomType.CHAT,
+        type: room.type === 'voice' ? RoomType.VOICE_CHAT : room.type === 'memes' ? RoomType.POSTS : RoomType.GENERAL,
         config: room.description || null,
         isDefaultRoom: false,
       });
     }
+    
+    // Ensure 3D view is closed when a room is selected
+    setIs3DViewOpen(false);
   };
 
   const handleOpenDM = (username: string, avatar: string) => {
@@ -319,7 +323,7 @@ export function CommunityPage() {
           name: community.name,
           category: mapTypeToCategory(community.type),
           members: 0, // TODO: Get from backend when available
-          description: community.description,
+          description: community.description || '',
           color: '#28f5cc',
           avatar: community.bannerUrl || undefined,
         }}
@@ -469,6 +473,15 @@ export function CommunityPage() {
         currentUser={currentUser}
         onShowMembers={() => setShowMembersPanel(true)}
         onNavigate={handleNavigate}
+        onBack={() => {
+          // If we're on a sub-page (room, manage, etc.), go back to main community page
+          if (currentPage !== 'main') {
+            setCurrentPage('main');
+          } else {
+            // If we're already on the main page, go back in browser history
+            navigate(-1);
+          }
+        }}
       />
 
       {/* Members Panel */}
@@ -493,12 +506,13 @@ export function CommunityPage() {
         />
       )}
 
-      {/* Main Content Area - Hide when room is expanded */}
-      {!expandedRoom && (
-        <div className="relative ml-16 lg:ml-20 min-h-screen">
-          {/* Community Overview Header - Clean Banner Design */}
-          <div className="relative w-full h-64 overflow-hidden">
-            {/* Banner Background Image - Full Width */}
+      {/* Main Content Area - Always visible, 3D view renders on top */}
+      <div className="relative ml-16 lg:ml-20 min-h-screen">
+        {/* Community Overview Header - Refined Banner Design - Reduced height */}
+        {/* Only show header when 3D view is not open */}
+        {!is3DViewOpen && (
+          <div className="relative w-full h-32 overflow-hidden rounded-b-2xl">
+            {/* Banner Background Image - Full Width with gradient overlay */}
             {community.bannerUrl ? (
               <img 
                 src={community.bannerUrl} 
@@ -514,64 +528,76 @@ export function CommunityPage() {
               />
             )}
             
-            {/* Soft Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/60 to-black/70" />
+            {/* Enhanced Gradient Overlay for Better Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
             
-            {/* Content - Centered and Clean */}
-            <div className="relative z-10 flex flex-col items-center justify-center h-full px-6">
-              {/* Community Name - ONE TIME */}
+            {/* Content - Left-aligned for better hierarchy */}
+            <div className="relative z-10 flex flex-col items-start justify-end h-full px-6 pb-4 pt-8">
+              {/* Community Name - More compact typography */}
               <h1 
-                className="text-white text-4xl font-bold mb-4 text-center"
+                className="text-white text-2xl font-bold mb-2"
                 style={{
-                  textShadow: '0 2px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(40, 245, 204, 0.3)',
+                  textShadow: '0 1px 8px rgba(0, 0, 0, 0.7), 0 0 15px rgba(40, 245, 204, 0.2)',
                 }}
               >
                 {community.name}
               </h1>
               
-              {/* Community Type Badge + Member Stats */}
-              <div className="flex items-center gap-6 flex-wrap justify-center">
+              {/* Community Type Badge + Member Stats - Horizontal layout */}
+              <div className="flex items-center gap-3 flex-wrap">
                 {/* Community Type Badge */}
                 <span 
-                  className="px-4 py-1.5 rounded-full text-sm font-medium"
+                  className="px-2.5 py-0.5 rounded-full text-xs font-medium"
                   style={{
-                    background: 'rgba(40, 245, 204, 0.2)',
-                    border: '1px solid rgba(40, 245, 204, 0.4)',
+                    background: 'rgba(40, 245, 204, 0.25)',
+                    border: '1px solid rgba(40, 245, 204, 0.5)',
                     color: '#28f5cc',
-                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
                   }}
                 >
                   {mapTypeToCategory(community.type)}
                 </span>
                 
-                {/* Member Stats */}
+                {/* Divider */}
+                <div className="w-px h-3 bg-[#747c88]/40" />
+                
+                {/* Member Stats - Compact layout */}
                 {stats && (
                   <>
-                    <div className="flex items-center gap-2 text-white text-sm">
-                      <span className="text-[#747c88]">Total Members:</span>
-                      <span className="font-semibold">{stats.totalMembers}</span>
+                    <div className="flex items-center gap-1 text-white text-xs">
+                      <Users className="w-3 h-3 text-[#747c88]" />
+                      <span className="font-medium">{stats.totalMembers}</span>
+                      <span className="text-[#747c88]">members</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white text-sm">
-                      <span className="text-[#747c88]">Active Members:</span>
-                      <span className="font-semibold text-[#28f5cc]">{stats.activeMembers}</span>
+                    <div className="flex items-center gap-1 text-white text-xs">
+                      <Users className="w-3 h-3 text-[#28f5cc]" />
+                      <span className="font-medium text-[#28f5cc]">{stats.activeMembers}</span>
+                      <span className="text-[#747c88]">online</span>
                     </div>
                   </>
                 )}
               </div>
             </div>
           </div>
+        )}
 
-          {/* Stacked Room Cards - Expanded Space */}
-          <div className="relative" style={{ height: 'calc(100vh - 15rem)' }}>
-            <StackedRoomCards 
-              onRoomSelect={handleRoomSelect}
-              rooms={mappedRooms}
-              onCreateRoom={() => setIsCreateRoomModalOpen(true)}
-              canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
-            />
-          </div>
+        {/* Stacked Room Cards - Adjusted height to fit without scroll */}
+        <div 
+          className="relative w-full" 
+          style={{ 
+            height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'calc(100vh - 8rem)',
+          }}
+        >
+          <StackedRoomCards 
+            onRoomSelect={handleRoomSelect}
+            rooms={mappedRooms}
+            onCreateRoom={() => setIsCreateRoomModalOpen(true)}
+            canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
+            isOwner={userRole === MembershipRole.OWNER}
+            on3DViewToggle={setIs3DViewOpen}
+          />
         </div>
-      )}
+      </div>
 
       {/* Create Room Modal */}
       <CreateRoomModal

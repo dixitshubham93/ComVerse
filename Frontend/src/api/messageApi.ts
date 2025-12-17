@@ -13,48 +13,39 @@ export interface MessageDto {
   id: number;
   roomId: number;
   userId: number;
-  username: string;
   content: string;
-  contentType: string;
+  imageUrl?: string | null;
   createdAt: string;
+  user?: {
+    id: number;
+    username: string;
+    email: string;
+    avatarUrl: string | null;
+  };
 }
 
 /**
- * Paginated response for messages
- */
-export interface MessagePage {
-  content: MessageDto[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-}
-
-/**
- * Fetches messages for a room with pagination
- * @param communityId - The ID of the community
+ * Fetches messages for a room
  * @param roomId - The ID of the room
- * @param page - Page number (0-indexed)
- * @param limit - Number of messages per page
- * @returns Promise resolving to MessagePage
+ * @param limit - Number of messages to fetch (default 50)
+ * @param offset - Offset for pagination (default 0)
+ * @returns Promise resolving to MessageDto array
  * @throws Error if the API call fails
  */
 export const getRoomMessages = async (
-  communityId: number,
   roomId: number,
-  page: number = 0,
-  limit: number = 50
-): Promise<MessagePage> => {
+  limit: number = 50,
+  offset: number = 0
+): Promise<MessageDto[]> => {
   try {
-    // Backend endpoint is /api/chat/rooms/{roomId}/messages
+    const token = localStorage.getItem('authToken');
     const response = await fetch(
-      `${API_BASE_URL}/api/chat/rooms/${roomId}/messages?page=${page}&size=${limit}`,
+      `${API_BASE_URL}/api/messages/${roomId}?limit=${limit}&offset=${offset}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       }
     );
@@ -63,10 +54,54 @@ export const getRoomMessages = async (
       throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
     }
 
-    const data: MessagePage = await response.json();
-    return data;
+    const result = await response.json();
+    // Backend returns { success, data: MessageDto[] }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching room messages:', error);
+    return [];
+  }
+};
+
+/**
+ * Sends a message to a room
+ * @param roomId - The ID of the room
+ * @param content - Message content
+ * @param imageUrl - Optional image URL
+ * @returns Promise resolving to created MessageDto
+ * @throws Error if the API call fails
+ */
+export const sendMessage = async (
+  roomId: number,
+  content: string,
+  imageUrl?: string
+): Promise<MessageDto> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/api/messages/${roomId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: JSON.stringify({ content, imageUrl }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to send message: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    if (!result.success || !result.data) {
+      throw new Error(result.message || 'Failed to send message');
+    }
+    return result.data;
+  } catch (error) {
+    console.error('Error sending message:', error);
     throw error;
   }
 };

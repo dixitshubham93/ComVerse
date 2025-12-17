@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createUser, UserDto } from '../api/userApi';
+import { login as loginApi, signup as signupApi } from '../api/authApi';
 
 interface User {
   id: number;
@@ -16,7 +16,7 @@ interface AuthContextType {
   signup: (username: string, email: string, password: string, age: number, avatar: string, banner?: string) => Promise<void>;
   setUserFromSignup: (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => void;
   logout: () => void;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,7 +27,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('comverse_user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('authToken');
+    
+    if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
         // Ensure id is a number
@@ -37,47 +39,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(parsedUser);
       } catch (e) {
         console.error('Failed to parse stored user:', e);
+        localStorage.removeItem('comverse_user');
+        localStorage.removeItem('authToken');
+      }
+    }
+  }, []);
+
+  // Check for Google OAuth redirect on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userParam = urlParams.get('user');
+
+    if (token && userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        const newUser: User = {
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || '',
+          age: userData.age,
+        };
+        
+        setUser(newUser);
+        localStorage.setItem('comverse_user', JSON.stringify(newUser));
+        localStorage.setItem('authToken', token);
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, '/');
+      } catch (e) {
+        console.error('Failed to parse Google OAuth user data:', e);
       }
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    // TODO: Replace with actual API call when auth is implemented
-    // For now, simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Mock user data - replace with actual API response
-    const mockUser: User = {
-      id: 1,
-      username: email.split('@')[0],
-      email,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + email,
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('comverse_user', JSON.stringify(mockUser));
+    try {
+      const res = await loginApi({ email, password });
+      
+      if (res.success && res.data) {
+        const { token, user: userData } = res.data;
+        
+        const newUser: User = {
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || '',
+          age: userData.age,
+        };
+        
+        setUser(newUser);
+        localStorage.setItem('comverse_user', JSON.stringify(newUser));
+        localStorage.setItem('authToken', token);
+      } else {
+        throw new Error(res.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const signup = async (username: string, email: string, password: string, age: number, avatar: string, banner?: string) => {
-    try {
-      // Note: User creation is handled by the auth API (signupApi) in AuthCard
-      // This function is kept for backward compatibility but should not be used for new signups
-      // Use setUserFromSignup instead to avoid double API calls
-      
-      const newUser: User = {
-        id: 0, // This should be set from the backend response in AuthCard
-        username,
-        email,
-        avatar: avatar,
-        age: age || undefined,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('comverse_user', JSON.stringify(newUser));
-    } catch (error) {
-      console.error('Failed to set user in context:', error);
-      throw error;
-    }
+    // This is kept for backward compatibility but should use setUserFromSignup after API call
+    throw new Error('Please use the signup API directly from AuthCard');
   };
 
   const setUserFromSignup = (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => {
@@ -93,24 +119,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('comverse_user', JSON.stringify(newUser));
   };
 
-  const loginWithGoogle = async () => {
-    // TODO: Replace with actual Google OAuth implementation
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const mockUser: User = {
-      id: Date.now(),
-      username: 'Google User',
-      email: 'user@gmail.com',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=google',
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('comverse_user', JSON.stringify(mockUser));
+  const loginWithGoogle = () => {
+    // Redirect to Google OAuth
+    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+    window.location.href = `${apiUrl}/api/auth/google`;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('comverse_user');
+    localStorage.removeItem('authToken');
   };
 
   return (

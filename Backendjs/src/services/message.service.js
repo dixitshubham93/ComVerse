@@ -32,3 +32,18 @@ export const getMessagesByRoom = async (
     },
   });
 };
+
+export const createNewMessage = async ({ roomId, userId, content, contentType }) => {
+  return prisma.message.create({
+    data: {
+      roomId,
+      userId,
+      content,
+      contentType: contentType || null,
+      createdAt: new Date(),
+    },
+    include: {
+      user: true,
+    },
+  });
+};

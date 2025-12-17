@@ -5,8 +5,8 @@ import { ChatMessage } from '../components/ChatMessage';
 import { EmojiPicker } from '../components/EmojiPicker';
 import { Send, Image as ImageIcon, Hash } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
-import { useRoomSocket, MessageDto } from '../hooks/useRoomSocket';
-import { getRoomMessages, MessagePage } from '../api/messageApi';
+import { useRoomSocket, MessageDto as SocketMessageDto } from '../hooks/useRoomSocket';
+import { getRoomMessages, sendMessage, MessageDto as APIMessageDto } from '../api/messageApi';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GeneralChatProps {
@@ -124,20 +124,31 @@ export function GeneralChat({
   const isLoadingMoreRef = useRef(false);
 
   // Convert MessageDto to Message format
-  const convertMessageDto = (dto: MessageDto): Message => {
+  const convertMessageDto = (dto: APIMessageDto): Message => {
     const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
     const isCurrentUser = dto.userId === currentUserId;
     
-    // Generate avatar from username if not available
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.username}`;
+    // Extract username from user object or fallback
+    const username = dto.user?.username || `User${dto.userId}`;
+    const userAvatar = dto.user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+    
+    // Parse content - extract image URL if present
+    let messageText = dto.content || '';
+    let image: string | undefined = undefined;
+    const imageMatch = messageText.match(/\[IMAGE:(.+?)\]/);
+    if (imageMatch && imageMatch[1]) {
+      image = imageMatch[1];
+      messageText = messageText.replace(/\[IMAGE:.+?\]/, '').trim();
+    }
     
     return {
       id: dto.id.toString(),
-      avatar: isCurrentUser ? currentUser.avatar : avatarUrl,
-      username: dto.username,
+      avatar: isCurrentUser ? currentUser.avatar : userAvatar,
+      username: username,
       role: userRole, // TODO: Fetch actual role from membership API if needed
       timestamp: new Date(dto.createdAt).toLocaleString(),
-      message: dto.content,
+      message: messageText,
+      image: image || undefined,
       reactions: [],
       userId: dto.userId.toString(),
     };
@@ -148,11 +159,13 @@ export function GeneralChat({
     const loadInitialMessages = async () => {
       try {
         setIsLoadingMessages(true);
-        const messagePage: MessagePage = await getRoomMessages(communityId, roomId, 0, 50);
-        const convertedMessages = messagePage.content.map(convertMessageDto).reverse();
-        setMessages(convertedMessages);
-        setHasMoreMessages(!messagePage.last);
-        setCurrentPage(0);
+        const messages = await getRoomMessages(roomId, 50, 0);
+        if (Array.isArray(messages)) {
+          const convertedMessages = messages.map(convertMessageDto).reverse();
+          setMessages(convertedMessages);
+          setHasMoreMessages(messages.length >= 50);
+          setCurrentPage(0);
+        }
       } catch (error) {
         console.error('Error loading messages:', error);
         setSocketError('Failed to load messages');
@@ -174,11 +187,14 @@ export function GeneralChat({
     try {
       isLoadingMoreRef.current = true;
       const nextPage = currentPage + 1;
-      const messagePage: MessagePage = await getRoomMessages(communityId, roomId, nextPage, 50);
-      const convertedMessages = messagePage.content.map(convertMessageDto).reverse();
-      setMessages((prev) => [...convertedMessages, ...prev]);
-      setHasMoreMessages(!messagePage.last);
-      setCurrentPage(nextPage);
+      const offset = nextPage * 50;
+      const messages = await getRoomMessages(roomId, 50, offset);
+      if (Array.isArray(messages)) {
+        const convertedMessages = messages.map(convertMessageDto).reverse();
+        setMessages((prev) => [...convertedMessages, ...prev]);
+        setHasMoreMessages(messages.length >= 50);
+        setCurrentPage(nextPage);
+      }
     } catch (error) {
       console.error('Error loading older messages:', error);
     } finally {
@@ -216,12 +232,14 @@ export function GeneralChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMoreMessages]);
 
-  // WebSocket connection
+  // WebSocket connection - DISABLED for now, using REST API
+  // TODO: Set up WebSocket server on backend at /ws endpoint
+  /*
   const { isConnected, error: wsError, sendMessage } = useRoomSocket(roomId, communityId, {
-    onMessage: (message: MessageDto) => {
+    onMessage: (message: SocketMessageDto) => {
       setMessages((prev) => [...prev, convertMessageDto(message)]);
     },
-    onMessageUpdated: (message: MessageDto) => {
+    onMessageUpdated: (message: SocketMessageDto) => {
       setMessages((prev) =>
         prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
       );
@@ -239,6 +257,8 @@ export function GeneralChat({
       setSocketError(wsError);
     }
   }, [wsError]);
+  */
+  const isConnected = false; // Placeholder for now
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages (only if not loading older messages)
@@ -258,17 +278,18 @@ export function GeneralChat({
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() && !imagePreview) return;
-    if (!isConnected) {
-      setSocketError('Not connected to server. Please wait...');
-      return;
-    }
 
+    // Using REST API instead of WebSocket
     try {
       setSocketError(null);
-      const contentType = imagePreview ? 'IMAGE' : 'TEXT';
-      const content = imagePreview ? `${inputValue}\n[IMAGE:${imagePreview}]` : inputValue;
+      const imageUrl = imagePreview || undefined;
       
-      sendMessage(content, contentType);
+      // Send message via REST API
+      const newMessage = await sendMessage(roomId, inputValue.trim(), imageUrl);
+      
+      // Add message to local state
+      setMessages((prev) => [...prev, convertMessageDto(newMessage)]);
+      
       setInputValue('');
       setImagePreview(null);
     } catch (error: any) {

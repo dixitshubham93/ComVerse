@@ -52,8 +52,12 @@ export const checkMembership = async (userId: number, communityId: number): Prom
       return false;
     }
 
-    const isMember: boolean = await response.json();
-    return isMember;
+    const result = await response.json();
+    // Backend returns { success, data: boolean }
+    if (result.success && typeof result.data === 'boolean') {
+      return result.data;
+    }
+    return false;
   } catch (error) {
     console.error('Error checking membership:', error);
     return false;
@@ -79,8 +83,12 @@ export const getUserRole = async (userId: number, communityId: number): Promise<
       return null;
     }
 
-    const role: MembershipRole = await response.json();
-    return role;
+    const result = await response.json();
+    // Backend returns { success, data: role }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return null;
   } catch (error) {
     console.error('Error getting user role:', error);
     return null;
@@ -95,15 +103,13 @@ export const getUserRole = async (userId: number, communityId: number): Promise<
  */
 export const joinCommunity = async (userId: number, communityId: number): Promise<MembershipDto> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/memberships/join`, {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/api/memberships/join/${communityId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
-      body: JSON.stringify({
-        userId,
-        communityId,
-      }),
     });
 
     if (!response.ok) {
@@ -111,8 +117,12 @@ export const joinCommunity = async (userId: number, communityId: number): Promis
       throw new Error(errorData.message || `Failed to join community: ${response.status}`);
     }
 
-    const data: MembershipDto = await response.json();
-    return data;
+    const result = await response.json();
+    // Backend returns { success, data: MembershipDto }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error('Invalid response from server');
   } catch (error) {
     console.error('Error joining community:', error);
     throw error;
@@ -165,60 +175,29 @@ export const getCommunityMembers = async (communityId: number): Promise<MemberIn
       throw new Error(`Failed to fetch members: ${response.status}`);
     }
 
-    const memberships: MembershipDto[] = await response.json();
+    const result = await response.json();
+    // Backend returns { success, data: MembershipDto[] with user included }
+    if (!result.success || !result.data) {
+      return [];
+    }
+
+    const memberships = result.data;
     
-    // Fetch user details for each membership
-    const memberInfos: MemberInfo[] = await Promise.all(
-      memberships.map(async (membership) => {
-        try {
-          const userResponse = await fetch(`${API_BASE_URL}/api/users/${membership.userId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!userResponse.ok) {
-            return {
-              id: membership.id,
-              userId: membership.userId,
-              username: 'Unknown',
-              avatarUrl: null,
-              role: membership.role,
-              joinedAt: membership.joinedAt,
-              isActive: false,
-            };
-          }
-
-          const user = await userResponse.json();
-          return {
-            id: membership.id,
-            userId: membership.userId,
-            username: user.username,
-            avatarUrl: user.avatarUrl,
-            role: membership.role,
-            joinedAt: membership.joinedAt,
-            isActive: true, // TODO: Implement actual active status check
-          };
-        } catch (error) {
-          console.error(`Error fetching user ${membership.userId}:`, error);
-          return {
-            id: membership.id,
-            userId: membership.userId,
-            username: 'Unknown',
-            avatarUrl: null,
-            role: membership.role,
-            joinedAt: membership.joinedAt,
-            isActive: false,
-          };
-        }
-      })
-    );
+    // Transform memberships to MemberInfo (backend already includes user data)
+    const memberInfos: MemberInfo[] = memberships.map((membership: any) => ({
+      id: membership.id,
+      userId: membership.userId,
+      username: membership.user?.username || 'Unknown',
+      avatarUrl: membership.user?.avatarUrl || null,
+      role: membership.role,
+      joinedAt: membership.joinedAt,
+      isActive: true, // TODO: Implement actual active status check
+    }));
 
     return memberInfos;
   } catch (error) {
     console.error('Error fetching community members:', error);
-    throw error;
+    return [];
   }
 };
 

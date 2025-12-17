@@ -82,8 +82,12 @@ export const getUser = async (id: number): Promise<UserDto> => {
       throw new Error(`Failed to fetch user: ${response.status} ${response.statusText}`);
     }
 
-    const userData: UserDto = await response.json();
-    return userData;
+    const result = await response.json();
+    // Backend returns { success, message, data: UserDto }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error(result.message || 'Failed to fetch user');
   } catch (error) {
     console.error('Error fetching user:', error);
     throw error;
@@ -109,11 +113,16 @@ export const getUserCommunities = async (userId: number) => {
       throw new Error(`Failed to fetch user communities: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    // Backend returns { success, message, data: CommunityDto[] }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching user communities:', error);
-    throw error;
+    // Return empty array to prevent crashes
+    return [];
   }
 };
 
@@ -136,11 +145,16 @@ export const getUserCommunitiesWithDetails = async (userId: number) => {
       throw new Error(`Failed to fetch user communities: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    // Backend returns { success, message, data: UserCommunityDto[] }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching user communities with details:', error);
-    throw error;
+    // Return empty array to prevent crashes
+    return [];
   }
 };
 

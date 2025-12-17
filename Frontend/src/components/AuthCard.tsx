@@ -85,17 +85,24 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
     try {
       const res = await loginApi({ email, password });
       if (res.success && res.data) {
+        const { token, user: userData } = res.data;
+        
+        // Store token
+        localStorage.setItem('authToken', token);
+        
         setUserFromSignup({
-          id: res.data.id,
-          username: res.data.username,
-          email: res.data.email,
-          avatar: res.data.avatarUrl || '',
-          age: res.data.age,
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || '',
+          age: userData.age || undefined,
         });
         onClose();
       } else {
         setError(res.message || 'Invalid credentials');
       }
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +142,7 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
         bannerUrl = await uploadToCloudinary(bannerFile);
       }
 
-      const res: ApiResponse<any> = await signupApi({
+      const res = await signupApi({
         username,
         email: signupEmail,
         password: signupPassword,
@@ -145,12 +152,17 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
       });
 
       if (res.success && res.data) {
+        const { token, user: userData } = res.data;
+        
+        // Store token
+        localStorage.setItem('authToken', token);
+        
         setUserFromSignup({
-          id: res.data.id,
-          username: res.data.username,
-          email: res.data.email,
-          avatar: res.data.avatarUrl || avatarUrl,
-          age: res.data.age,
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          avatar: userData.avatarUrl || avatarUrl,
+          age: userData.age || undefined,
         });
         onClose();
       } else {
@@ -163,14 +175,13 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
     }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleAuth = () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
-      onClose();
+      loginWithGoogle();
+      // Don't close the modal, user will be redirected
     } catch {
       setError('Google authentication failed');
-    } finally {
       setIsLoading(false);
     }
   };

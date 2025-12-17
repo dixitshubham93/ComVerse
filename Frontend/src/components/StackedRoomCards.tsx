@@ -1,5 +1,8 @@
 import { useState, useMemo, useRef, Suspense } from 'react';
-import type React from 'react';
+import * as THREE from "three";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/drei";
+import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
 import { Phone, Image, MessageCircle, Megaphone, X, Plus } from 'lucide-react';
 
 interface Room {
@@ -27,10 +30,6 @@ const stackConfig = {
 /* ---------- ExpandedRoom3D - drop-in for expanded grid ---------- */
 /* Requires: react, three, @react-three/fiber, @react-three/drei, lucide-react */
 
-import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/drei";
-import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
 
 /** Small helper to pick icon */
 function iconForType(type) {

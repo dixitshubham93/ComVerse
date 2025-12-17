@@ -38,3 +38,17 @@ export const getRoomsByCommunity = async (communityId) => {
     orderBy: { createdAt: "asc" },
   });
 };
+
+export const deleteRoom = async (roomId) => {
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+  });
+
+  if (!room) throw new AppError("Room not found", 404);
+
+  await prisma.room.delete({
+    where: { id: roomId },
+  });
+
+  return { message: "Room deleted successfully" };
+};

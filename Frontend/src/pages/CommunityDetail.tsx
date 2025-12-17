@@ -287,14 +287,13 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
 
       {/* Sidebar */}
       <CommunitySidebar
+        communityId={0} // This is a mock component, so we pass 0
         communityName={community.name}
-        communityAvatar={community.avatar || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         userRole="Owner"
         currentUser={currentUser}
+        onShowMembers={() => {}}
         onNavigate={handleNavigate}
-        onLeave={onBack}
-        onGoToHome={onGoToHome}
-        onGoToUserSpace={onGoToUserSpace}
+        onBack={onBack}
       />
 
       {/* Main Content with sidebar offset */}

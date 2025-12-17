@@ -1,22 +1,46 @@
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
 
-export const createCommunity = async ({ name, description, bannerUrl, userId }) => {
+export const createCommunity = async ({ name, description, bannerUrl, type, userId }) => {
   try {
     const existing = await prisma.community.findUnique({ where: { name } });
     if (existing) throw new AppError("Community already exists", 409);
 
+    // Create community with owner membership and default rooms in a transaction
     const community = await prisma.community.create({
       data: {
         name,
         description,
         bannerUrl,
+        type: type || 'PUBLIC',
         memberships: {
           create: {
             userId,
             role: "OWNER",
             joinedAt: new Date(),
           },
+        },
+        rooms: {
+          create: [
+            {
+              name: "Announcement",
+              type: "ANNOUNCEMENT",
+              isDefaultRoom: true,
+              readOnly: true,
+              adminOnly: false,
+              locked: false,
+              createdAt: new Date(),
+            },
+            {
+              name: "General",
+              type: "GENERAL",
+              isDefaultRoom: true,
+              readOnly: false,
+              adminOnly: false,
+              locked: false,
+              createdAt: new Date(),
+            },
+          ],
         },
       },
     });

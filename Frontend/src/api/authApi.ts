@@ -50,12 +50,20 @@ export interface UserDto {
 }
 
 /**
+ * Login/Signup response data
+ */
+export interface AuthResponseData {
+  token: string;
+  user: UserDto;
+}
+
+/**
  * Signs up a new user
  * @param data - Signup data
- * @returns Promise resolving to ApiResponse with UserDto
+ * @returns Promise resolving to ApiResponse with AuthResponseData
  * @throws Error if the API call fails
  */
-export const signup = async (data: SignupRequest): Promise<ApiResponse<UserDto>> => {
+export const signup = async (data: SignupRequest): Promise<ApiResponse<AuthResponseData>> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
@@ -65,7 +73,7 @@ export const signup = async (data: SignupRequest): Promise<ApiResponse<UserDto>>
       body: JSON.stringify(data),
     });
 
-    const result: ApiResponse<UserDto> = await response.json();
+    const result: ApiResponse<AuthResponseData> = await response.json();
 
     if (!response.ok || !result.success) {
       throw new Error(result.message || `Failed to sign up: ${response.status} ${response.statusText}`);
@@ -81,10 +89,10 @@ export const signup = async (data: SignupRequest): Promise<ApiResponse<UserDto>>
 /**
  * Logs in a user
  * @param data - Login credentials
- * @returns Promise resolving to ApiResponse with UserDto
+ * @returns Promise resolving to ApiResponse with AuthResponseData
  * @throws Error if the API call fails
  */
-export const login = async (data: LoginRequest): Promise<ApiResponse<UserDto>> => {
+export const login = async (data: LoginRequest): Promise<ApiResponse<AuthResponseData>> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -94,7 +102,7 @@ export const login = async (data: LoginRequest): Promise<ApiResponse<UserDto>> =
       body: JSON.stringify(data),
     });
 
-    const result: ApiResponse<UserDto> = await response.json();
+    const result: ApiResponse<AuthResponseData> = await response.json();
 
     if (!response.ok || !result.success) {
       throw new Error(result.message || `Failed to log in: ${response.status} ${response.statusText}`);

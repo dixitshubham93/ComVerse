@@ -3,6 +3,7 @@ import { X, Upload, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { createCommunity, CommunityType } from '../api/communityApi';
 import { useAuth } from '../contexts/AuthContext';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 interface CreateCommunityModalProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [communityType, setCommunityType] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
@@ -84,11 +86,11 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setBannerFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
         setBannerPreview(result);
-        setBannerUrl(result);
       };
       reader.readAsDataURL(file);
     }
@@ -109,6 +111,12 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
     setError(null);
 
     try {
+      // Upload banner to Cloudinary if a new file is selected
+      let uploadedBannerUrl = bannerUrl;
+      if (bannerFile) {
+        uploadedBannerUrl = await uploadToCloudinary(bannerFile);
+      }
+
       const backendType = COMMUNITY_TYPE_MAP[communityType];
       if (!backendType) {
         throw new Error('Invalid community type');
@@ -120,7 +128,7 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
         {
           name: name.trim(),
           description: description.trim(),
-          bannerUrl: bannerUrl || null,
+          bannerUrl: uploadedBannerUrl || undefined,
           type: backendType,
         },
         userId
@@ -129,7 +137,7 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
       // Call the callback with the created community
       onCreateCommunity({
         name: createdCommunity.name,
-        description: createdCommunity.description,
+        description: createdCommunity.description || '',
         bannerUrl: createdCommunity.bannerUrl || '',
         communityType: communityType,
       });
@@ -139,6 +147,7 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
         setName('');
         setDescription('');
         setBannerUrl('');
+        setBannerFile(null);
         setCommunityType('');
         setBannerPreview(null);
       }

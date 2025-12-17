@@ -50,3 +50,29 @@ export const unlikePost = async (postId, userId) => {
     },
   });
 };
+
+export const getPostsByUser = async (userId, limit = 50) => {
+  return prisma.post.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: {
+      user: true,
+      comments: true,
+      likes: true,
+    },
+  });
+};
+
+export const getRecentPostsByUser = async (userId, limit = 10) => {
+  return prisma.post.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: {
+      user: true,
+      comments: true,
+      likes: true,
+    },
+  });
+};

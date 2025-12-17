@@ -1,4 +1,4 @@
-import { createRoom, getRoomsByCommunity } from "../services/room.service.js";
+import { createRoom, getRoomsByCommunity, deleteRoom as deleteRoomService } from "../services/room.service.js";
 
 export const create = async (req, res, next) => {
   try {
@@ -7,7 +7,14 @@ export const create = async (req, res, next) => {
       ...req.body,
     });
 
-    res.status(201).json({ success: true, room });
+    // Convert BigInt to Number for JSON serialization
+    const serializedRoom = {
+      ...room,
+      id: Number(room.id),
+      communityId: Number(room.communityId),
+    };
+
+    res.status(201).json({ success: true, data: serializedRoom });
   } catch (err) {
     next(err);
   }
@@ -18,7 +25,24 @@ export const getByCommunity = async (req, res, next) => {
     const rooms = await getRoomsByCommunity(
       BigInt(req.params.communityId)
     );
-    res.json({ success: true, rooms });
+    
+    // Convert BigInt to Number for JSON serialization
+    const serializedRooms = rooms.map(r => ({
+      ...r,
+      id: Number(r.id),
+      communityId: Number(r.communityId),
+    }));
+    
+    res.json({ success: true, data: serializedRooms });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteRoom = async (req, res, next) => {
+  try {
+    const result = await deleteRoomService(BigInt(req.params.id));
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }

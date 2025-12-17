@@ -13,6 +13,16 @@ datasource db {
 
 enum CommunityType {
   PUBLIC
+  GAMING
+  ART
+  MUSIC
+  TECHNOLOGY
+  SPORTS
+  FINANCE
+  LIFESTYLE
+  TRAVEL
+  EDUCATION
+  OTHER
 }
 
 enum MembershipRole {
@@ -24,7 +34,8 @@ enum MembershipRole {
 enum RoomType {
   ANNOUNCEMENT
   GENERAL
-  VOICE
+  VOICE_CHAT
+  POSTS
 }
 
 enum PostType {

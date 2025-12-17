@@ -62,22 +62,39 @@ export const loginUser = async ({ email, password }) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new AppError("Invalid credentials", 401);
 
-  return generateToken(user);
+  const safeUser = {
+    id: Number(user.id),
+    username: user.username,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    bannerUrl: user.bannerUrl,
+    age: user.age,
+  };
+
+  return {
+    token: generateToken(user),
+    user: safeUser,
+  };
 };
 
 export const oauthLogin = async ({ email, username, avatarUrl }) => {
   let user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email,
-        username,
-        avatarUrl,
-        password: null,
-      },
-    });
+    throw new AppError("User not registered. Please sign up first.", 401);
   }
 
-  return generateToken(user);
+  const safeUser = {
+    id: Number(user.id),
+    username: user.username,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    bannerUrl: user.bannerUrl,
+    age: user.age,
+  };
+
+  return {
+    token: generateToken(user),
+    user: safeUser,
+  };
 };

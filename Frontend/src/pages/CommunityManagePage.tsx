@@ -247,8 +247,12 @@ export function CommunityManagePage() {
         currentUser={currentUser}
         onShowMembers={() => {}}
         onNavigate={(page) => {
-          if (page === 'home') navigate(`/community/${communityId}`);
+          if (page === 'home') {
+            navigate(`/community/${communityId}`);
+          }
+          // For other navigation cases, we let the default behavior handle it
         }}
+        onBack={() => navigate(`/community/${communityId}`)}
       />
 
       {/* Main Content */}

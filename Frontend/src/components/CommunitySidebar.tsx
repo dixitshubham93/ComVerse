@@ -14,6 +14,7 @@ interface CommunitySidebarProps {
   };
   onShowMembers: () => void;
   onNavigate?: (page: string) => void;
+  onBack?: () => void; // Add onBack prop
 }
 
 export function CommunitySidebar({
@@ -23,6 +24,7 @@ export function CommunitySidebar({
   currentUser,
   onShowMembers,
   onNavigate,
+  onBack, // Destructure onBack prop
 }: CommunitySidebarProps) {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
@@ -195,7 +197,7 @@ export function CommunitySidebar({
             <div className="absolute bottom-4 left-3 right-3 flex flex-col gap-2">
               {/* Back Button */}
               <button
-                onClick={() => navigate(-1)}
+                onClick={onBack || (() => navigate(-1))} // Use onBack if provided, otherwise use navigate(-1)
                 className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(116,124,136,0.15)] transition-all duration-200 group"
               >
                 <ArrowLeft className="w-5 h-5 text-[#747c88] group-hover:text-white transition-colors flex-shrink-0" />
@@ -273,7 +275,7 @@ export function CommunitySidebar({
             <div className="absolute bottom-4 left-2 right-2 flex flex-col gap-2">
               {/* Back Button */}
               <button
-                onClick={() => navigate(-1)}
+                onClick={onBack || (() => navigate(-1))} // Use onBack if provided, otherwise use navigate(-1)
                 className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(116,124,136,0.15)] transition-all duration-200 group"
                 title="Back"
               >

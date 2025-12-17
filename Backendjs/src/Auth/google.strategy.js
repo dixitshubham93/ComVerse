@@ -11,13 +11,13 @@ passport.use(
     },
     async (_, __, profile, done) => {
       try {
-        const token = await oauthLogin({
+        const result = await oauthLogin({
           email: profile.emails[0].value,
           username: profile.displayName,
           avatarUrl: profile.photos?.[0]?.value,
         });
 
-        done(null, { token });
+        done(null, result);
       } catch (err) {
         done(err, null);
       }
