@@ -239,7 +239,7 @@ export function MemesPostsPage({
             borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
           }}
         >
-            <div className="max-w-[600px] mx-auto px-8 py-4">
+            <div className="max-w-[520px] mx-auto px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <motion.button 
@@ -267,7 +267,7 @@ export function MemesPostsPage({
             </div>
           </motion.header>
 
-            <div className="max-w-[600px] mx-auto px-8 md:px-12 py-6">
+            <div className="max-w-[520px] mx-auto px-6 py-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -423,22 +423,22 @@ export function MemesPostsPage({
                       <motion.div 
                         whileHover={{ scale: 1.01 }}
                         className="mt-4 rounded-xl overflow-hidden cursor-pointer relative group/media"
-                        style={{ 
-                          border: '1px solid rgba(40, 245, 204, 0.08)',
-                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-                          maxHeight: '480px'
-                        }}
-                      >
-                        <div className="relative w-full flex items-center justify-center bg-black/50" style={{ minHeight: '300px', maxHeight: '480px' }}>
-                          {!imageLoaded[post.id] && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-8 h-8 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
-                            </div>
-                          )}
-                          <img
-                            src={post.mediaUrl}
-                            alt={post.caption || 'Post'}
-                            className={`w-full h-auto max-h-[480px] object-contain transition-all duration-500 group-hover/media:scale-[1.02] ${
+                          style={{ 
+                            border: '1px solid rgba(40, 245, 204, 0.08)',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                            maxHeight: '420px'
+                          }}
+                        >
+                          <div className="relative w-full flex items-center justify-center bg-black/50" style={{ minHeight: '300px', maxHeight: '420px' }}>
+                            {!imageLoaded[post.id] && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                              </div>
+                            )}
+                            <img
+                              src={post.mediaUrl}
+                              alt={post.caption || 'Post'}
+                              className={`w-full h-auto max-h-[420px] object-contain transition-all duration-500 group-hover/media:scale-[1.02] ${
                               imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
                             }`}
                             loading="lazy"
