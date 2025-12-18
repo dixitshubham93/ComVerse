@@ -486,160 +486,134 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
             </div>
           )}
 
-          {/* Sign Up Step 2 */}
-          {mode === 'signup' && signupStep === 2 && (
-            <form onSubmit={handleSignUpStep2} className="space-y-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setSignupStep(1);
-                  setError('');
-                }}
-                className="text-[#28f5cc] hover:text-[#04ad7b] text-sm mb-2 flex items-center gap-1"
-              >
-                ← Back
-              </button>
-
-              <div>
-                <Label htmlFor="signup-email" className="text-[#747c88] mb-2 block">
-                  Email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={signupEmail}
-                    onChange={(e) => {
-                      setSignupEmail(e.target.value);
-                      if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
-                    }}
-                    className={`pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                      fieldErrors.email ? 'border-red-500/50' : ''
-                    }`}
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-                {fieldErrors.email && (
-                  <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="signup-password" className="text-[#747c88] mb-2 block">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={signupPassword}
-                    onChange={(e) => {
-                      setSignupPassword(e.target.value);
-                      if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                    }}
-                    className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                      fieldErrors.password ? 'border-red-500/50' : ''
-                    }`}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {fieldErrors.password && (
-                  <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="confirm-password" className="text-[#747c88] mb-2 block">
-                  Confirm Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                    }}
-                    className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                      fieldErrors.password ? 'border-red-500/50' : ''
-                    }`}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 rounded-full bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
-              >
-                {isLoading ? 'Creating account...' : 'Create Account'}
-              </button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#747c88]/30"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-transparent text-[#747c88]">Or continue with</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGoogleAuth}
-                disabled={isLoading}
-                className="w-full py-3 rounded-full border-2 border-[#747c88]/30 text-white hover:border-[#28f5cc] transition-all disabled:opacity-50"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  <span>Continue with Google</span>
-                </div>
-              </button>
-
-              <div className="text-center text-sm text-[#747c88]">
-                Already have an account?{' '}
+            {/* Sign Up Step 2 */}
+            {mode === 'signup' && signupStep === 2 && (
+              <form onSubmit={handleSignUpStep2} className="space-y-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setMode('signin');
                     setSignupStep(1);
                     setError('');
                   }}
-                  className="text-[#28f5cc] hover:text-[#04ad7b] font-semibold"
+                  className="text-[#28f5cc] hover:text-[#04ad7b] text-sm mb-2 flex items-center gap-1"
                 >
-                  Sign in
+                  ← Back
                 </button>
-              </div>
-            </form>
-          )}
+
+                <div>
+                  <Label htmlFor="signup-email" className="text-[#747c88] mb-2 block">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      value={signupEmail}
+                      onChange={(e) => {
+                        setSignupEmail(e.target.value);
+                        if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                      }}
+                      className={`pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                        fieldErrors.email ? 'border-red-500/50' : ''
+                      }`}
+                      placeholder="your@email.com"
+                      required
+                    />
+                  </div>
+                  {fieldErrors.email && (
+                    <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="signup-password" className="text-[#747c88] mb-2 block">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={signupPassword}
+                      onChange={(e) => {
+                        setSignupPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                      }}
+                      className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                        fieldErrors.password ? 'border-red-500/50' : ''
+                      }`}
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="confirm-password" className="text-[#747c88] mb-2 block">
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                      }}
+                      className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                        fieldErrors.password ? 'border-red-500/50' : ''
+                      }`}
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 rounded-full bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
+                >
+                  {isLoading ? 'Creating account...' : 'Create Account'}
+                </button>
+
+                <div className="text-center text-sm text-[#747c88]">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('signin');
+                      setSignupStep(1);
+                      setError('');
+                    }}
+                    className="text-[#28f5cc] hover:text-[#04ad7b] font-semibold"
+                  >
+                    Sign in
+                  </button>
+                </div>
+              </form>
+            )}
         </div>
       </DialogContent>
     </Dialog>

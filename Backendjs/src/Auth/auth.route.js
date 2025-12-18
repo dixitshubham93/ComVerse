@@ -15,21 +15,27 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false }),
-  (req, res) => {
-    const frontendUrl = process.env.FRONTEND_URL;
+  (req, res, next) => {
+    passport.authenticate("google", { session: false }, (err, user, info) => {
+      const frontendUrl = process.env.FRONTEND_URL;
 
-    if (!frontendUrl) {
-      throw new Error("FRONTEND_URL is not defined");
-    }
+      if (!frontendUrl) {
+        return next(new Error("FRONTEND_URL is not defined"));
+      }
 
-    // Encode user data as URL parameters
-    const token = req.user.token;
-    const user = encodeURIComponent(JSON.stringify(req.user.user));
+      if (err || !user) {
+        const message = err?.message || "Authentication failed";
+        return res.redirect(`${frontendUrl}/?error=${encodeURIComponent(message)}`);
+      }
 
-    res.redirect(
-      `${frontendUrl}/?token=${token}&user=${user}`
-    );
+      // Encode user data as URL parameters
+      const token = user.token;
+      const userData = encodeURIComponent(JSON.stringify(user.user));
+
+      res.redirect(
+        `${frontendUrl}/?token=${token}&user=${userData}`
+      );
+    })(req, res, next);
   }
 );
 

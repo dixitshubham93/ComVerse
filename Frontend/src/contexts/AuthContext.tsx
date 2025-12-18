@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { login as loginApi, signup as signupApi } from '../api/authApi';
+import { toast } from 'sonner';
 
 interface User {
   id: number;
@@ -45,34 +46,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Check for Google OAuth redirect on mount
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const userParam = urlParams.get('user');
+    // Check for Google OAuth redirect on mount
+    useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const userParam = urlParams.get('user');
+      const errorParam = urlParams.get('error');
 
-    if (token && userParam) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(userParam));
-        const newUser: User = {
-          id: userData.id,
-          username: userData.username,
-          email: userData.email,
-          avatar: userData.avatarUrl || '',
-          age: userData.age,
-        };
-        
-        setUser(newUser);
-        localStorage.setItem('comverse_user', JSON.stringify(newUser));
-        localStorage.setItem('authToken', token);
-        
+      if (errorParam) {
+        toast.error(decodeURIComponent(errorParam));
         // Clean up URL
         window.history.replaceState({}, document.title, '/');
-      } catch (e) {
-        console.error('Failed to parse Google OAuth user data:', e);
+        return;
       }
-    }
-  }, []);
+
+      if (token && userParam) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userParam));
+          const newUser: User = {
+            id: userData.id,
+            username: userData.username,
+            email: userData.email,
+            avatar: userData.avatarUrl || '',
+            age: userData.age,
+          };
+          
+          setUser(newUser);
+          localStorage.setItem('comverse_user', JSON.stringify(newUser));
+          localStorage.setItem('authToken', token);
+          
+          toast.success(`Welcome back, ${newUser.username}!`);
+          
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/');
+        } catch (e) {
+          console.error('Failed to parse Google OAuth user data:', e);
+          toast.error('Failed to complete Google authentication');
+        }
+      }
+    }, []);
 
   const login = async (email: string, password: string) => {
     try {
