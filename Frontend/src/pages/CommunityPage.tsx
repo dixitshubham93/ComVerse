@@ -419,9 +419,11 @@ export function CommunityPage() {
 
   // Render Memes/Posts Page
   if (currentPage === 'memesPosts' && selectedRoom) {
+    const roomId = parseInt(selectedRoom.id, 10);
     return (
       <MemesPostsPage
         roomName={selectedRoom.name}
+        roomId={roomId}
         communityName={community.name}
         communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         userRole={getRoleString()}

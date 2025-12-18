@@ -5,16 +5,47 @@ import {
   unlikePost,
 } from "../services/post.service.js";
 
+const serializePost = (post) => ({
+  id: Number(post.id),
+  mediaUrl: post.mediaUrl,
+  caption: post.caption || null,
+  type: post.type,
+  createdAt: post.createdAt,
+  roomId: Number(post.roomId),
+  userId: Number(post.userId),
+  user: post.user ? {
+    id: Number(post.user.id),
+    username: post.user.username,
+    email: post.user.email,
+    avatarUrl: post.user.avatarUrl,
+  } : null,
+  comments: post.comments ? post.comments.map(c => ({
+    id: Number(c.id),
+    content: c.content,
+    createdAt: c.createdAt,
+    userId: Number(c.userId),
+    postId: Number(c.postId),
+  })) : [],
+  likes: post.likes ? post.likes.map(l => ({
+    id: Number(l.id),
+    postId: Number(l.postId),
+    userId: Number(l.userId),
+  })) : [],
+  likeCount: post.likes ? post.likes.length : 0,
+  commentCount: post.comments ? post.comments.length : 0,
+});
+
 export const createPost = async (req, res, next) => {
   try {
     const post = await createPostService({
       roomId: BigInt(req.params.roomId),
       userId: req.user.id,
       mediaUrl: req.body.mediaUrl,
-      type: req.body.type,
+      caption: req.body.caption || null,
+      type: req.body.type || 'IMAGE',
     });
 
-    res.status(201).json({ success: true, post });
+    res.status(201).json({ success: true, post: serializePost(post) });
   } catch (err) {
     next(err);
   }
@@ -26,7 +57,8 @@ export const getPostsByRoom = async (req, res, next) => {
       BigInt(req.params.roomId)
     );
 
-    res.json({ success: true, posts });
+    const serializedPosts = posts.map(serializePost);
+    res.json({ success: true, posts: serializedPosts });
   } catch (err) {
     next(err);
   }

@@ -12,6 +12,9 @@ export const addComment = async ({
       content,
       createdAt: new Date(),
     },
+    include: {
+      user: true,
+    },
   });
 };
 

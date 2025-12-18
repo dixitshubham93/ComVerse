@@ -5,6 +5,7 @@ export const createPost = async ({
   roomId,
   userId,
   mediaUrl,
+  caption,
   type,
 }) => {
   return prisma.post.create({
@@ -12,8 +13,14 @@ export const createPost = async ({
       roomId,
       userId,
       mediaUrl,
+      caption,
       type,
       createdAt: new Date(),
+    },
+    include: {
+      user: true,
+      comments: true,
+      likes: true,
     },
   });
 };
