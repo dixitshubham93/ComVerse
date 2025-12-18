@@ -15,13 +15,8 @@ interface MemesPostsPageProps {
   onGoToUserSpace?: () => void;
 }
 
-const CLOUDINARY_CLOUD_NAME = (import.meta as any).env?.VITE_CLOUDINARY_CLOUD_NAME || 'sshubhamcloudinary';
-const CLOUDINARY_UPLOAD_PRESET = (import.meta as any).env?.VITE_CLOUDINARY_UPLOAD_PRESET || 'avatar_unsigned';
-
-const currentUser = {
-  name: 'Alex Rivera',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
-};
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'sshubhamcloudinary';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'avatar_unsigned';
 
 export function MemesPostsPage({
   communityName,
@@ -164,27 +159,36 @@ export function MemesPostsPage({
     }
   };
 
-  const handleUpload = async () => {
-    if (!uploadFile || uploading) return;
-    setUploading(true);
+    const handleUpload = async () => {
+      if (!uploadFile || uploading) return;
+      setUploading(true);
+  
+      try {
+        console.log('Uploading to Cloudinary:', {
+          cloudName: CLOUDINARY_CLOUD_NAME,
+          preset: CLOUDINARY_UPLOAD_PRESET,
+          fileName: uploadFile.name,
+          fileSize: uploadFile.size
+        });
 
-    try {
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  
+        const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            { method: 'POST', body: formData }
+          );
+          const data = await res.json();
+  
+          if (!res.ok) {
+            console.error('Cloudinary error details:', data);
+            const msg = data.error?.message || JSON.stringify(data);
+            alert(`Cloudinary Upload Error: ${msg}\n\nTroubleshooting:\n1. Ensure your upload preset "${CLOUDINARY_UPLOAD_PRESET}" is set to "Unsigned" in Cloudinary settings.\n2. Verify Cloud Name "${CLOUDINARY_CLOUD_NAME}" is correct.`);
+            setUploading(false);
+            return;
+          }
 
-      const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-          { method: 'POST', body: formData }
-        );
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error('Cloudinary error:', data);
-          alert(`Upload failed: ${data.error?.message || 'Unknown error'}. Please check your Cloudinary upload preset is set to "unsigned".`);
-          setUploading(false);
-          return;
-        }
 
         if (data.secure_url) {
         const post = await createPost(roomId, {
