@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, MoreHorizontal, Share2, Sparkles } from 'lucide-react';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, PostDto, CommentDto } from '../api/postApi';
@@ -212,7 +212,12 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden relative" style={{ background: '#000000' }}>
+    <div className="min-h-screen w-full overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #030808 0%, #051414 50%, #071a1a 100%)' }}>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.03]" style={{ background: 'radial-gradient(circle, #28f5cc 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-30%] right-[-15%] w-[600px] h-[600px] rounded-full opacity-[0.02]" style={{ background: 'radial-gradient(circle, #04ad7b 0%, transparent 70%)' }} />
+      </div>
+
       <CommunitySidebar
         communityId={communityId}
         communityName={communityName}
@@ -224,107 +229,162 @@ export function MemesPostsPage({
       />
 
       <div className="relative z-10" style={{ marginLeft: '64px' }}>
-        <motion.div
+        <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 py-3 border-b sticky top-0 z-30"
+          className="sticky top-0 z-30"
           style={{
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(12px)',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(5, 20, 20, 0.85)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
           }}
         >
-          <div className="flex items-center justify-between max-w-[600px] mx-auto">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={onBack}
-                className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-white" />
-              </button>
-              <div>
-                <h1 className="text-white text-lg font-bold">{roomName}</h1>
-                <p className="text-[#71767b] text-xs">{communityName}</p>
+          <div className="max-w-[680px] mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <motion.button 
+                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onBack}
+                  className="p-2.5 rounded-xl transition-all duration-300"
+                  style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+                >
+                  <ArrowLeft className="w-5 h-5 text-[#28f5cc]" />
+                </motion.button>
+                <div>
+                  <h1 className="text-white text-lg font-semibold tracking-tight">{roomName}</h1>
+                  <p className="text-[#28f5cc]/50 text-xs font-medium">{communityName}</p>
+                </div>
               </div>
+              <motion.div 
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                style={{ background: 'rgba(40, 245, 204, 0.08)', border: '1px solid rgba(40, 245, 204, 0.15)' }}
+              >
+                <div className="w-2 h-2 rounded-full bg-[#28f5cc] animate-pulse" />
+                <span className="text-[#28f5cc] text-xs font-medium">{posts.length} posts</span>
+              </motion.div>
             </div>
           </div>
-        </motion.div>
+        </motion.header>
 
-        <div className="max-w-[600px] mx-auto border-x" style={{ borderColor: 'rgba(255, 255, 255, 0.1)', minHeight: 'calc(100vh - 57px)' }}>
+        <div className="max-w-[680px] mx-auto px-4 py-6">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-4 border-b flex items-center gap-3"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8 p-5 rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.05) 0%, rgba(4, 173, 123, 0.03) 100%)',
+              border: '1px solid rgba(40, 245, 204, 0.12)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(40, 245, 204, 0.1)',
+            }}
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-              {currentUserAvatar ? (
-                <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-black font-bold">
-                  {currentUsername.charAt(0).toUpperCase()}
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#28f5cc]/30 ring-offset-2 ring-offset-[#051414]">
+                  {currentUserAvatar ? (
+                    <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-black font-bold" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                      {currentUsername.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#28f5cc] flex items-center justify-center">
+                  <Sparkles className="w-2.5 h-2.5 text-black" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="w-full text-left px-5 py-3.5 rounded-xl text-white/40 hover:text-white/60 transition-all duration-300 text-[15px]"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(40, 245, 204, 0.1)',
+                  }}
+                >
+                  Share something amazing...
+                </button>
+                <div className="flex items-center justify-end mt-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.3)' }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowUploadModal(true)}
+                    className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300"
+                    style={{
+                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                      color: '#000',
+                      boxShadow: '0 4px 20px rgba(40, 245, 204, 0.25)',
+                    }}
+                  >
+                    Create Post
+                  </motion.button>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="flex-1 text-left px-4 py-3 rounded-full text-[#71767b] hover:bg-white/5 transition-colors"
-              style={{ border: '1px solid rgba(255, 255, 255, 0.15)' }}
-            >
-              Share something...
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowUploadModal(true)}
-              className="px-5 py-2.5 rounded-full font-bold text-sm transition-all"
-              style={{ background: '#04ad7b', color: '#000' }}
-            >
-              Post
-            </motion.button>
           </motion.div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-[#04ad7b] animate-spin" />
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-[#28f5cc]/10" />
+                </div>
+              </div>
+              <p className="text-white/40 text-sm">Loading posts...</p>
             </div>
           ) : posts.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16 px-8"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20 px-8"
             >
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(4, 173, 123, 0.1)' }}>
-                <ImagePlus className="w-8 h-8 text-[#04ad7b]" />
+              <div className="relative w-24 h-24 mx-auto mb-6">
+                <div className="absolute inset-0 rounded-full bg-[#28f5cc]/10 animate-ping" />
+                <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 173, 123, 0.1))', border: '1px solid rgba(40, 245, 204, 0.2)' }}>
+                  <ImagePlus className="w-10 h-10 text-[#28f5cc]" />
+                </div>
               </div>
-              <h3 className="text-white text-xl font-bold mb-2">No posts yet</h3>
-              <p className="text-[#71767b] text-sm mb-6">When someone posts, you'll see it here.</p>
+              <h3 className="text-white text-xl font-semibold mb-2">No posts yet</h3>
+              <p className="text-white/40 text-sm mb-8 max-w-xs mx-auto">Be the first to share something with the community</p>
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(40, 245, 204, 0.4)' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowUploadModal(true)}
-                className="px-6 py-3 rounded-full font-bold"
-                style={{ background: '#04ad7b', color: '#000' }}
+                className="px-8 py-3.5 rounded-xl font-semibold"
+                style={{
+                  background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                  color: '#000',
+                  boxShadow: '0 4px 20px rgba(40, 245, 204, 0.25)',
+                }}
               >
-                Create first post
+                Create First Post
               </motion.button>
             </motion.div>
           ) : (
-            <div>
+            <div className="space-y-6">
               {posts.map((post, index) => (
                 <motion.article
                   key={post.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-b"
-                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="group rounded-2xl overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(10, 30, 30, 0.8) 0%, rgba(5, 20, 20, 0.9) 100%)',
+                    border: '1px solid rgba(40, 245, 204, 0.08)',
+                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
+                  }}
                 >
-                  <div className="p-4">
-                    <div className="flex gap-3">
-                      <div className="flex-shrink-0">
+                  <div className="p-5">
+                    <div className="flex items-start gap-4">
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="flex-shrink-0 cursor-pointer"
+                      >
                         <div
-                          className="w-10 h-10 rounded-full overflow-hidden"
+                          className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#28f5cc]/30 transition-all duration-300"
                           style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
                         >
                           {post.user?.avatarUrl ? (
@@ -335,81 +395,119 @@ export function MemesPostsPage({
                             </div>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-bold text-[15px] hover:underline cursor-pointer">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-white font-semibold text-[15px] hover:text-[#28f5cc] cursor-pointer transition-colors">
                             {post.user?.username || 'Unknown'}
                           </span>
-                          <span className="text-[#71767b] text-sm">·</span>
-                          <span className="text-[#71767b] text-sm">{formatTime(post.createdAt)}</span>
-                          <button className="ml-auto p-1.5 -mr-1.5 hover:bg-[#04ad7b]/10 rounded-full transition-colors group">
-                            <MoreHorizontal className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b]" />
-                          </button>
+                          <span className="text-white/20">·</span>
+                          <span className="text-white/40 text-sm">{formatTime(post.createdAt)}</span>
+                          <motion.button 
+                            whileHover={{ scale: 1.1, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
+                            className="ml-auto p-2 -mr-2 rounded-lg transition-all duration-200"
+                          >
+                            <MoreHorizontal className="w-4 h-4 text-white/40 hover:text-white/60" />
+                          </motion.button>
                         </div>
 
                         {post.caption && (
-                          <p className="text-white text-[15px] mt-1 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-white/90 text-[15px] mt-2 leading-relaxed whitespace-pre-wrap">
                             {post.caption}
                           </p>
                         )}
-
-                        <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                          <div className="relative aspect-square bg-black">
-                            {!imageLoaded[post.id] && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-[#16181c]">
-                                <Loader2 className="w-6 h-6 text-[#04ad7b] animate-spin" />
-                              </div>
-                            )}
-                            <img
-                              src={post.mediaUrl}
-                              alt={post.caption || 'Post'}
-                              className={`w-full h-full object-cover transition-opacity duration-300 ${
-                                imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
-                              }`}
-                              loading="lazy"
-                              onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3 max-w-[425px]">
-                          <button
-                            onClick={() => handleToggleComments(post.id)}
-                            className="flex items-center gap-2 group -ml-2 p-2 rounded-full hover:bg-[#04ad7b]/10 transition-colors"
-                          >
-                            <MessageCircle className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors" />
-                            <span className="text-[13px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors min-w-[20px]">
-                              {post.commentCount || 0}
-                            </span>
-                          </button>
-
-                          <motion.button
-                            whileTap={{ scale: 0.8 }}
-                            onClick={() => handleLike(post)}
-                            disabled={likeLoading === post.id}
-                            className="flex items-center gap-2 group p-2 rounded-full hover:bg-pink-500/10 transition-colors disabled:opacity-50"
-                          >
-                            <Heart
-                              className={`w-[18px] h-[18px] transition-all ${
-                                isLikedByUser(post)
-                                  ? 'text-pink-500 fill-pink-500'
-                                  : 'text-[#71767b] group-hover:text-pink-500'
-                              }`}
-                            />
-                            <span className={`text-[13px] transition-colors min-w-[20px] ${
-                              isLikedByUser(post) ? 'text-pink-500' : 'text-[#71767b] group-hover:text-pink-500'
-                            }`}>
-                              {post.likeCount || 0}
-                            </span>
-                          </motion.button>
-
-                          <button className="flex items-center gap-2 group p-2 rounded-full hover:bg-[#04ad7b]/10 transition-colors">
-                            <Bookmark className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors" />
-                          </button>
-                        </div>
                       </div>
+                    </div>
+
+                    <motion.div 
+                      whileHover={{ scale: 1.01 }}
+                      className="mt-4 rounded-xl overflow-hidden cursor-pointer relative group/media"
+                      style={{ 
+                        border: '1px solid rgba(40, 245, 204, 0.08)',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                      }}
+                    >
+                      <div className="relative aspect-square bg-black/50">
+                        {!imageLoaded[post.id] && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                          </div>
+                        )}
+                        <img
+                          src={post.mediaUrl}
+                          alt={post.caption || 'Post'}
+                          className={`w-full h-full object-cover transition-all duration-500 group-hover/media:scale-[1.02] ${
+                            imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
+                          }`}
+                          loading="lazy"
+                          onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover/media:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </motion.div>
+
+                    <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px solid rgba(40, 245, 204, 0.06)' }}>
+                      <div className="flex items-center gap-1">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleLike(post)}
+                          disabled={likeLoading === post.id}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 disabled:opacity-50"
+                          style={{
+                            background: isLikedByUser(post) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                          }}
+                        >
+                          <Heart
+                            className={`w-5 h-5 transition-all duration-300 ${
+                              isLikedByUser(post)
+                                ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                                : 'text-white/50 hover:text-red-400'
+                            }`}
+                          />
+                          <span className={`text-sm font-medium transition-colors ${
+                            isLikedByUser(post) ? 'text-red-400' : 'text-white/50'
+                          }`}>
+                            {post.likeCount || 0}
+                          </span>
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleToggleComments(post.id)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+                          style={{
+                            background: expandedComments === post.id ? 'rgba(40, 245, 204, 0.1)' : 'transparent',
+                          }}
+                        >
+                          <MessageCircle className={`w-5 h-5 transition-colors ${
+                            expandedComments === post.id ? 'text-[#28f5cc]' : 'text-white/50 hover:text-[#28f5cc]'
+                          }`} />
+                          <span className={`text-sm font-medium ${
+                            expandedComments === post.id ? 'text-[#28f5cc]' : 'text-white/50'
+                          }`}>
+                            {post.commentCount || 0}
+                          </span>
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+                        >
+                          <Share2 className="w-5 h-5 text-white/50 hover:text-[#28f5cc] transition-colors" />
+                        </motion.button>
+                      </div>
+
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 rounded-xl transition-all duration-200 hover:bg-[#28f5cc]/10"
+                      >
+                        <Bookmark className="w-5 h-5 text-white/50 hover:text-[#28f5cc] transition-colors" />
+                      </motion.button>
                     </div>
                   </div>
 
@@ -419,13 +517,16 @@ export function MemesPostsPage({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="overflow-hidden"
-                        style={{ background: 'rgba(255, 255, 255, 0.02)' }}
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(40, 245, 204, 0.02) 0%, rgba(5, 20, 20, 0.5) 100%)',
+                          borderTop: '1px solid rgba(40, 245, 204, 0.06)',
+                        }}
                       >
-                        <div className="px-4 pb-4 pt-2 ml-[52px]">
-                          <div className="flex gap-3 mb-4">
-                            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                        <div className="p-5">
+                          <div className="flex items-start gap-3 mb-5">
+                            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
                               {currentUserAvatar ? (
                                 <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
                               ) : (
@@ -434,44 +535,66 @@ export function MemesPostsPage({
                                 </div>
                               )}
                             </div>
-                            <div className="flex-1 flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={newComments[post.id] || ''}
-                                onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
-                                placeholder="Post your reply"
-                                className="flex-1 bg-transparent text-white text-sm placeholder-[#71767b] outline-none py-2"
-                              />
+                            <div className="flex-1 flex items-center gap-3">
+                              <div 
+                                className="flex-1 relative rounded-xl overflow-hidden"
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.03)',
+                                  border: '1px solid rgba(40, 245, 204, 0.1)',
+                                }}
+                              >
+                                <input
+                                  type="text"
+                                  value={newComments[post.id] || ''}
+                                  onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                  onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
+                                  placeholder="Write a reply..."
+                                  className="w-full bg-transparent text-white text-sm placeholder-white/30 outline-none px-4 py-3"
+                                />
+                              </div>
                               <motion.button
-                                whileHover={{ scale: 1.05 }}
+                                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleSubmitComment(post.id)}
                                 disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
-                                className="px-4 py-1.5 rounded-full font-bold text-sm disabled:opacity-40 transition-all"
-                                style={{ background: '#04ad7b', color: '#000' }}
+                                className="p-3 rounded-xl disabled:opacity-30 transition-all duration-200"
+                                style={{
+                                  background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                                  boxShadow: '0 4px 12px rgba(40, 245, 204, 0.2)',
+                                }}
                               >
                                 {submittingComment === post.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <Loader2 className="w-4 h-4 text-black animate-spin" />
                                 ) : (
-                                  'Reply'
+                                  <Send className="w-4 h-4 text-black" />
                                 )}
                               </motion.button>
                             </div>
                           </div>
 
                           {loadingComments === post.id ? (
-                            <div className="flex items-center justify-center py-6">
-                              <Loader2 className="w-5 h-5 text-[#04ad7b] animate-spin" />
+                            <div className="flex items-center justify-center py-8">
+                              <div className="w-6 h-6 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
                             </div>
                           ) : (postComments[post.id]?.length || 0) === 0 ? (
-                            <div className="text-center py-6">
-                              <p className="text-[#71767b] text-sm">No replies yet. Start the conversation!</p>
+                            <div className="text-center py-8">
+                              <MessageCircle className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                              <p className="text-white/30 text-sm">No replies yet. Start the conversation!</p>
                             </div>
                           ) : (
                             <div className="space-y-4">
-                              {postComments[post.id]?.map((comment) => (
-                                <div key={comment.id} className="flex gap-3">
+                              {postComments[post.id]?.map((comment, cIndex) => (
+                                <motion.div 
+                                  key={comment.id} 
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: cIndex * 0.05 }}
+                                  className="flex items-start gap-3 p-3 rounded-xl"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.02)',
+                                    border: '1px solid rgba(40, 245, 204, 0.05)',
+                                  }}
+                                >
                                   <div
                                     className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
                                     style={{ background: 'linear-gradient(135deg, rgba(4, 173, 123, 0.6), rgba(40, 245, 204, 0.6))' }}
@@ -485,13 +608,13 @@ export function MemesPostsPage({
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-white font-bold text-sm">{comment.user?.username || 'Unknown'}</span>
-                                      <span className="text-[#71767b] text-xs">{formatTime(comment.createdAt)}</span>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-white font-medium text-sm">{comment.user?.username || 'Unknown'}</span>
+                                      <span className="text-white/30 text-xs">{formatTime(comment.createdAt)}</span>
                                     </div>
-                                    <p className="text-white text-sm mt-0.5 leading-relaxed">{comment.content}</p>
+                                    <p className="text-white/80 text-sm leading-relaxed">{comment.content}</p>
                                   </div>
-                                </div>
+                                </motion.div>
                               ))}
                             </div>
                           )}
@@ -513,46 +636,73 @@ export function MemesPostsPage({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-            style={{ background: 'rgba(91, 112, 131, 0.4)' }}
+            style={{ background: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)' }}
             onClick={() => !uploading && resetUpload()}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-xl rounded-2xl overflow-hidden"
-              style={{ background: '#000', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg rounded-2xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(145deg, rgba(10, 30, 30, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
+                border: '1px solid rgba(40, 245, 204, 0.15)',
+                boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
+              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                <button
-                  onClick={resetUpload}
-                  disabled={uploading}
-                  className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-                {uploadStep === 'details' && (
+              <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(40, 245, 204, 0.1)' }}>
+                <h3 className="text-white font-semibold text-lg">Create Post</h3>
+                <div className="flex items-center gap-3">
+                  {uploadStep === 'details' && (
+                    <motion.button
+                      whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleUpload}
+                      disabled={uploading}
+                      className="px-5 py-2 rounded-xl font-semibold text-sm disabled:opacity-50"
+                      style={{
+                        background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                        color: '#000',
+                      }}
+                    >
+                      {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Share'}
+                    </motion.button>
+                  )}
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleUpload}
+                    whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={resetUpload}
                     disabled={uploading}
-                    className="px-5 py-2 rounded-full font-bold text-sm disabled:opacity-50"
-                    style={{ background: '#04ad7b', color: '#000' }}
+                    className="p-2 rounded-xl transition-colors"
                   >
-                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Post'}
+                    <X className="w-5 h-5 text-white/60" />
                   </motion.button>
-                )}
+                </div>
               </div>
 
               {uploadStep === 'select' ? (
-                <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
-                  <div className="w-24 h-24 rounded-full bg-[#04ad7b]/10 flex items-center justify-center mb-6">
-                    <ImagePlus className="w-10 h-10 text-[#04ad7b]" />
-                  </div>
-                  <h3 className="text-white text-xl font-bold mb-2">Create a post</h3>
-                  <p className="text-[#71767b] text-sm mb-6 text-center">Share photos with your community</p>
+                <div className="p-10 flex flex-col items-center justify-center min-h-[350px]">
+                  <motion.div 
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', damping: 15 }}
+                    className="relative mb-8"
+                  >
+                    <div className="absolute inset-0 rounded-full bg-[#28f5cc]/20 animate-ping" style={{ animationDuration: '2s' }} />
+                    <div 
+                      className="relative w-24 h-24 rounded-full flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 173, 123, 0.1))',
+                        border: '2px solid rgba(40, 245, 204, 0.3)',
+                      }}
+                    >
+                      <ImagePlus className="w-10 h-10 text-[#28f5cc]" />
+                    </div>
+                  </motion.div>
+                  <h3 className="text-white text-xl font-semibold mb-2">Share Your Moment</h3>
+                  <p className="text-white/40 text-sm mb-8 text-center max-w-xs">Upload photos to share with your community</p>
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -561,19 +711,23 @@ export function MemesPostsPage({
                     className="hidden"
                   />
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)' }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-6 py-3 rounded-full font-bold"
-                    style={{ background: '#04ad7b', color: '#000' }}
+                    className="px-8 py-3.5 rounded-xl font-semibold"
+                    style={{
+                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                      color: '#000',
+                      boxShadow: '0 4px 20px rgba(40, 245, 204, 0.25)',
+                    }}
                   >
-                    Select photo
+                    Choose Photo
                   </motion.button>
                 </div>
               ) : (
-                <div className="p-4">
-                  <div className="flex gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
                       {currentUserAvatar ? (
                         <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -586,24 +740,32 @@ export function MemesPostsPage({
                       <textarea
                         value={uploadCaption}
                         onChange={(e) => setUploadCaption(e.target.value)}
-                        placeholder="What's happening?"
-                        className="w-full bg-transparent text-white text-lg placeholder-[#71767b] outline-none resize-none min-h-[80px]"
+                        placeholder="What's on your mind?"
+                        className="w-full bg-transparent text-white text-[15px] placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
                         autoFocus
                       />
                       {uploadPreview && (
-                        <div className="relative mt-3 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                          <img src={uploadPreview} alt="Preview" className="w-full max-h-[300px] object-contain bg-black" />
-                          <button
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="relative mt-4 rounded-xl overflow-hidden"
+                          style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+                        >
+                          <img src={uploadPreview} alt="Preview" className="w-full max-h-[280px] object-contain bg-black/50" />
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => {
                               setUploadFile(null);
                               setUploadPreview(null);
                               setUploadStep('select');
                             }}
-                            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 hover:bg-black flex items-center justify-center transition-colors"
+                            className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                            style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
                           >
                             <X className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
+                          </motion.button>
+                        </motion.div>
                       )}
                     </div>
                   </div>
@@ -611,10 +773,20 @@ export function MemesPostsPage({
               )}
 
               {uploading && (
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 rounded-full border-2 border-[#04ad7b] border-t-transparent animate-spin" />
-                  <p className="text-white font-medium">Posting...</p>
-                </div>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4"
+                  style={{ background: 'rgba(5, 20, 20, 0.95)', backdropFilter: 'blur(8px)' }}
+                >
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full border-3 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Sparkles className="w-6 h-6 text-[#28f5cc]" />
+                    </div>
+                  </div>
+                  <p className="text-white font-medium">Sharing your post...</p>
+                </motion.div>
               )}
             </motion.div>
           </motion.div>
