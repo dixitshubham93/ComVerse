@@ -420,32 +420,33 @@ export function MemesPostsPage({
                       </div>
                     </div>
 
-                    <motion.div 
-                      whileHover={{ scale: 1.01 }}
-                      className="mt-4 rounded-xl overflow-hidden cursor-pointer relative group/media"
-                      style={{ 
-                        border: '1px solid rgba(40, 245, 204, 0.08)',
-                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      <div className="relative aspect-square bg-black/50">
-                        {!imageLoaded[post.id] && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-8 h-8 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
-                          </div>
-                        )}
-                        <img
-                          src={post.mediaUrl}
-                          alt={post.caption || 'Post'}
-                          className={`w-full h-full object-cover transition-all duration-500 group-hover/media:scale-[1.02] ${
-                            imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
-                          }`}
-                          loading="lazy"
-                          onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover/media:opacity-100 transition-opacity duration-300" />
-                      </div>
-                    </motion.div>
+                      <motion.div 
+                        whileHover={{ scale: 1.01 }}
+                        className="mt-4 rounded-xl overflow-hidden cursor-pointer relative group/media"
+                        style={{ 
+                          border: '1px solid rgba(40, 245, 204, 0.08)',
+                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                          maxHeight: '480px'
+                        }}
+                      >
+                        <div className="relative w-full flex items-center justify-center bg-black/50" style={{ minHeight: '300px', maxHeight: '480px' }}>
+                          {!imageLoaded[post.id] && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                            </div>
+                          )}
+                          <img
+                            src={post.mediaUrl}
+                            alt={post.caption || 'Post'}
+                            className={`w-full h-auto max-h-[480px] object-contain transition-all duration-500 group-hover/media:scale-[1.02] ${
+                              imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
+                            }`}
+                            loading="lazy"
+                            onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover/media:opacity-100 transition-opacity duration-300" />
+                        </div>
+                      </motion.div>
 
                     <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px solid rgba(40, 245, 204, 0.06)' }}>
                       <div className="flex items-center gap-1">
