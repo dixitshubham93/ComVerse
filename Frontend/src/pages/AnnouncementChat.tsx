@@ -339,96 +339,94 @@ export function AnnouncementChat({
           </ScrollArea>
         </div>
 
-        {/* Input Bar */}
-        <div className="sticky bottom-0 z-20 px-6 py-4 border-t border-[#04372f]/50">
-          {canPost ? (
-            <div
-              className="glassmorphism rounded-xl p-4"
-              style={{
-                boxShadow: '0 -4px 30px rgba(40, 245, 204, 0.15)',
-                background: 'rgba(42, 52, 68, 0.9)',
-                backdropFilter: 'blur(20px)',
-              }}
-            >
-              {/* Image Preview */}
-              {imagePreview && (
-                <div className="mb-3 relative inline-block">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-xs rounded-lg border border-[#04372f]"
+          {/* Input Bar */}
+          <div className="sticky bottom-0 z-20 px-6 py-4 border-t border-[#04372f]/50">
+            {canPost ? (
+              <div
+                className="glassmorphism rounded-xl p-4"
+                style={{
+                  boxShadow: '0 -4px 30px rgba(40, 245, 204, 0.15)',
+                  background: 'rgba(42, 52, 68, 0.9)',
+                  backdropFilter: 'blur(20px)',
+                }}
+              >
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="mb-3 relative inline-block">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-w-xs rounded-lg border border-[#04372f]"
+                    />
+                    <button
+                      className="absolute top-2 right-2 p-1 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+                      onClick={() => setImagePreview(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  {/* Emoji Picker */}
+                  <EmojiPicker onSelectEmoji={(emoji) => setInputValue((prev) => prev + emoji)} />
+
+                  {/* Input Field */}
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={`Post announcement to #${roomName}`}
+                    className="flex-1 px-4 py-3 rounded-lg bg-[#04372f]/50 text-white placeholder-[#747c88] border border-[#04372f] focus:border-[#28f5cc] focus:outline-none transition-all duration-200"
+                    style={{
+                      boxShadow: '0 0 10px rgba(40, 245, 204, 0.1)',
+                    }}
+                  />
+
+                  {/* Image Upload */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
                   />
                   <button
-                    className="absolute top-2 right-2 p-1 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
-                    onClick={() => setImagePreview(null)}
+                    className="p-2 rounded-lg glassmorphism hover:border-[#28f5cc] transition-all duration-200"
+                    style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.2)' }}
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    ✕
+                    <ImageIcon className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
+                  </button>
+
+                  {/* Send Button */}
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() && !imagePreview}
+                    className="px-6 py-3 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black hover:opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)',
+                    }}
+                  >
+                    <Send className="w-5 h-5" />
                   </button>
                 </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                {/* Emoji Picker */}
-                <EmojiPicker onSelectEmoji={(emoji) => setInputValue((prev) => prev + emoji)} />
-
-                {/* Input Field */}
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={`Post announcement to #${roomName}`}
-                  className="flex-1 px-4 py-3 rounded-lg bg-[#04372f]/50 text-white placeholder-[#747c88] border border-[#04372f] focus:border-[#28f5cc] focus:outline-none transition-all duration-200"
-                  style={{
-                    boxShadow: '0 0 10px rgba(40, 245, 204, 0.1)',
-                  }}
-                />
-
-                {/* Image Upload */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-                <button
-                  className="p-2 rounded-lg glassmorphism hover:border-[#28f5cc] transition-all duration-200"
-                  style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.2)' }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <ImageIcon className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
-                </button>
-
-                {/* Send Button */}
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() && !imagePreview}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black hover:opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)',
-                  }}
-                >
-                  <Send className="w-5 h-5" />
-                </button>
               </div>
-            </div>
-          ) : (
-            // Disabled input for non-admin users
-            <div
-              className="glassmorphism rounded-xl p-4 opacity-60"
-              style={{
-                background: 'rgba(42, 52, 68, 0.6)',
-                backdropFilter: 'blur(20px)',
-              }}
-            >
-              <div className="flex items-center justify-center gap-3 py-2">
-                <Lock className="w-5 h-5 text-[#747c88]" />
-                <p className="text-[#747c88]">Only admins can post in this announcement channel.</p>
+            ) : (
+              <div
+                className="rounded-xl py-3 px-4"
+                style={{
+                  background: 'rgba(30, 40, 50, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <p className="text-[#8b9299] text-center text-sm">
+                  Only owner and admins can send messages
+                </p>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
       </div>
     </div>
   );
