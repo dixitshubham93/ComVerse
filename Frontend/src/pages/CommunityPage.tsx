@@ -178,7 +178,9 @@ export function CommunityPage() {
   // Handle join room - navigate to appropriate page
   const handleJoinRoom = (room: RoomDto) => {
     setExpandedRoom(null);
-    const frontendType = mapRoomTypeToFrontend(room.type);
+    const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
+    const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
+    
     const roomObj = {
       id: room.id.toString(),
       name: room.name,
