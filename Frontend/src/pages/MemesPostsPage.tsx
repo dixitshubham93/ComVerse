@@ -3,6 +3,7 @@ import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowL
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, PostDto, CommentDto } from '../api/postApi';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 interface MemesPostsPageProps {
   communityId: number;
@@ -15,9 +16,6 @@ interface MemesPostsPageProps {
   onGoToHome?: () => void;
   onGoToUserSpace?: () => void;
 }
-
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'sshubhamcloudinary';
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'avatar_unsigned';
 
 export function MemesPostsPage({
   communityId,
@@ -171,49 +169,26 @@ export function MemesPostsPage({
       setUploading(true);
   
       try {
-        console.log('Uploading to Cloudinary:', {
-          cloudName: CLOUDINARY_CLOUD_NAME,
-          preset: CLOUDINARY_UPLOAD_PRESET,
-          fileName: uploadFile.name,
-          fileSize: uploadFile.size
-        });
+        const secure_url = await uploadToCloudinary(uploadFile);
 
-        const formData = new FormData();
-        formData.append('file', uploadFile);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-  
-        const res = await fetch(
-            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-            { method: 'POST', body: formData }
-          );
-          const data = await res.json();
-  
-          if (!res.ok) {
-            console.error('Cloudinary error details:', data);
-            const msg = data.error?.message || JSON.stringify(data);
-            alert(`Cloudinary Upload Error: ${msg}\n\nTroubleshooting:\n1. Ensure your upload preset "${CLOUDINARY_UPLOAD_PRESET}" is set to "Unsigned" in Cloudinary settings.\n2. Verify Cloud Name "${CLOUDINARY_CLOUD_NAME}" is correct.`);
-            setUploading(false);
-            return;
+        if (secure_url) {
+          const post = await createPost(roomId, {
+            mediaUrl: secure_url,
+            caption: uploadCaption || undefined,
+            type: 'IMAGE',
+          });
+          if (post) {
+            setPosts(prev => [post, ...prev]);
           }
-
-
-        if (data.secure_url) {
-        const post = await createPost(roomId, {
-          mediaUrl: data.secure_url,
-          caption: uploadCaption || undefined,
-          type: 'IMAGE',
-        });
-        if (post) {
-          setPosts(prev => [post, ...prev]);
+          resetUpload();
         }
-        resetUpload();
+      } catch (error: any) {
+        console.error('Upload failed:', error);
+        alert(`Cloudinary Upload Error: ${error.message || 'Unknown error'}\n\nPlease check your Cloudinary configuration in src/utils/cloudinary.ts`);
+      } finally {
+        setUploading(false);
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-    }
-
-    setUploading(false);
-  };
+    };
 
   const resetUpload = () => {
     setShowUploadModal(false);
