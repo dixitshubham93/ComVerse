@@ -239,7 +239,7 @@ export function MemesPostsPage({
             borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
           }}
         >
-            <div className="max-w-[540px] mx-auto px-6 py-4">
+            <div className="max-w-[600px] mx-auto px-8 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <motion.button 
@@ -267,7 +267,7 @@ export function MemesPostsPage({
             </div>
           </motion.header>
 
-            <div className="max-w-[540px] mx-auto px-4 py-6">
+            <div className="max-w-[600px] mx-auto px-8 md:px-12 py-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -412,11 +412,11 @@ export function MemesPostsPage({
                           </motion.button>
                         </div>
 
-                        {post.caption && (
-                          <p className="text-white/90 text-[16px] mt-2 leading-relaxed whitespace-pre-wrap">
-                            {post.caption}
-                          </p>
-                        )}
+                          {post.caption && (
+                            <p className="text-white/90 text-[16px] mt-2 mb-2 px-2 font-medium leading-relaxed tracking-wide whitespace-pre-wrap">
+                              {post.caption}
+                            </p>
+                          )}
                       </div>
                     </div>
 
