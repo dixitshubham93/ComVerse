@@ -468,8 +468,8 @@ export function MemesPostsPage({
                   />
                 </div>
 
-                <div className="flex-1 md:w-[400px] md:flex-none flex flex-col overflow-hidden" style={{ background: 'rgba(20, 20, 30, 1)' }}>
-                <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
+                <div className="flex-1 md:w-[400px] md:flex-none flex flex-col" style={{ background: 'rgba(20, 20, 30, 1)', minHeight: '50vh' }}>
+                <div className="p-4 border-b flex items-center gap-3 flex-shrink-0" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
@@ -554,44 +554,45 @@ export function MemesPostsPage({
                   )}
                 </div>
 
-                <div className="p-4 border-t" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
-                  <div className="flex items-center gap-4 mb-2">
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleLike(selectedPost)}
-                      disabled={likeLoading === selectedPost.id}
-                      className="disabled:opacity-50"
-                    >
-                      <Heart
-                        className={`w-6 h-6 transition-all ${
-                          isLikedByUser(selectedPost) ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-400'
-                        }`}
-                      />
-                    </motion.button>
-                    <MessageCircle className="w-6 h-6 text-white" />
-                  </div>
-                  <p className="text-white text-sm font-bold mb-3">
-                    {selectedPost.likeCount} likes
-                  </p>
+                <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'rgba(4, 173, 123, 0.2)', background: 'rgba(20, 20, 30, 1)' }}>
+                    <div className="flex items-center gap-4 mb-2">
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleLike(selectedPost)}
+                        disabled={likeLoading === selectedPost.id}
+                        className="disabled:opacity-50"
+                      >
+                        <Heart
+                          className={`w-6 h-6 transition-all ${
+                            isLikedByUser(selectedPost) ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-400'
+                          }`}
+                        />
+                      </motion.button>
+                      <MessageCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-white text-sm font-bold mb-3">
+                      {selectedPost.likeCount} likes
+                    </p>
 
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-                      placeholder="Add a comment..."
-                      className="flex-1 bg-transparent text-white text-sm placeholder-[#747c88] outline-none"
-                    />
-                    <button
-                      onClick={handleSubmitComment}
-                      disabled={!newComment.trim() || submittingComment}
-                      className="text-[#04ad7b] font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:text-[#28f5cc] transition-colors"
-                    >
-                      {submittingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Post'}
-                    </button>
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(4, 173, 123, 0.2)' }}>
+                      <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
+                        placeholder="Add a comment..."
+                        className="flex-1 bg-transparent text-white text-sm placeholder-[#747c88] outline-none"
+                      />
+                      <button
+                        onClick={handleSubmitComment}
+                        disabled={!newComment.trim() || submittingComment}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)', color: '#0a0a0f' }}
+                      >
+                        {submittingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4" /> Post</>}
+                      </button>
+                    </div>
                   </div>
-                </div>
               </div>
             </motion.div>
           </motion.div>
