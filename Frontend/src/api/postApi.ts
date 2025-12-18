@@ -1,4 +1,8 @@
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+let API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+API_BASE_URL = API_BASE_URL.replace(/\/$/, '');
+if (API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -4);
+}
 
 export interface PostDto {
   id: number;

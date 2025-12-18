@@ -15,8 +15,8 @@ interface MemesPostsPageProps {
   onGoToUserSpace?: () => void;
 }
 
-const CLOUDINARY_CLOUD_NAME = 'sshubhamcloudinary';
-const CLOUDINARY_UPLOAD_PRESET = 'comverse_unsigned';
+const CLOUDINARY_CLOUD_NAME = (import.meta as any).env?.VITE_CLOUDINARY_CLOUD_NAME || 'sshubhamcloudinary';
+const CLOUDINARY_UPLOAD_PRESET = (import.meta as any).env?.VITE_CLOUDINARY_UPLOAD_PRESET || 'avatar_unsigned';
 
 const currentUser = {
   name: 'Alex Rivera',
