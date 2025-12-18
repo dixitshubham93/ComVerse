@@ -174,12 +174,19 @@ export function MemesPostsPage({
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
       const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: 'POST', body: formData }
-      );
-      const data = await res.json();
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+          { method: 'POST', body: formData }
+        );
+        const data = await res.json();
 
-      if (data.secure_url) {
+        if (!res.ok) {
+          console.error('Cloudinary error:', data);
+          alert(`Upload failed: ${data.error?.message || 'Unknown error'}. Please check your Cloudinary upload preset is set to "unsigned".`);
+          setUploading(false);
+          return;
+        }
+
+        if (data.secure_url) {
         const post = await createPost(roomId, {
           mediaUrl: data.secure_url,
           caption: uploadCaption || undefined,
