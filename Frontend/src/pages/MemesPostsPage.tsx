@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, MoreHorizontal } from 'lucide-react';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, PostDto, CommentDto } from '../api/postApi';
@@ -30,14 +30,13 @@ export function MemesPostsPage({
 }: MemesPostsPageProps) {
   const [posts, setPosts] = useState<PostDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<PostDto | null>(null);
-  const [comments, setComments] = useState<CommentDto[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<number | null>(null);
+  const [postComments, setPostComments] = useState<Record<number, CommentDto[]>>({});
+  const [loadingComments, setLoadingComments] = useState<number | null>(null);
+  const [newComments, setNewComments] = useState<Record<number, string>>({});
+  const [submittingComment, setSubmittingComment] = useState<number | null>(null);
   const [likeLoading, setLikeLoading] = useState<number | null>(null);
   
-  // Premium Upload State
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadStep, setUploadStep] = useState<'select' | 'details'>('select');
   const [uploadCaption, setUploadCaption] = useState('');
@@ -48,14 +47,14 @@ export function MemesPostsPage({
   
   const [imageLoaded, setImageLoaded] = useState<Record<number, boolean>>({});
 
-    const currentUserId = Number(localStorage.getItem('userId')) || 0;
-    const currentUsername = localStorage.getItem('username') || 'User';
-    const currentUserAvatar = localStorage.getItem('avatarUrl') || 'https://via.placeholder.com/150';
+  const currentUserId = Number(localStorage.getItem('userId')) || 0;
+  const currentUsername = localStorage.getItem('username') || 'User';
+  const currentUserAvatar = localStorage.getItem('avatarUrl') || 'https://via.placeholder.com/150';
 
-    const currentUser = {
-      name: currentUsername,
-      avatar: currentUserAvatar
-    };
+  const currentUser = {
+    name: currentUsername,
+    avatar: currentUserAvatar
+  };
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -98,20 +97,6 @@ export function MemesPostsPage({
       return p;
     }));
 
-    if (selectedPost?.id === post.id) {
-      setSelectedPost(prev => {
-        if (!prev) return prev;
-        const newLikes = alreadyLiked
-          ? (prev.likes || []).filter(l => l.userId !== currentUserId)
-          : [...(prev.likes || []), { id: Date.now(), postId: prev.id, userId: currentUserId }];
-        return {
-          ...prev,
-          likes: newLikes,
-          likeCount: newLikes.length,
-        };
-      });
-    }
-
     try {
       if (alreadyLiked) {
         await unlikePost(post.id);
@@ -125,32 +110,42 @@ export function MemesPostsPage({
     setLikeLoading(null);
   };
 
-  const handleOpenPost = async (post: PostDto) => {
-    setSelectedPost(post);
-    setLoadingComments(true);
-    const data = await getComments(post.id);
-    setComments(data);
-    setLoadingComments(false);
+  const handleToggleComments = async (postId: number) => {
+    if (expandedComments === postId) {
+      setExpandedComments(null);
+      return;
+    }
+    
+    setExpandedComments(postId);
+    
+    if (!postComments[postId]) {
+      setLoadingComments(postId);
+      const data = await getComments(postId);
+      setPostComments(prev => ({ ...prev, [postId]: data }));
+      setLoadingComments(null);
+    }
   };
 
-  const handleSubmitComment = async () => {
-    if (!selectedPost || !newComment.trim() || submittingComment) return;
-    setSubmittingComment(true);
+  const handleSubmitComment = async (postId: number) => {
+    const commentText = newComments[postId]?.trim();
+    if (!commentText || submittingComment === postId) return;
+    
+    setSubmittingComment(postId);
 
-    const comment = await createComment(selectedPost.id, newComment.trim());
+    const comment = await createComment(postId, commentText);
     if (comment) {
-      setComments(prev => [...prev, comment]);
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), comment]
+      }));
       setPosts(prev => prev.map(p => 
-        p.id === selectedPost.id 
+        p.id === postId 
           ? { ...p, commentCount: (p.commentCount || 0) + 1 }
           : p
       ));
-      setSelectedPost(prev => prev ? { ...prev, commentCount: (prev.commentCount || 0) + 1 } : prev);
-      setNewComment('');
-    } else {
-      alert('Failed to post comment. Please try again.');
+      setNewComments(prev => ({ ...prev, [postId]: '' }));
     }
-    setSubmittingComment(false);
+    setSubmittingComment(null);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,31 +161,31 @@ export function MemesPostsPage({
     }
   };
 
-    const handleUpload = async () => {
-      if (!uploadFile || uploading) return;
-      setUploading(true);
-  
-      try {
-        const secure_url = await uploadToCloudinary(uploadFile);
+  const handleUpload = async () => {
+    if (!uploadFile || uploading) return;
+    setUploading(true);
 
-        if (secure_url) {
-          const post = await createPost(roomId, {
-            mediaUrl: secure_url,
-            caption: uploadCaption || undefined,
-            type: 'IMAGE',
-          });
-          if (post) {
-            setPosts(prev => [post, ...prev]);
-          }
-          resetUpload();
+    try {
+      const secure_url = await uploadToCloudinary(uploadFile);
+
+      if (secure_url) {
+        const post = await createPost(roomId, {
+          mediaUrl: secure_url,
+          caption: uploadCaption || undefined,
+          type: 'IMAGE',
+        });
+        if (post) {
+          setPosts(prev => [post, ...prev]);
         }
-      } catch (error: any) {
-        console.error('Upload failed:', error);
-        alert(`Cloudinary Upload Error: ${error.message || 'Unknown error'}\n\nPlease check your Cloudinary configuration in src/utils/cloudinary.ts`);
-      } finally {
-        setUploading(false);
+        resetUpload();
       }
-    };
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      alert(`Cloudinary Upload Error: ${error.message || 'Unknown error'}\n\nPlease check your Cloudinary configuration in src/utils/cloudinary.ts`);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const resetUpload = () => {
     setShowUploadModal(false);
@@ -210,26 +205,14 @@ export function MemesPostsPage({
     const days = Math.floor(diff / 86400000);
 
     if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden relative" style={{ background: '#0a0a0f' }}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            background: `
-              radial-gradient(ellipse at 30% 40%, rgba(4, 173, 123, 0.15) 0%, transparent 60%),
-              radial-gradient(ellipse at 70% 60%, rgba(40, 245, 204, 0.1) 0%, transparent 60%)
-            `,
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen w-full overflow-hidden relative" style={{ background: '#000000' }}>
       <CommunitySidebar
         communityId={communityId}
         communityName={communityName}
@@ -244,49 +227,63 @@ export function MemesPostsPage({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 md:px-8 py-4 md:py-5 border-b sticky top-0 z-30"
+          className="px-4 py-3 border-b sticky top-0 z-30"
           style={{
-            background: 'rgba(10, 10, 15, 0.85)',
-            backdropFilter: 'blur(20px)',
-            borderColor: 'rgba(4, 173, 123, 0.2)',
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(12px)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
-          <div className="flex items-center justify-between max-w-3xl mx-auto">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between max-w-[600px] mx-auto">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={onBack}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors md:hidden"
+                className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-white" />
               </button>
               <div>
-                <div className="flex items-center gap-2 mb-1 text-xs">
-                  <span className="text-[#747c88]">{communityName}</span>
-                  <ChevronRight className="w-3 h-3 text-[#747c88]" />
-                  <span className="text-[#04ad7b]">{roomName}</span>
-                </div>
-                <h1 className="text-white text-lg md:text-xl font-medium">
-                  {roomName}
-                </h1>
+                <h1 className="text-white text-lg font-bold">{roomName}</h1>
+                <p className="text-[#71767b] text-xs">{communityName}</p>
               </div>
             </div>
+          </div>
+        </motion.div>
+
+        <div className="max-w-[600px] mx-auto border-x" style={{ borderColor: 'rgba(255, 255, 255, 0.1)', minHeight: 'calc(100vh - 57px)' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-4 border-b flex items-center gap-3"
+            style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+          >
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+              {currentUserAvatar ? (
+                <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-black font-bold">
+                  {currentUsername.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex-1 text-left px-4 py-3 rounded-full text-[#71767b] hover:bg-white/5 transition-colors"
+              style={{ border: '1px solid rgba(255, 255, 255, 0.15)' }}
+            >
+              Share something...
+            </button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-              style={{
-                background: 'linear-gradient(135deg, #04ad7b, #28f5cc)',
-                color: '#0a0a0f',
-              }}
+              className="px-5 py-2.5 rounded-full font-bold text-sm transition-all"
+              style={{ background: '#04ad7b', color: '#000' }}
             >
-              <ImagePlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Post</span>
+              Post
             </motion.button>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="w-8 h-8 text-[#04ad7b] animate-spin" />
@@ -295,309 +292,219 @@ export function MemesPostsPage({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-20"
+              className="text-center py-16 px-8"
             >
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(4, 173, 123, 0.1)' }}>
+                <ImagePlus className="w-8 h-8 text-[#04ad7b]" />
+              </div>
+              <h3 className="text-white text-xl font-bold mb-2">No posts yet</h3>
+              <p className="text-[#71767b] text-sm mb-6">When someone posts, you'll see it here.</p>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setShowUploadModal(true)}
-                className="w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center transition-all cursor-pointer group"
-                style={{
-                  background: 'rgba(4, 173, 123, 0.1)',
-                  border: '2px solid rgba(4, 173, 123, 0.3)',
-                }}
+                className="px-6 py-3 rounded-full font-bold"
+                style={{ background: '#04ad7b', color: '#000' }}
               >
-                <ImagePlus className="w-10 h-10 text-[#04ad7b] group-hover:scale-110 transition-transform" />
+                Create first post
               </motion.button>
-              <p className="text-[#747c88] text-lg mb-2">No posts yet</p>
-              <p className="text-[#747c88]/60 text-sm">Be the first to share something!</p>
             </motion.div>
           ) : (
-            <AnimatePresence>
+            <div>
               {posts.map((post, index) => (
-                <motion.div
+                <motion.article
                   key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="rounded-2xl overflow-hidden group"
-                  style={{
-                    background: 'rgba(20, 20, 30, 0.6)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(4, 173, 123, 0.15)',
-                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border-b"
+                  style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                 >
-                  <div className="p-4 flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium overflow-hidden"
-                      style={{
-                        background: 'linear-gradient(135deg, #04ad7b, #28f5cc)',
-                      }}
-                    >
-                      {post.user?.avatarUrl ? (
-                        <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[#0a0a0f]">
-                          {post.user?.username?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">
-                        {post.user?.username || 'Unknown'}
-                      </p>
-                      <p className="text-[#747c88] text-xs">{formatTime(post.createdAt)}</p>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="relative aspect-square bg-black/30 cursor-pointer"
-                    onClick={() => handleOpenPost(post)}
-                  >
-                    {!imageLoaded[post.id] && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 text-[#04ad7b] animate-spin" />
-                      </div>
-                    )}
-                    <img
-                      src={post.mediaUrl}
-                      alt={post.caption || 'Post'}
-                      className={`w-full h-full object-cover transition-all duration-500 ${
-                        imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      loading="lazy"
-                      onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
-                    />
-                    <div 
-                      className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
-                    >
-                      <div className="flex items-center gap-6 text-white">
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-6 h-6" fill="white" />
-                          <span className="font-medium">{post.likeCount}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MessageCircle className="w-6 h-6" fill="white" />
-                          <span className="font-medium">{post.commentCount}</span>
+                  <div className="p-4">
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0">
+                        <div
+                          className="w-10 h-10 rounded-full overflow-hidden"
+                          style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                        >
+                          {post.user?.avatarUrl ? (
+                            <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-black font-bold text-sm">
+                              {post.user?.username?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                          )}
                         </div>
                       </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-bold text-[15px] hover:underline cursor-pointer">
+                            {post.user?.username || 'Unknown'}
+                          </span>
+                          <span className="text-[#71767b] text-sm">·</span>
+                          <span className="text-[#71767b] text-sm">{formatTime(post.createdAt)}</span>
+                          <button className="ml-auto p-1.5 -mr-1.5 hover:bg-[#04ad7b]/10 rounded-full transition-colors group">
+                            <MoreHorizontal className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b]" />
+                          </button>
+                        </div>
+
+                        {post.caption && (
+                          <p className="text-white text-[15px] mt-1 leading-relaxed whitespace-pre-wrap">
+                            {post.caption}
+                          </p>
+                        )}
+
+                        <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                          <div className="relative aspect-square bg-black">
+                            {!imageLoaded[post.id] && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-[#16181c]">
+                                <Loader2 className="w-6 h-6 text-[#04ad7b] animate-spin" />
+                              </div>
+                            )}
+                            <img
+                              src={post.mediaUrl}
+                              alt={post.caption || 'Post'}
+                              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                                imageLoaded[post.id] ? 'opacity-100' : 'opacity-0'
+                              }`}
+                              loading="lazy"
+                              onLoad={() => setImageLoaded(prev => ({ ...prev, [post.id]: true }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3 max-w-[425px]">
+                          <button
+                            onClick={() => handleToggleComments(post.id)}
+                            className="flex items-center gap-2 group -ml-2 p-2 rounded-full hover:bg-[#04ad7b]/10 transition-colors"
+                          >
+                            <MessageCircle className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors" />
+                            <span className="text-[13px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors min-w-[20px]">
+                              {post.commentCount || 0}
+                            </span>
+                          </button>
+
+                          <motion.button
+                            whileTap={{ scale: 0.8 }}
+                            onClick={() => handleLike(post)}
+                            disabled={likeLoading === post.id}
+                            className="flex items-center gap-2 group p-2 rounded-full hover:bg-pink-500/10 transition-colors disabled:opacity-50"
+                          >
+                            <Heart
+                              className={`w-[18px] h-[18px] transition-all ${
+                                isLikedByUser(post)
+                                  ? 'text-pink-500 fill-pink-500'
+                                  : 'text-[#71767b] group-hover:text-pink-500'
+                              }`}
+                            />
+                            <span className={`text-[13px] transition-colors min-w-[20px] ${
+                              isLikedByUser(post) ? 'text-pink-500' : 'text-[#71767b] group-hover:text-pink-500'
+                            }`}>
+                              {post.likeCount || 0}
+                            </span>
+                          </motion.button>
+
+                          <button className="flex items-center gap-2 group p-2 rounded-full hover:bg-[#04ad7b]/10 transition-colors">
+                            <Bookmark className="w-[18px] h-[18px] text-[#71767b] group-hover:text-[#04ad7b] transition-colors" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-center gap-4">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleLike(post)}
-                        disabled={likeLoading === post.id}
-                        className="flex items-center gap-2 transition-colors disabled:opacity-50"
+                  <AnimatePresence>
+                    {expandedComments === post.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                        style={{ background: 'rgba(255, 255, 255, 0.02)' }}
                       >
-                        <Heart
-                          className={`w-6 h-6 transition-all ${
-                            isLikedByUser(post) ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-400'
-                          }`}
-                        />
-                        <span className="text-white text-sm">{post.likeCount}</span>
-                      </motion.button>
-                      <button
-                        onClick={() => handleOpenPost(post)}
-                        className="flex items-center gap-2 text-white hover:text-[#04ad7b] transition-colors"
-                      >
-                        <MessageCircle className="w-6 h-6" />
-                        <span className="text-sm">{post.commentCount}</span>
-                      </button>
-                    </div>
+                        <div className="px-4 pb-4 pt-2 ml-[52px]">
+                          <div className="flex gap-3 mb-4">
+                            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                              {currentUserAvatar ? (
+                                <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
+                                  {currentUsername.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={newComments[post.id] || ''}
+                                onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
+                                placeholder="Post your reply"
+                                className="flex-1 bg-transparent text-white text-sm placeholder-[#71767b] outline-none py-2"
+                              />
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSubmitComment(post.id)}
+                                disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
+                                className="px-4 py-1.5 rounded-full font-bold text-sm disabled:opacity-40 transition-all"
+                                style={{ background: '#04ad7b', color: '#000' }}
+                              >
+                                {submittingComment === post.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  'Reply'
+                                )}
+                              </motion.button>
+                            </div>
+                          </div>
 
-                    {post.caption && (
-                      <p className="text-white/90 text-sm">
-                        <span className="font-medium text-white mr-2">{post.user?.username}</span>
-                        {post.caption}
-                      </p>
+                          {loadingComments === post.id ? (
+                            <div className="flex items-center justify-center py-6">
+                              <Loader2 className="w-5 h-5 text-[#04ad7b] animate-spin" />
+                            </div>
+                          ) : (postComments[post.id]?.length || 0) === 0 ? (
+                            <div className="text-center py-6">
+                              <p className="text-[#71767b] text-sm">No replies yet. Start the conversation!</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {postComments[post.id]?.map((comment) => (
+                                <div key={comment.id} className="flex gap-3">
+                                  <div
+                                    className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
+                                    style={{ background: 'linear-gradient(135deg, rgba(4, 173, 123, 0.6), rgba(40, 245, 204, 0.6))' }}
+                                  >
+                                    {comment.user?.avatarUrl ? (
+                                      <img src={comment.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                                        {comment.user?.username?.charAt(0).toUpperCase() || '?'}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-white font-bold text-sm">{comment.user?.username || 'Unknown'}</span>
+                                      <span className="text-[#71767b] text-xs">{formatTime(comment.createdAt)}</span>
+                                    </div>
+                                    <p className="text-white text-sm mt-0.5 leading-relaxed">{comment.content}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
                     )}
-
-                    {post.commentCount > 0 && (
-                      <button
-                        onClick={() => handleOpenPost(post)}
-                        className="text-[#747c88] text-sm hover:text-white transition-colors"
-                      >
-                        View all {post.commentCount} comments
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
+                  </AnimatePresence>
+                </motion.article>
               ))}
-            </AnimatePresence>
+            </div>
           )}
         </div>
       </div>
-
-      <AnimatePresence>
-        {selectedPost && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(10px)' }}
-            onClick={() => setSelectedPost(null)}
-          >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="relative w-full max-w-5xl h-[90vh] flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-2xl"
-                style={{
-                  background: '#0a0a0f',
-                  border: '1px solid rgba(4, 173, 123, 0.3)',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => setSelectedPost(null)}
-                  className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 md:hidden"
-                  style={{ background: 'rgba(0,0,0,0.6)' }}
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-
-                <div className="h-[40vh] md:h-auto md:flex-1 bg-black flex items-center justify-center flex-shrink-0">
-                  <img
-                    src={selectedPost.mediaUrl}
-                    alt={selectedPost.caption || 'Post'}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                <div className="flex-1 md:w-[400px] md:flex-none flex flex-col" style={{ background: 'rgba(20, 20, 30, 1)', minHeight: '50vh' }}>
-                <div className="p-4 border-b flex items-center gap-3 flex-shrink-0" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-                  >
-                    {selectedPost.user?.avatarUrl ? (
-                      <img src={selectedPost.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-[#0a0a0f]">
-                        {selectedPost.user?.username?.charAt(0).toUpperCase() || '?'}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm font-medium">{selectedPost.user?.username || 'Unknown'}</p>
-                    <p className="text-[#747c88] text-xs">{formatTime(selectedPost.createdAt)}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedPost(null)}
-                    className="hidden md:flex w-8 h-8 rounded-full items-center justify-center hover:bg-white/10 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-[#747c88]" />
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-                  {selectedPost.caption && (
-                    <div className="flex gap-3">
-                      <div
-                        className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-medium overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-                      >
-                        {selectedPost.user?.avatarUrl ? (
-                          <img src={selectedPost.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-[#0a0a0f]">
-                            {selectedPost.user?.username?.charAt(0).toUpperCase() || '?'}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-white text-sm">
-                          <span className="font-medium mr-2">{selectedPost.user?.username}</span>
-                          {selectedPost.caption}
-                        </p>
-                        <p className="text-[#747c88] text-xs mt-1">{formatTime(selectedPost.createdAt)}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {loadingComments ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 text-[#04ad7b] animate-spin" />
-                    </div>
-                  ) : comments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-[#747c88] text-sm">No comments yet</p>
-                    </div>
-                  ) : (
-                    comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-medium overflow-hidden"
-                          style={{ background: 'linear-gradient(135deg, rgba(4, 173, 123, 0.5), rgba(40, 245, 204, 0.5))' }}
-                        >
-                          {comment.user?.avatarUrl ? (
-                            <img src={comment.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-white">
-                              {comment.user?.username?.charAt(0).toUpperCase() || '?'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-white text-sm">
-                            <span className="font-medium mr-2">{comment.user?.username || 'Unknown'}</span>
-                            {comment.content}
-                          </p>
-                          <p className="text-[#747c88] text-xs mt-1">{formatTime(comment.createdAt)}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'rgba(4, 173, 123, 0.2)', background: 'rgba(20, 20, 30, 1)' }}>
-                    <div className="flex items-center gap-4 mb-2">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleLike(selectedPost)}
-                        disabled={likeLoading === selectedPost.id}
-                        className="disabled:opacity-50"
-                      >
-                        <Heart
-                          className={`w-6 h-6 transition-all ${
-                            isLikedByUser(selectedPost) ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-400'
-                          }`}
-                        />
-                      </motion.button>
-                      <MessageCircle className="w-6 h-6 text-white" />
-                    </div>
-                    <p className="text-white text-sm font-bold mb-3">
-                      {selectedPost.likeCount} likes
-                    </p>
-
-                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(4, 173, 123, 0.2)' }}>
-                      <input
-                        type="text"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-                        placeholder="Add a comment..."
-                        className="flex-1 bg-transparent text-white text-sm placeholder-[#747c88] outline-none"
-                      />
-                      <button
-                        onClick={handleSubmitComment}
-                        disabled={!newComment.trim() || submittingComment}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)', color: '#0a0a0f' }}
-                      >
-                        {submittingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4" /> Post</>}
-                      </button>
-                    </div>
-                  </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {showUploadModal && (
@@ -606,122 +513,107 @@ export function MemesPostsPage({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-            style={{ background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)' }}
+            style={{ background: 'rgba(91, 112, 131, 0.4)' }}
             onClick={() => !uploading && resetUpload()}
           >
             <motion.div
-              initial={{ scale: 1.05, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 1.05, opacity: 0 }}
-              className={`relative overflow-hidden transition-all duration-300 shadow-2xl ${
-                uploadStep === 'select' ? 'w-full max-w-md aspect-square' : 'w-full max-w-4xl'
-              }`}
-              style={{
-                background: '#1a1a20',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-xl rounded-2xl overflow-hidden"
+              style={{ background: '#000', border: '1px solid rgba(255, 255, 255, 0.1)' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="h-12 border-b flex items-center justify-between px-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+              <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <button
+                  onClick={resetUpload}
+                  disabled={uploading}
+                  className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
                 {uploadStep === 'details' && (
-                  <button 
-                    onClick={() => setUploadStep('select')}
-                    className="text-white hover:text-[#04ad7b] transition-colors"
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-                )}
-                <h2 className="text-white font-semibold flex-1 text-center">Create new post</h2>
-                {uploadStep === 'details' ? (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="text-[#04ad7b] font-bold hover:text-[#28f5cc] transition-colors disabled:opacity-50"
+                    className="px-5 py-2 rounded-full font-bold text-sm disabled:opacity-50"
+                    style={{ background: '#04ad7b', color: '#000' }}
                   >
-                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Share'}
-                  </button>
-                ) : (
-                  <button 
-                    onClick={resetUpload}
-                    className="text-white/50 hover:text-white transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Post'}
+                  </motion.button>
                 )}
               </div>
 
-              {/* Content */}
-              <div className={`flex flex-col md:flex-row h-[500px] md:h-[600px]`}>
-                {uploadStep === 'select' ? (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-6 p-10 text-center">
-                    <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-2">
-                      <ImagePlus className="w-12 h-12 text-white/40" />
-                    </div>
-                    <p className="text-xl text-white font-light">Drag photos and videos here</p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileSelect}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-6 py-2 rounded-lg bg-[#0095f6] hover:bg-[#1877f2] text-white font-semibold text-sm transition-colors"
-                    >
-                      Select from computer
-                    </button>
+              {uploadStep === 'select' ? (
+                <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
+                  <div className="w-24 h-24 rounded-full bg-[#04ad7b]/10 flex items-center justify-center mb-6">
+                    <ImagePlus className="w-10 h-10 text-[#04ad7b]" />
                   </div>
-                ) : (
-                  <>
-                    {/* Preview Area */}
-                    <div className="flex-[1.5] bg-black flex items-center justify-center overflow-hidden">
-                      <img 
-                        src={uploadPreview!} 
-                        alt="Preview" 
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-
-                    {/* Form Area */}
-                    <div className="flex-1 border-l flex flex-col bg-[#1a1a20]" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                      <div className="p-4 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[1.5px]">
-                          <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
-                            {currentUserAvatar ? (
-                              <img src={currentUserAvatar} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-white text-xs">{currentUsername.charAt(0)}</span>
-                            )}
-                          </div>
+                  <h3 className="text-white text-xl font-bold mb-2">Create a post</h3>
+                  <p className="text-[#71767b] text-sm mb-6 text-center">Share photos with your community</p>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-3 rounded-full font-bold"
+                    style={{ background: '#04ad7b', color: '#000' }}
+                  >
+                    Select photo
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <div className="flex gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                      {currentUserAvatar ? (
+                        <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-black font-bold">
+                          {currentUsername.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-white font-semibold text-sm">{currentUsername}</span>
-                      </div>
-
+                      )}
+                    </div>
+                    <div className="flex-1">
                       <textarea
                         value={uploadCaption}
                         onChange={(e) => setUploadCaption(e.target.value)}
-                        placeholder="Write a caption..."
-                        className="flex-1 w-full bg-transparent text-white p-4 outline-none resize-none text-sm placeholder-white/30"
+                        placeholder="What's happening?"
+                        className="w-full bg-transparent text-white text-lg placeholder-[#71767b] outline-none resize-none min-h-[80px]"
+                        autoFocus
                       />
-
-                      <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                        <div className="flex items-center justify-between text-white/50 text-xs">
-                          <span>Accessibility</span>
-                          <ChevronRight className="w-4 h-4" />
+                      {uploadPreview && (
+                        <div className="relative mt-3 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                          <img src={uploadPreview} alt="Preview" className="w-full max-h-[300px] object-contain bg-black" />
+                          <button
+                            onClick={() => {
+                              setUploadFile(null);
+                              setUploadPreview(null);
+                              setUploadStep('select');
+                            }}
+                            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 hover:bg-black flex items-center justify-center transition-colors"
+                          >
+                            <X className="w-4 h-4 text-white" />
+                          </button>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                </div>
+              )}
 
               {uploading && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
                   <div className="w-12 h-12 rounded-full border-2 border-[#04ad7b] border-t-transparent animate-spin" />
-                  <p className="text-white font-medium">Sharing your post...</p>
+                  <p className="text-white font-medium">Posting...</p>
                 </div>
               )}
             </motion.div>
