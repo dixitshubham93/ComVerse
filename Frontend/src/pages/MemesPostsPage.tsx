@@ -279,17 +279,17 @@ export function MemesPostsPage({
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(40, 245, 204, 0.1)',
               }}
             >
-              <div className="flex items-start gap-4">
-                <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#28f5cc]/30 ring-offset-2 ring-offset-[#051414]">
-                    {currentUserAvatar ? (
-                      <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-black font-bold text-[15px]" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-                        {currentUsername.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
+                <div className="flex items-start gap-4">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-[#28f5cc]/30 ring-offset-2 ring-offset-[#051414]">
+                      {currentUserAvatar ? (
+                        <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-black font-bold text-[13px]" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                          {currentUsername.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#28f5cc] flex items-center justify-center">
                     <Sparkles className="w-2 h-2 text-black" />
                   </div>
@@ -379,14 +379,14 @@ export function MemesPostsPage({
                 >
                   <div className="p-5">
                     <div className="flex items-start gap-4">
-                        <motion.div 
-                          whileHover={{ scale: 1.05 }}
-                          className="flex-shrink-0 cursor-pointer"
-                        >
-                          <div
-                            className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#28f5cc]/30 transition-all duration-300"
-                            style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                          <motion.div 
+                            whileHover={{ scale: 1.05 }}
+                            className="flex-shrink-0 cursor-pointer"
                           >
+                            <div
+                              className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#28f5cc]/30 transition-all duration-300"
+                              style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                            >
                             {post.user?.avatarUrl ? (
                               <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -724,18 +724,18 @@ export function MemesPostsPage({
                     Choose Photo
                   </motion.button>
                 </div>
-              ) : (
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-                      {currentUserAvatar ? (
-                        <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-black font-bold">
-                          {currentUsername.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+                ) : (
+                  <div className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                        {currentUserAvatar ? (
+                          <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
+                            {currentUsername.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
                     <div className="flex-1">
                       <textarea
                         value={uploadCaption}
