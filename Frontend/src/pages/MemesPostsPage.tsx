@@ -239,7 +239,7 @@ export function MemesPostsPage({
             borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
           }}
         >
-            <div className="max-w-[580px] mx-auto px-6 py-4">
+            <div className="max-w-[540px] mx-auto px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <motion.button 
@@ -267,7 +267,7 @@ export function MemesPostsPage({
             </div>
           </motion.header>
 
-          <div className="max-w-[580px] mx-auto px-4 py-6">
+            <div className="max-w-[540px] mx-auto px-4 py-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -297,7 +297,7 @@ export function MemesPostsPage({
               <div className="flex-1">
                 <button
                   onClick={() => setShowUploadModal(true)}
-                  className="w-full text-left px-5 py-3.5 rounded-xl text-white/40 hover:text-white/60 transition-all duration-300 text-[15px]"
+                  className="w-full text-left px-5 py-3.5 rounded-xl text-white/40 hover:text-white/60 transition-all duration-300 text-[16px]"
                   style={{
                     background: 'rgba(255, 255, 255, 0.03)',
                     border: '1px solid rgba(40, 245, 204, 0.1)',
@@ -399,7 +399,7 @@ export function MemesPostsPage({
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-white font-semibold text-[15px] hover:text-[#28f5cc] cursor-pointer transition-colors">
+                            <span className="text-white font-semibold text-[16px] hover:text-[#28f5cc] cursor-pointer transition-colors">
                               {post.user?.username || 'Unknown'}
                             </span>
                             <span className="text-white/20">·</span>
@@ -413,7 +413,7 @@ export function MemesPostsPage({
                         </div>
 
                         {post.caption && (
-                          <p className="text-white/90 text-[15px] mt-2 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-white/90 text-[16px] mt-2 leading-relaxed whitespace-pre-wrap">
                             {post.caption}
                           </p>
                         )}
@@ -549,7 +549,7 @@ export function MemesPostsPage({
                                     onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
                                     placeholder="Write a reply..."
-                                    className="w-full bg-transparent text-white text-[15px] placeholder-white/30 outline-none px-4 py-3"
+                                    className="w-full bg-transparent text-white text-[16px] placeholder-white/30 outline-none px-4 py-3"
                                   />
                                 </div>
                                 <motion.button
@@ -609,10 +609,10 @@ export function MemesPostsPage({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-white font-medium text-[15px]">{comment.user?.username || 'Unknown'}</span>
+                                        <span className="text-white font-medium text-[16px]">{comment.user?.username || 'Unknown'}</span>
                                         <span className="text-white/30 text-xs">{formatTime(comment.createdAt)}</span>
                                       </div>
-                                      <p className="text-white/80 text-[15px] leading-relaxed">{comment.content}</p>
+                                      <p className="text-white/80 text-[16px] leading-relaxed">{comment.content}</p>
                                     </div>
                                   </motion.div>
                                 ))}
@@ -741,7 +741,7 @@ export function MemesPostsPage({
                         value={uploadCaption}
                         onChange={(e) => setUploadCaption(e.target.value)}
                         placeholder="What's on your mind?"
-                        className="w-full bg-transparent text-white text-[15px] placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
+                        className="w-full bg-transparent text-white text-[16px] placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
                         autoFocus
                       />
                       {uploadPreview && (
