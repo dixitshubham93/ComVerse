@@ -45,7 +45,7 @@ export interface LikeDto {
 }
 
 const getAuthToken = (): string | null => {
-  return localStorage.getItem('token');
+  return localStorage.getItem('authToken');
 };
 
 const getAuthHeaders = (): Record<string, string> => {
