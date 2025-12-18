@@ -441,34 +441,34 @@ export function MemesPostsPage({
             style={{ background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(10px)' }}
             onClick={() => setSelectedPost(null)}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-2xl"
-              style={{
-                background: '#0a0a0f',
-                border: '1px solid rgba(4, 173, 123, 0.3)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedPost(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 md:hidden"
-                style={{ background: 'rgba(0,0,0,0.6)' }}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-5xl h-[90vh] flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-2xl"
+                style={{
+                  background: '#0a0a0f',
+                  border: '1px solid rgba(4, 173, 123, 0.3)',
+                }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <X className="w-5 h-5 text-white" />
-              </button>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 md:hidden"
+                  style={{ background: 'rgba(0,0,0,0.6)' }}
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
 
-              <div className="flex-1 bg-black flex items-center justify-center min-h-[300px] md:min-h-[500px]">
-                <img
-                  src={selectedPost.mediaUrl}
-                  alt={selectedPost.caption || 'Post'}
-                  className="w-full h-full object-contain"
-                />
-              </div>
+                <div className="h-[40vh] md:h-auto md:flex-1 bg-black flex items-center justify-center flex-shrink-0">
+                  <img
+                    src={selectedPost.mediaUrl}
+                    alt={selectedPost.caption || 'Post'}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
-              <div className="w-full md:w-[400px] flex flex-col" style={{ background: 'rgba(20, 20, 30, 1)' }}>
+                <div className="flex-1 md:w-[400px] md:flex-none flex flex-col overflow-hidden" style={{ background: 'rgba(20, 20, 30, 1)' }}>
                 <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium overflow-hidden"
@@ -494,7 +494,7 @@ export function MemesPostsPage({
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[400px] md:max-h-none">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                   {selectedPost.caption && (
                     <div className="flex gap-3">
                       <div
