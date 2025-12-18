@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, PostDto, CommentDto } from '../api/postApi';
 
 interface MemesPostsPageProps {
+  communityId: number;
   communityName: string;
   communityAvatar?: string;
   userRole: 'Owner' | 'Admin' | 'Member';
@@ -48,9 +49,14 @@ export function MemesPostsPage({
   
   const [imageLoaded, setImageLoaded] = useState<Record<number, boolean>>({});
 
-  const currentUserId = Number(localStorage.getItem('userId')) || 0;
-  const currentUsername = localStorage.getItem('username') || 'User';
-  const currentUserAvatar = localStorage.getItem('avatarUrl');
+    const currentUserId = Number(localStorage.getItem('userId')) || 0;
+    const currentUsername = localStorage.getItem('username') || 'User';
+    const currentUserAvatar = localStorage.getItem('avatarUrl') || 'https://via.placeholder.com/150';
+
+    const currentUser = {
+      name: currentUsername,
+      avatar: currentUserAvatar
+    };
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -247,13 +253,13 @@ export function MemesPostsPage({
       </div>
 
       <CommunitySidebar
+        communityId={communityId}
         communityName={communityName}
-        communityAvatar={communityAvatar}
         userRole={userRole}
         currentUser={currentUser}
+        onShowMembers={() => {}}
         onNavigate={handleNavigate}
-        onGoToHome={onGoToHome}
-        onGoToUserSpace={onGoToUserSpace}
+        onBack={onBack}
       />
 
       <div className="relative z-10" style={{ marginLeft: '64px' }}>
