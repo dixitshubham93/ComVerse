@@ -131,13 +131,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('comverse_user', JSON.stringify(newUser));
   };
 
-  const loginWithGoogle = () => {
-    // Redirect to Google OAuth
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
-    // apiUrl already includes /api if set from VITE_API_URL
-    const redirectUrl = apiUrl.endsWith('/api') ? `${apiUrl}/auth/google` : `${apiUrl}/api/auth/google`;
-    window.location.href = redirectUrl;
-  };
+    const loginWithGoogle = () => {
+      // Redirect to Google OAuth
+      let apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+      
+      // Clean up the URL to prevent double /api issues
+      apiUrl = apiUrl.replace(/\/$/, ''); // Remove trailing slash
+      
+      // If it already ends with /api, just add /auth/google
+      // Otherwise add /api/auth/google
+      const redirectUrl = apiUrl.endsWith('/api') 
+        ? `${apiUrl}/auth/google` 
+        : `${apiUrl}/api/auth/google`;
+        
+      window.location.href = redirectUrl;
+    };
 
   const logout = () => {
     setUser(null);
