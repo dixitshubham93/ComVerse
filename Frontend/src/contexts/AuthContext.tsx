@@ -122,7 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = () => {
     // Redirect to Google OAuth
     const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
-    window.location.href = `${apiUrl}/api/auth/google`;
+    // apiUrl already includes /api if set from VITE_API_URL
+    const redirectUrl = apiUrl.endsWith('/api') ? `${apiUrl}/auth/google` : `${apiUrl}/api/auth/google`;
+    window.location.href = redirectUrl;
   };
 
   const logout = () => {
