@@ -239,61 +239,61 @@ export function MemesPostsPage({
             borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
           }}
         >
-          <div className="max-w-[680px] mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <motion.button 
-                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onBack}
-                  className="p-2.5 rounded-xl transition-all duration-300"
-                  style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+            <div className="max-w-[580px] mx-auto px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.05, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onBack}
+                    className="p-2.5 rounded-xl transition-all duration-300"
+                    style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+                  >
+                    <ArrowLeft className="w-5 h-5 text-[#28f5cc]" />
+                  </motion.button>
+                  <div>
+                    <h1 className="text-white text-lg font-semibold tracking-tight">{roomName}</h1>
+                    <p className="text-[#28f5cc]/50 text-xs font-medium">{communityName}</p>
+                  </div>
+                </div>
+                <motion.div 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+                  style={{ background: 'rgba(40, 245, 204, 0.08)', border: '1px solid rgba(40, 245, 204, 0.15)' }}
                 >
-                  <ArrowLeft className="w-5 h-5 text-[#28f5cc]" />
-                </motion.button>
-                <div>
-                  <h1 className="text-white text-lg font-semibold tracking-tight">{roomName}</h1>
-                  <p className="text-[#28f5cc]/50 text-xs font-medium">{communityName}</p>
-                </div>
+                  <div className="w-2 h-2 rounded-full bg-[#28f5cc] animate-pulse" />
+                  <span className="text-[#28f5cc] text-xs font-medium">{posts.length} posts</span>
+                </motion.div>
               </div>
-              <motion.div 
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-                style={{ background: 'rgba(40, 245, 204, 0.08)', border: '1px solid rgba(40, 245, 204, 0.15)' }}
-              >
-                <div className="w-2 h-2 rounded-full bg-[#28f5cc] animate-pulse" />
-                <span className="text-[#28f5cc] text-xs font-medium">{posts.length} posts</span>
-              </motion.div>
             </div>
-          </div>
-        </motion.header>
+          </motion.header>
 
-        <div className="max-w-[680px] mx-auto px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8 p-5 rounded-2xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.05) 0%, rgba(4, 173, 123, 0.03) 100%)',
-              border: '1px solid rgba(40, 245, 204, 0.12)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(40, 245, 204, 0.1)',
-            }}
-          >
-            <div className="flex items-start gap-4">
-              <div className="relative flex-shrink-0">
-                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#28f5cc]/30 ring-offset-2 ring-offset-[#051414]">
-                  {currentUserAvatar ? (
-                    <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-black font-bold" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-                      {currentUsername.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+          <div className="max-w-[580px] mx-auto px-4 py-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mb-8 p-5 rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.05) 0%, rgba(4, 173, 123, 0.03) 100%)',
+                border: '1px solid rgba(40, 245, 204, 0.12)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(40, 245, 204, 0.1)',
+              }}
+            >
+              <div className="flex items-start gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#28f5cc]/30 ring-offset-2 ring-offset-[#051414]">
+                    {currentUserAvatar ? (
+                      <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-black font-bold text-[15px]" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                        {currentUsername.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#28f5cc] flex items-center justify-center">
+                    <Sparkles className="w-2 h-2 text-black" />
+                  </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#28f5cc] flex items-center justify-center">
-                  <Sparkles className="w-2.5 h-2.5 text-black" />
-                </div>
-              </div>
               <div className="flex-1">
                 <button
                   onClick={() => setShowUploadModal(true)}
@@ -379,31 +379,31 @@ export function MemesPostsPage({
                 >
                   <div className="p-5">
                     <div className="flex items-start gap-4">
-                      <motion.div 
-                        whileHover={{ scale: 1.05 }}
-                        className="flex-shrink-0 cursor-pointer"
-                      >
-                        <div
-                          className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#28f5cc]/30 transition-all duration-300"
-                          style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                        <motion.div 
+                          whileHover={{ scale: 1.05 }}
+                          className="flex-shrink-0 cursor-pointer"
                         >
-                          {post.user?.avatarUrl ? (
-                            <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-black font-bold text-sm">
-                              {post.user?.username?.charAt(0).toUpperCase() || '?'}
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
+                          <div
+                            className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#28f5cc]/30 transition-all duration-300"
+                            style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                          >
+                            {post.user?.avatarUrl ? (
+                              <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
+                                {post.user?.username?.charAt(0).toUpperCase() || '?'}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-white font-semibold text-[15px] hover:text-[#28f5cc] cursor-pointer transition-colors">
-                            {post.user?.username || 'Unknown'}
-                          </span>
-                          <span className="text-white/20">·</span>
-                          <span className="text-white/40 text-sm">{formatTime(post.createdAt)}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white font-semibold text-[15px] hover:text-[#28f5cc] cursor-pointer transition-colors">
+                              {post.user?.username || 'Unknown'}
+                            </span>
+                            <span className="text-white/20">·</span>
+                            <span className="text-white/40 text-[13px]">{formatTime(post.createdAt)}</span>
                           <motion.button 
                             whileHover={{ scale: 1.1, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
                             className="ml-auto p-2 -mr-2 rounded-lg transition-all duration-200"
@@ -524,101 +524,101 @@ export function MemesPostsPage({
                           borderTop: '1px solid rgba(40, 245, 204, 0.06)',
                         }}
                       >
-                        <div className="p-5">
-                          <div className="flex items-start gap-3 mb-5">
-                            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-                              {currentUserAvatar ? (
-                                <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
-                                  {currentUsername.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 flex items-center gap-3">
-                              <div 
-                                className="flex-1 relative rounded-xl overflow-hidden"
-                                style={{
-                                  background: 'rgba(255, 255, 255, 0.03)',
-                                  border: '1px solid rgba(40, 245, 204, 0.1)',
-                                }}
-                              >
-                                <input
-                                  type="text"
-                                  value={newComments[post.id] || ''}
-                                  onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                  onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
-                                  placeholder="Write a reply..."
-                                  className="w-full bg-transparent text-white text-sm placeholder-white/30 outline-none px-4 py-3"
-                                />
-                              </div>
-                              <motion.button
-                                whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleSubmitComment(post.id)}
-                                disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
-                                className="p-3 rounded-xl disabled:opacity-30 transition-all duration-200"
-                                style={{
-                                  background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                                  boxShadow: '0 4px 12px rgba(40, 245, 204, 0.2)',
-                                }}
-                              >
-                                {submittingComment === post.id ? (
-                                  <Loader2 className="w-4 h-4 text-black animate-spin" />
+                          <div className="p-5">
+                            <div className="flex items-start gap-3 mb-5">
+                              <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                                {currentUserAvatar ? (
+                                  <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                  <Send className="w-4 h-4 text-black" />
+                                  <div className="w-full h-full flex items-center justify-center text-black font-bold text-[10px]">
+                                    {currentUsername.charAt(0).toUpperCase()}
+                                  </div>
                                 )}
-                              </motion.button>
-                            </div>
-                          </div>
-
-                          {loadingComments === post.id ? (
-                            <div className="flex items-center justify-center py-8">
-                              <div className="w-6 h-6 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
-                            </div>
-                          ) : (postComments[post.id]?.length || 0) === 0 ? (
-                            <div className="text-center py-8">
-                              <MessageCircle className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                              <p className="text-white/30 text-sm">No replies yet. Start the conversation!</p>
-                            </div>
-                          ) : (
-                            <div className="space-y-4">
-                              {postComments[post.id]?.map((comment, cIndex) => (
-                                <motion.div 
-                                  key={comment.id} 
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: cIndex * 0.05 }}
-                                  className="flex items-start gap-3 p-3 rounded-xl"
+                              </div>
+                              <div className="flex-1 flex items-center gap-3">
+                                <div 
+                                  className="flex-1 relative rounded-xl overflow-hidden"
                                   style={{
-                                    background: 'rgba(255, 255, 255, 0.02)',
-                                    border: '1px solid rgba(40, 245, 204, 0.05)',
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(40, 245, 204, 0.1)',
                                   }}
                                 >
-                                  <div
-                                    className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
-                                    style={{ background: 'linear-gradient(135deg, rgba(4, 173, 123, 0.6), rgba(40, 245, 204, 0.6))' }}
-                                  >
-                                    {comment.user?.avatarUrl ? (
-                                      <img src={comment.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
-                                        {comment.user?.username?.charAt(0).toUpperCase() || '?'}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-white font-medium text-sm">{comment.user?.username || 'Unknown'}</span>
-                                      <span className="text-white/30 text-xs">{formatTime(comment.createdAt)}</span>
-                                    </div>
-                                    <p className="text-white/80 text-sm leading-relaxed">{comment.content}</p>
-                                  </div>
-                                </motion.div>
-                              ))}
+                                  <input
+                                    type="text"
+                                    value={newComments[post.id] || ''}
+                                    onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
+                                    placeholder="Write a reply..."
+                                    className="w-full bg-transparent text-white text-[15px] placeholder-white/30 outline-none px-4 py-3"
+                                  />
+                                </div>
+                                <motion.button
+                                  whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleSubmitComment(post.id)}
+                                  disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
+                                  className="p-3 rounded-xl disabled:opacity-30 transition-all duration-200"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                                    boxShadow: '0 4px 12px rgba(40, 245, 204, 0.2)',
+                                  }}
+                                >
+                                  {submittingComment === post.id ? (
+                                    <Loader2 className="w-4 h-4 text-black animate-spin" />
+                                  ) : (
+                                    <Send className="w-4 h-4 text-black" />
+                                  )}
+                                </motion.button>
+                              </div>
                             </div>
-                          )}
-                        </div>
+
+                            {loadingComments === post.id ? (
+                              <div className="flex items-center justify-center py-8">
+                                <div className="w-6 h-6 rounded-full border-2 border-[#28f5cc]/20 border-t-[#28f5cc] animate-spin" />
+                              </div>
+                            ) : (postComments[post.id]?.length || 0) === 0 ? (
+                              <div className="text-center py-8">
+                                <MessageCircle className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                                <p className="text-white/30 text-sm">No replies yet. Start the conversation!</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                {postComments[post.id]?.map((comment, cIndex) => (
+                                  <motion.div 
+                                    key={comment.id} 
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: cIndex * 0.05 }}
+                                    className="flex items-start gap-3 p-3 rounded-xl"
+                                    style={{
+                                      background: 'rgba(255, 255, 255, 0.02)',
+                                      border: '1px solid rgba(40, 245, 204, 0.05)',
+                                    }}
+                                  >
+                                    <div
+                                      className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0"
+                                      style={{ background: 'linear-gradient(135deg, rgba(4, 173, 123, 0.6), rgba(40, 245, 204, 0.6))' }}
+                                    >
+                                      {comment.user?.avatarUrl ? (
+                                        <img src={comment.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-white font-bold text-[10px]">
+                                          {comment.user?.username?.charAt(0).toUpperCase() || '?'}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-white font-medium text-[15px]">{comment.user?.username || 'Unknown'}</span>
+                                        <span className="text-white/30 text-xs">{formatTime(comment.createdAt)}</span>
+                                      </div>
+                                      <p className="text-white/80 text-[15px] leading-relaxed">{comment.content}</p>
+                                    </div>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
