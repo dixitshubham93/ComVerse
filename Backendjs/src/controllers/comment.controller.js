@@ -19,14 +19,16 @@ const serializeComment = (comment) => ({
 
 export const createComment = async (req, res, next) => {
   try {
+    console.log("Creating comment for postId:", req.params.postId, "userId:", req.user.id);
     const comment = await addComment({
       postId: BigInt(req.params.postId),
       userId: req.user.id,
       content: req.body.content,
     });
-
+    console.log("Comment created successfully:", comment.id);
     res.status(201).json({ success: true, comment: serializeComment(comment) });
   } catch (err) {
+    console.error("Error in createComment controller:", err);
     next(err);
   }
 };

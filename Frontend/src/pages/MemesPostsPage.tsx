@@ -142,12 +142,14 @@ export function MemesPostsPage({
       setComments(prev => [...prev, comment]);
       setPosts(prev => prev.map(p => 
         p.id === selectedPost.id 
-          ? { ...p, commentCount: p.commentCount + 1 }
+          ? { ...p, commentCount: (p.commentCount || 0) + 1 }
           : p
       ));
-      setSelectedPost(prev => prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev);
+      setSelectedPost(prev => prev ? { ...prev, commentCount: (prev.commentCount || 0) + 1 } : prev);
+      setNewComment('');
+    } else {
+      alert('Failed to post comment. Please try again.');
     }
-    setNewComment('');
     setSubmittingComment(false);
   };
 
