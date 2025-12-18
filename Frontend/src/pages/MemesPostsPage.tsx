@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2 } from 'lucide-react';
+import { ChevronRight, Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft } from 'lucide-react';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, PostDto, CommentDto } from '../api/postApi';
@@ -41,15 +41,21 @@ export function MemesPostsPage({
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [likeLoading, setLikeLoading] = useState<number | null>(null);
+  
+  // Premium Upload State
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadStep, setUploadStep] = useState<'select' | 'details'>('select');
   const [uploadCaption, setUploadCaption] = useState('');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [imageLoaded, setImageLoaded] = useState<Record<number, boolean>>({});
 
   const currentUserId = Number(localStorage.getItem('userId')) || 0;
+  const currentUsername = localStorage.getItem('username') || 'User';
+  const currentUserAvatar = localStorage.getItem('avatarUrl');
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -152,6 +158,7 @@ export function MemesPostsPage({
       const reader = new FileReader();
       reader.onload = (ev) => {
         setUploadPreview(ev.target?.result as string);
+        setUploadStep('details');
       };
       reader.readAsDataURL(file);
     }
@@ -181,16 +188,21 @@ export function MemesPostsPage({
         if (post) {
           setPosts(prev => [post, ...prev]);
         }
-        setShowUploadModal(false);
-        setUploadFile(null);
-        setUploadPreview(null);
-        setUploadCaption('');
+        resetUpload();
       }
     } catch (error) {
       console.error('Upload failed:', error);
     }
 
     setUploading(false);
+  };
+
+  const resetUpload = () => {
+    setShowUploadModal(false);
+    setUploadFile(null);
+    setUploadPreview(null);
+    setUploadCaption('');
+    setUploadStep('select');
   };
 
   const formatTime = (dateStr?: string) => {
@@ -221,21 +233,6 @@ export function MemesPostsPage({
             `,
           }}
         />
-        <div className="absolute inset-0">
-          {[...Array(100)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full bg-white"
-              style={{
-                width: `${Math.random() * 1.5 + 0.5}px`,
-                height: `${Math.random() * 1.5 + 0.5}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.5 + 0.2,
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       <CommunitySidebar
@@ -252,7 +249,6 @@ export function MemesPostsPage({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
           className="px-4 md:px-8 py-4 md:py-5 border-b sticky top-0 z-30"
           style={{
             background: 'rgba(10, 10, 15, 0.85)',
@@ -261,15 +257,23 @@ export function MemesPostsPage({
           }}
         >
           <div className="flex items-center justify-between max-w-3xl mx-auto">
-            <div>
-              <div className="flex items-center gap-2 mb-1 text-xs">
-                <span className="text-[#747c88]">{communityName}</span>
-                <ChevronRight className="w-3 h-3 text-[#747c88]" />
-                <span className="text-[#04ad7b]">{roomName}</span>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={onBack}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors md:hidden"
+              >
+                <ArrowLeft className="w-5 h-5 text-white" />
+              </button>
+              <div>
+                <div className="flex items-center gap-2 mb-1 text-xs">
+                  <span className="text-[#747c88]">{communityName}</span>
+                  <ChevronRight className="w-3 h-3 text-[#747c88]" />
+                  <span className="text-[#04ad7b]">{roomName}</span>
+                </div>
+                <h1 className="text-white text-lg md:text-xl font-medium">
+                  {roomName}
+                </h1>
               </div>
-              <h1 className="text-white text-lg md:text-xl font-medium">
-                {roomName}
-              </h1>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -298,15 +302,18 @@ export function MemesPostsPage({
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
-              <div
-                className="w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center"
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowUploadModal(true)}
+                className="w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center transition-all cursor-pointer group"
                 style={{
                   background: 'rgba(4, 173, 123, 0.1)',
                   border: '2px solid rgba(4, 173, 123, 0.3)',
                 }}
               >
-                <ImagePlus className="w-10 h-10 text-[#04ad7b]" />
-              </div>
+                <ImagePlus className="w-10 h-10 text-[#04ad7b] group-hover:scale-110 transition-transform" />
+              </motion.button>
               <p className="text-[#747c88] text-lg mb-2">No posts yet</p>
               <p className="text-[#747c88]/60 text-sm">Be the first to share something!</p>
             </motion.div>
@@ -443,7 +450,7 @@ export function MemesPostsPage({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row rounded-2xl overflow-hidden"
+              className="relative w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row rounded-2xl overflow-hidden shadow-2xl"
               style={{
                 background: '#0a0a0f',
                 border: '1px solid rgba(4, 173, 123, 0.3)',
@@ -462,11 +469,11 @@ export function MemesPostsPage({
                 <img
                   src={selectedPost.mediaUrl}
                   alt={selectedPost.caption || 'Post'}
-                  className="w-full h-full object-contain max-h-[50vh] md:max-h-[90vh]"
+                  className="w-full h-full object-contain"
                 />
               </div>
 
-              <div className="w-full md:w-[380px] flex flex-col max-h-[50vh] md:max-h-[90vh]" style={{ background: 'rgba(20, 20, 30, 0.95)' }}>
+              <div className="w-full md:w-[400px] flex flex-col" style={{ background: 'rgba(20, 20, 30, 1)' }}>
                 <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium overflow-hidden"
@@ -492,7 +499,7 @@ export function MemesPostsPage({
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[400px] md:max-h-none">
                   {selectedPost.caption && (
                     <div className="flex gap-3">
                       <div
@@ -553,7 +560,7 @@ export function MemesPostsPage({
                 </div>
 
                 <div className="p-4 border-t" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-4 mb-2">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleLike(selectedPost)}
@@ -568,7 +575,7 @@ export function MemesPostsPage({
                     </motion.button>
                     <MessageCircle className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-white text-sm font-medium mb-2">
+                  <p className="text-white text-sm font-bold mb-3">
                     {selectedPost.likeCount} likes
                   </p>
 
@@ -602,104 +609,125 @@ export function MemesPostsPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0, 0, 0, 0.9)', backdropFilter: 'blur(10px)' }}
-            onClick={() => !uploading && setShowUploadModal(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            style={{ background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)' }}
+            onClick={() => !uploading && resetUpload()}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 1.05, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-lg rounded-2xl overflow-hidden"
+              exit={{ scale: 1.05, opacity: 0 }}
+              className={`relative overflow-hidden transition-all duration-300 shadow-2xl ${
+                uploadStep === 'select' ? 'w-full max-w-md aspect-square' : 'w-full max-w-4xl'
+              }`}
               style={{
-                background: 'rgba(20, 20, 30, 0.95)',
-                border: '1px solid rgba(4, 173, 123, 0.3)',
+                background: '#1a1a20',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(4, 173, 123, 0.2)' }}>
-                <h2 className="text-white font-medium">Create Post</h2>
-                <button
-                  onClick={() => !uploading && setShowUploadModal(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
-                >
-                  <X className="w-5 h-5 text-[#747c88]" />
-                </button>
+              {/* Header */}
+              <div className="h-12 border-b flex items-center justify-between px-4" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                {uploadStep === 'details' && (
+                  <button 
+                    onClick={() => setUploadStep('select')}
+                    className="text-white hover:text-[#04ad7b] transition-colors"
+                  >
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+                )}
+                <h2 className="text-white font-semibold flex-1 text-center">Create new post</h2>
+                {uploadStep === 'details' ? (
+                  <button
+                    onClick={handleUpload}
+                    disabled={uploading}
+                    className="text-[#04ad7b] font-bold hover:text-[#28f5cc] transition-colors disabled:opacity-50"
+                  >
+                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Share'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={resetUpload}
+                    className="text-white/50 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                )}
               </div>
 
-              <div className="p-4 space-y-4">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  accept="image/*"
-                  className="hidden"
-                />
-
-                {uploadPreview ? (
-                  <div className="relative aspect-square rounded-xl overflow-hidden bg-black/30">
-                    <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+              {/* Content */}
+              <div className={`flex flex-col md:flex-row h-[500px] md:h-[600px]`}>
+                {uploadStep === 'select' ? (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-6 p-10 text-center">
+                    <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-2">
+                      <ImagePlus className="w-12 h-12 text-white/40" />
+                    </div>
+                    <p className="text-xl text-white font-light">Drag photos and videos here</p>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      accept="image/*"
+                      className="hidden"
+                    />
                     <button
-                      onClick={() => {
-                        setUploadFile(null);
-                        setUploadPreview(null);
-                      }}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ background: 'rgba(0,0,0,0.6)' }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-6 py-2 rounded-lg bg-[#0095f6] hover:bg-[#1877f2] text-white font-semibold text-sm transition-colors"
                     >
-                      <X className="w-4 h-4 text-white" />
+                      Select from computer
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full aspect-video rounded-xl flex flex-col items-center justify-center gap-3 transition-all hover:border-[#04ad7b]"
-                    style={{
-                      background: 'rgba(4, 173, 123, 0.05)',
-                      border: '2px dashed rgba(4, 173, 123, 0.3)',
-                    }}
-                  >
-                    <ImagePlus className="w-10 h-10 text-[#04ad7b]" />
-                    <span className="text-[#747c88] text-sm">Click to select an image</span>
-                  </button>
+                  <>
+                    {/* Preview Area */}
+                    <div className="flex-[1.5] bg-black flex items-center justify-center overflow-hidden">
+                      <img 
+                        src={uploadPreview!} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Form Area */}
+                    <div className="flex-1 border-l flex flex-col bg-[#1a1a20]" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                      <div className="p-4 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[1.5px]">
+                          <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                            {currentUserAvatar ? (
+                              <img src={currentUserAvatar} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-white text-xs">{currentUsername.charAt(0)}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-white font-semibold text-sm">{currentUsername}</span>
+                      </div>
+
+                      <textarea
+                        value={uploadCaption}
+                        onChange={(e) => setUploadCaption(e.target.value)}
+                        placeholder="Write a caption..."
+                        className="flex-1 w-full bg-transparent text-white p-4 outline-none resize-none text-sm placeholder-white/30"
+                      />
+
+                      <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                        <div className="flex items-center justify-between text-white/50 text-xs">
+                          <span>Accessibility</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
-
-                <textarea
-                  value={uploadCaption}
-                  onChange={(e) => setUploadCaption(e.target.value)}
-                  placeholder="Write a caption..."
-                  rows={3}
-                  className="w-full bg-transparent text-white text-sm placeholder-[#747c88] outline-none resize-none rounded-xl p-3"
-                  style={{
-                    background: 'rgba(4, 173, 123, 0.05)',
-                    border: '1px solid rgba(4, 173, 123, 0.2)',
-                  }}
-                />
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleUpload}
-                  disabled={!uploadFile || uploading}
-                  className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  style={{
-                    background: 'linear-gradient(135deg, #04ad7b, #28f5cc)',
-                    color: '#0a0a0f',
-                  }}
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Share Post
-                    </>
-                  )}
-                </motion.button>
               </div>
+
+              {uploading && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50">
+                  <div className="w-12 h-12 rounded-full border-2 border-[#04ad7b] border-t-transparent animate-spin" />
+                  <p className="text-white font-medium">Sharing your post...</p>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
