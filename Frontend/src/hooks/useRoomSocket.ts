@@ -36,6 +36,7 @@ export function useRoomSocket(
 ) {
   const { user } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const callbacksRef = useRef(callbacks);
@@ -50,18 +51,24 @@ export function useRoomSocket(
     }
 
     if (socketRef.current?.connected) {
+      setIsConnected(true);
       return;
     }
 
+    setIsConnecting(true);
     const socket = io(WS_BASE_URL, {
       auth: {
         token: user.token
       },
-      transports: ['websocket']
+      transports: ['websocket'],
+      reconnectionAttempts: 5,
+      timeout: 10000,
     });
 
     socket.on('connect', () => {
+      console.log('Socket connected successfully');
       setIsConnected(true);
+      setIsConnecting(false);
       setError(null);
       
       socket.emit('room:join', { roomId });
@@ -72,6 +79,7 @@ export function useRoomSocket(
       setError(err.message);
       callbacksRef.current.onError?.(err.message);
       setIsConnected(false);
+      setIsConnecting(false);
     });
 
     socket.on('room:message', (data: MessageDto) => {
@@ -104,10 +112,12 @@ export function useRoomSocket(
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
+      console.log('Disconnecting socket');
       socketRef.current.disconnect();
       socketRef.current = null;
     }
     setIsConnected(false);
+    setIsConnecting(false);
   }, []);
 
   const sendMessage = useCallback(
@@ -134,12 +144,14 @@ export function useRoomSocket(
     }
     if (!roomId) return false;
 
+    console.log('Emitting voice:join for room:', roomId);
     socketRef.current.emit('voice:join', { roomId });
     return true;
   }, [roomId]);
 
   const leaveVoice = useCallback(() => {
     if (socketRef.current?.connected && roomId) {
+      console.log('Emitting voice:leave for room:', roomId);
       socketRef.current.emit('voice:leave', { roomId });
       return true;
     }
@@ -158,6 +170,7 @@ export function useRoomSocket(
 
   return {
     isConnected,
+    isConnecting,
     error,
     sendMessage,
     joinVoice,

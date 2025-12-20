@@ -72,13 +72,10 @@ export function VoiceCallRoom({
   const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
 
   // WebSocket connection for presence and signaling
-  const { isConnected, joinVoice, leaveVoice, sendSignal } = useRoomSocket(roomId, communityId, {
+  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, error: socketError } = useRoomSocket(roomId, communityId, {
     onPresence: (presenceUsers: UserDto[]) => {
       const convertedUsers = presenceUsers.map(convertUserDto);
       setUsers(convertedUsers);
-      
-      // If we are in call, we might need to connect to new users
-      // or cleanup old users. This is also handled by the useEffect below.
     },
     onSignal: (data) => {
       console.log('Received signal from:', data.from);
@@ -597,24 +594,29 @@ export function VoiceCallRoom({
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(40, 245, 204, 0.1) inset',
               }}
             >
-                {!isInCall ? (
-                  /* Join Call Button */
-                  <button
-                    onClick={handleJoinCall}
-                    disabled={!isConnected}
-                    className={`px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    style={{
-                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                      boxShadow: isConnected ? '0 4px 16px rgba(40, 245, 204, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset' : 'none',
-                      animation: isConnected ? 'pulse-glow 2s ease-in-out infinite' : 'none',
-                    }}
-                  >
-                    <Phone className="w-4.5 h-4.5 text-black" />
-                    <span className="text-black font-semibold text-sm" style={{ fontSize: '0.875rem' }}>
-                      {isConnected ? 'Join Call' : 'Connecting...'}
-                    </span>
-                  </button>
-                ) : (
+                  {!isInCall ? (
+                    /* Join Call Button */
+                    <div className="flex flex-col items-center gap-2">
+                      <button
+                        onClick={handleJoinCall}
+                        disabled={!isConnected || isConnecting}
+                        className={`px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${(!isConnected || isConnecting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                          boxShadow: isConnected ? '0 4px 16px rgba(40, 245, 204, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset' : 'none',
+                          animation: isConnected ? 'pulse-glow 2s ease-in-out infinite' : 'none',
+                        }}
+                      >
+                        <Phone className="w-4.5 h-4.5 text-black" />
+                        <span className="text-black font-semibold text-sm" style={{ fontSize: '0.875rem' }}>
+                          {isConnecting ? 'Connecting...' : (isConnected ? 'Join Call' : 'Offline')}
+                        </span>
+                      </button>
+                      {socketError && (
+                        <span className="text-red-400 text-[10px] max-w-[150px] text-center">{socketError}</span>
+                      )}
+                    </div>
+                  ) : (
                 <>
                   {/* Mute Toggle */}
                   <button
