@@ -7,11 +7,13 @@
     import { Toaster } from "sonner";
     import { Buffer } from 'buffer';
     import process from 'process';
+    import util from 'util';
     
     // Polyfill for simple-peer
     (window as any).global = window;
     (window as any).Buffer = Buffer;
     (window as any).process = process;
+    (window as any).util = util;
     
     createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

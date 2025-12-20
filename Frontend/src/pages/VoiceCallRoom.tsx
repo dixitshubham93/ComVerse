@@ -3,92 +3,114 @@ import { Mic, MicOff, Phone, PhoneOff, Volume2, Hash } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
-import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
-import { useAuth } from '../contexts/AuthContext';
-import Peer from 'simple-peer';
-
-interface VoiceUser {
-  id: string;
-  name: string;
-  avatar: string;
-  isTalking: boolean;
-  isMuted: boolean;
-  isOnline: boolean;
-  userId: number;
-}
-
-interface VoiceRoom {
-  id: string;
-  name: string;
-  activeUsers: number;
-}
-
-interface VoiceCallRoomProps {
-  roomName: string;
-  roomId: number;
-  communityId: number;
-  communityName: string;
-  communityAvatar?: string;
-  userRole: 'Owner' | 'Admin' | 'Member';
-  onBack: () => void;
-  onGoToHome?: () => void;
-  onGoToUserSpace?: () => void;
-}
-
-export function VoiceCallRoom({ 
-  roomName: initialRoomName,
-  roomId,
-  communityId,
-  communityName, 
-  communityAvatar = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop',
-  userRole,
-  onBack,
-  onGoToHome,
-  onGoToUserSpace,
-}: VoiceCallRoomProps) {
-    const { user } = useAuth();
-      const currentUser = {
-        name: user?.username || 'Guest',
-        avatar: user?.avatar || user?.username?.charAt(0).toUpperCase() || 'G',
-      };
-
-
-  const [users, setUsers] = useState<VoiceUser[]>([]);
-  const [isInCall, setIsInCall] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(80);
+  import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
+  import { getCommunityRooms, RoomDto, RoomType } from '../api/roomApi';
+  import { useAuth } from '../contexts/AuthContext';
+  import Peer from 'simple-peer';
   
-  const voiceRooms: VoiceRoom[] = [
-    { id: '1', name: initialRoomName, activeUsers: users.length },
-    { id: '2', name: 'Gaming Zone', activeUsers: 0 },
-    { id: '3', name: 'Music Lounge', activeUsers: 0 },
-  ];
-  const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
-
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
-  const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
-
-  // WebSocket connection for presence and signaling
-  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, error: socketError } = useRoomSocket(roomId, communityId, {
-    onPresence: (presenceUsers: UserDto[]) => {
-      const convertedUsers = presenceUsers.map(convertUserDto);
-      setUsers(convertedUsers);
-    },
-    onSignal: (data) => {
-      console.log('Received signal from:', data.from);
-      const peer = peersRef.current.get(data.from);
-      if (peer) {
-        peer.signal(data.signal);
-      } else if (isInCall) {
-        console.log('Creating non-initiator peer for:', data.from);
-        const newPeer = createPeer(data.from, false);
-        newPeer.signal(data.signal);
+  interface VoiceUser {
+    id: string;
+    name: string;
+    avatar: string;
+    isTalking: boolean;
+    isMuted: boolean;
+    isOnline: boolean;
+    userId: number;
+  }
+  
+  interface VoiceRoom {
+    id: string;
+    name: string;
+    activeUsers: number;
+  }
+  
+  interface VoiceCallRoomProps {
+    roomName: string;
+    roomId: number;
+    communityId: number;
+    communityName: string;
+    communityAvatar?: string;
+    userRole: 'Owner' | 'Admin' | 'Member';
+    onBack: () => void;
+    onGoToHome?: () => void;
+    onGoToUserSpace?: () => void;
+  }
+  
+  export function VoiceCallRoom({ 
+    roomName: initialRoomName,
+    roomId: initialRoomId,
+    communityId,
+    communityName, 
+    communityAvatar = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop',
+    userRole,
+    onBack,
+    onGoToHome,
+    onGoToUserSpace,
+  }: VoiceCallRoomProps) {
+      const { user } = useAuth();
+        const currentUser = {
+          name: user?.username || 'Guest',
+          avatar: user?.avatar || user?.username?.charAt(0).toUpperCase() || 'G',
+        };
+  
+  
+    const [users, setUsers] = useState<VoiceUser[]>([]);
+    const [isInCall, setIsInCall] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [volume, setVolume] = useState(80);
+    
+    const [currentRoomId, setCurrentRoomId] = useState(initialRoomId);
+    const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
+    const [voiceRooms, setVoiceRooms] = useState<VoiceRoom[]>([]);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
+  
+    const localStreamRef = useRef<MediaStream | null>(null);
+    const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
+    const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
+  
+    // WebSocket connection for presence and signaling
+    const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, error: socketError } = useRoomSocket(currentRoomId, communityId, {
+      onPresence: (presenceUsers: UserDto[]) => {
+        const convertedUsers = presenceUsers.map(convertUserDto);
+        setUsers(convertedUsers);
+      },
+      onSignal: (data) => {
+        console.log('Received signal from:', data.from);
+        const peer = peersRef.current.get(data.from);
+        if (peer) {
+          peer.signal(data.signal);
+        } else if (isInCall) {
+          console.log('Creating non-initiator peer for:', data.from);
+          const newPeer = createPeer(data.from, false);
+          newPeer.signal(data.signal);
+        }
       }
-    }
-  });
+    });
+  
+    // Fetch all voice rooms for the community
+    useEffect(() => {
+      const fetchRooms = async () => {
+        try {
+          const allRooms = await getCommunityRooms(communityId);
+          const vRooms = allRooms
+            .filter(r => r.type === RoomType.VOICE_CHAT)
+            .map(r => ({
+              id: r.id.toString(),
+              name: r.name,
+              activeUsers: 0 // Ideally this comes from a separate presence API or socket
+            }));
+          setVoiceRooms(vRooms);
+          
+          // Update current room name if it changed
+          const current = allRooms.find(r => r.id === currentRoomId);
+          if (current) setCurrentRoomName(current.name);
+        } catch (error) {
+          console.error('Error fetching voice rooms:', error);
+        }
+      };
+      fetchRooms();
+    }, [communityId, currentRoomId]);
 
   const createPeer = (targetUserId: number, initiator: boolean) => {
     console.log(`Creating peer for ${targetUserId}, initiator: ${initiator}`);
@@ -299,14 +321,19 @@ export function VoiceCallRoom({
   }, []);
 
   const handleRoomSwitch = (room: VoiceRoom) => {
-    if (room.name === currentRoomName) return;
+    const newRoomId = parseInt(room.id, 10);
+    if (newRoomId === currentRoomId) return;
     
-    // For now, we only have one real room implementation per component instance
-    // but we can simulate switching for UI purposes or notify parent to change roomId
+    // If in call, leave current first
+    if (isInCall) {
+      handleLeaveCall();
+    }
+    
     setIsTransitioning(true);
+    setCurrentRoomId(newRoomId);
+    setCurrentRoomName(room.name);
     
     setTimeout(() => {
-      setCurrentRoomName(room.name);
       setIsTransitioning(false);
     }, 350);
   };
@@ -387,10 +414,11 @@ export function VoiceCallRoom({
 
       {/* Left Sidebar */}
       <CommunitySidebar
+        communityId={communityId}
         communityName={communityName}
-        communityAvatar={communityAvatar}
         userRole={userRole}
         currentUser={currentUser}
+        onShowMembers={() => {}}
         onNavigate={handleNavigate}
         onGoToHome={onGoToHome}
         onGoToUserSpace={onGoToUserSpace}
