@@ -1,13 +1,14 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus, Send, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CreateCommunityModal } from '../components/CreateCommunityModal';
 import { CommunityCard } from '../components/CommunityCard';
 import { useAuth } from '../contexts/AuthContext';
 import { getUser, getUserCommunitiesWithDetails } from '../api/userApi';
-import { getUserPosts, getUserRecentPosts } from '../api/postApi';
+import { getUserPosts, getUserRecentPosts, likePost, unlikePost, getComments, createComment, CommentDto } from '../api/postApi';
 import { UserCommunityDto } from '../api/communityApi';
 import { PostDto } from '../api/postApi';
 
@@ -31,6 +32,121 @@ export function UserProfile() {
   const [recentPosts, setRecentPosts] = useState<PostDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Comments state
+  const [expandedComments, setExpandedComments] = useState<number | null>(null);
+  const [postComments, setPostComments] = useState<Record<number, CommentDto[]>>({});
+  const [loadingComments, setLoadingComments] = useState<number | null>(null);
+  const [newComments, setNewComments] = useState<Record<number, string>>({});
+  const [submittingComment, setSubmittingComment] = useState<number | null>(null);
+  const [likeLoading, setLikeLoading] = useState<number | null>(null);
+
+  const currentUserId = authUser?.id ? (typeof authUser.id === 'string' ? parseInt(authUser.id, 10) : authUser.id) : 0;
+
+  const formatTime = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const handleLike = async (post: PostDto) => {
+    if (likeLoading) return;
+    setLikeLoading(post.id);
+
+    const isLiked = post.likes?.some(l => l.userId === currentUserId);
+    
+    // Optimistic update
+    const updatePosts = (prev: PostDto[]) => prev.map(p => {
+      if (p.id === post.id) {
+        const newLikes = isLiked
+          ? (p.likes || []).filter(l => l.userId !== currentUserId)
+          : [...(p.likes || []), { id: Date.now(), postId: p.id, userId: currentUserId }];
+        return {
+          ...p,
+          likes: newLikes,
+          likeCount: newLikes.length,
+        };
+      }
+      return p;
+    });
+
+    setUserPosts(updatePosts);
+    setRecentPosts(updatePosts);
+
+    try {
+      if (isLiked) {
+        await unlikePost(post.id);
+      } else {
+        await likePost(post.id);
+      }
+    } catch (err) {
+      console.error('Failed to like/unlike post:', err);
+      // Revert or refresh could be done here
+    } finally {
+      setLikeLoading(null);
+    }
+  };
+
+  const handleToggleComments = async (postId: number) => {
+    if (expandedComments === postId) {
+      setExpandedComments(null);
+      return;
+    }
+    
+    setExpandedComments(postId);
+    
+    if (!postComments[postId]) {
+      setLoadingComments(postId);
+      try {
+        const data = await getComments(postId);
+        setPostComments(prev => ({ ...prev, [postId]: data }));
+      } catch (err) {
+        console.error('Failed to fetch comments:', err);
+      } finally {
+        setLoadingComments(null);
+      }
+    }
+  };
+
+  const handleSubmitComment = async (postId: number) => {
+    const commentText = newComments[postId]?.trim();
+    if (!commentText || submittingComment === postId) return;
+    
+    setSubmittingComment(postId);
+    try {
+      const comment = await createComment(postId, commentText);
+      if (comment) {
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: [...(prev[postId] || []), comment]
+        }));
+        
+        const updatePosts = (prev: PostDto[]) => prev.map(p => 
+          p.id === postId 
+            ? { ...p, commentCount: (p.commentCount || 0) + 1 }
+            : p
+        );
+        
+        setUserPosts(updatePosts);
+        setRecentPosts(updatePosts);
+        setNewComments(prev => ({ ...prev, [postId]: '' }));
+      }
+    } catch (err) {
+      console.error('Failed to submit comment:', err);
+    } finally {
+      setSubmittingComment(null);
+    }
+  };
 
   // Fetch user data on mount
   useEffect(() => {
@@ -387,61 +503,160 @@ export function UserProfile() {
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                   }}
                 >
-                  {/* Post Header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
-                      alt={userData.username}
-                      className="w-10 h-10 rounded-full"
-                      style={{
-                        border: '2px solid rgba(40, 245, 204, 0.3)',
-                      }}
-                    />
-                    <div className="flex-1">
-                      <h4 className="text-white">{userData.username}</h4>
-                      <p className="text-[#747c88] text-sm">
-                        {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Recently'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Post Content */}
-                  {post.caption && (
-                    <p className="text-white mb-4 leading-relaxed">
-                      {post.caption}
-                    </p>
-                  )}
-
-                  {post.mediaUrl && (
-                    <div className="mb-4 rounded-lg overflow-hidden border border-[rgba(40,245,204,0.1)]">
-                      <img 
-                        src={post.mediaUrl} 
-                        alt="Post media" 
-                        className="w-full h-auto max-h-[500px] object-contain bg-black/20"
+                    {/* Post Header */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <img
+                        src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
+                        alt={userData.username}
+                        className="w-10 h-10 rounded-full"
+                        style={{
+                          border: '2px solid rgba(40, 245, 204, 0.3)',
+                        }}
                       />
+                      <div className="flex-1">
+                        <h4 className="text-white">{userData.username}</h4>
+                        <p className="text-[#747c88] text-sm">
+                          {formatTime(post.createdAt)}
+                        </p>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Post Actions */}
-                  <div className="flex items-center gap-6 pt-4 border-t border-[rgba(40,245,204,0.1)]">
-                    <button
-                      className="flex items-center gap-2 text-[#747c88] hover:text-[#28f5cc] transition-colors duration-200"
-                    >
-                      <Heart className="w-5 h-5" />
-                      <span className="text-sm">{post.likeCount || 0}</span>
-                    </button>
-                    <button
-                      className="flex items-center gap-2 text-[#747c88] hover:text-[#28f5cc] transition-colors duration-200"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="text-sm">{post.commentCount || 0}</span>
-                    </button>
-                    <button
-                      className="flex items-center gap-2 text-[#747c88] hover:text-[#28f5cc] transition-colors duration-200 ml-auto"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                  </div>
+                    {/* Post Content */}
+                    {post.caption && (
+                      <p className="text-white mb-4 leading-relaxed">
+                        {post.caption}
+                      </p>
+                    )}
+
+                    {post.mediaUrl && (
+                      <div className="mb-4 rounded-xl overflow-hidden border border-[rgba(40,245,204,0.1)] bg-black/40">
+                        <img 
+                          src={post.mediaUrl} 
+                          alt="Post media" 
+                          className="w-full h-auto max-h-[500px] object-contain block mx-auto transition-transform duration-500 hover:scale-[1.02]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Post Actions */}
+                    <div className="flex items-center gap-1 pt-4 border-t border-[rgba(40,245,204,0.1)]">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleLike(post)}
+                        disabled={likeLoading === post.id}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+                        style={{
+                          background: post.likes?.some(l => l.userId === currentUserId) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                        }}
+                      >
+                        <Heart
+                          className={`w-5 h-5 transition-all duration-300 ${
+                            post.likes?.some(l => l.userId === currentUserId)
+                              ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                              : 'text-[#747c88] hover:text-red-400'
+                          }`}
+                        />
+                        <span className={`text-sm font-medium ${
+                          post.likes?.some(l => l.userId === currentUserId) ? 'text-red-400' : 'text-[#747c88]'
+                        }`}>
+                          {post.likeCount || 0}
+                        </span>
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleToggleComments(post.id)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+                        style={{
+                          background: expandedComments === post.id ? 'rgba(40, 245, 204, 0.1)' : 'transparent',
+                        }}
+                      >
+                        <MessageCircle className={`w-5 h-5 transition-colors ${
+                          expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88] hover:text-[#28f5cc]'
+                        }`} />
+                        <span className={`text-sm font-medium ${
+                          expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88]'
+                        }`}>
+                          {post.commentCount || 0}
+                        </span>
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 ml-auto"
+                      >
+                        <Share2 className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
+                      </motion.button>
+                    </div>
+
+                    <AnimatePresence>
+                      {expandedComments === post.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="mt-4 overflow-hidden"
+                        >
+                          <div className="pt-4 border-t border-[rgba(40,245,204,0.06)]">
+                            <div className="flex items-center gap-3 mb-4">
+                              <input
+                                type="text"
+                                value={newComments[post.id] || ''}
+                                onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
+                                placeholder="Add a comment..."
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-[#28f5cc]/30 transition-colors"
+                              />
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSubmitComment(post.id)}
+                                disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
+                                className="p-2.5 rounded-xl bg-[#28f5cc] text-black disabled:opacity-30 transition-all duration-200"
+                              >
+                                {submittingComment === post.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Send className="w-4 h-4" />
+                                )}
+                              </motion.button>
+                            </div>
+
+                            {loadingComments === post.id ? (
+                              <div className="flex justify-center py-4">
+                                <Loader2 className="w-6 h-6 text-[#28f5cc] animate-spin" />
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                {(postComments[post.id] || []).map((comment) => (
+                                  <div key={comment.id} className="flex gap-3">
+                                    <img
+                                      src={comment.user?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.user?.username}
+                                      alt={comment.user?.username}
+                                      className="w-8 h-8 rounded-full flex-shrink-0"
+                                    />
+                                    <div className="flex-1 bg-white/5 rounded-xl p-3">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-white text-xs font-semibold">{comment.user?.username}</span>
+                                        <span className="text-[#747c88] text-[10px]">{formatTime(comment.createdAt)}</span>
+                                      </div>
+                                      <p className="text-white/80 text-xs">{comment.content}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                                {(postComments[post.id] || []).length === 0 && (
+                                  <p className="text-center text-[#747c88] text-xs py-2">No comments yet</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                 </div>
               ))}
             </div>
