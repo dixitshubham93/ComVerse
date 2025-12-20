@@ -15,7 +15,7 @@ export const registerPresenceSocket = (io, socket) => {
     joinedRooms.add(roomId);
     addUserToRoom(roomId, user);
 
-    io.to(`voice:${roomId}`).emit("voice:presence", {
+    io.to(`room:${roomId}`).emit("voice:presence", {
       roomId,
       users: getUsersInRoom(roomId),
     });
@@ -28,7 +28,7 @@ export const registerPresenceSocket = (io, socket) => {
     joinedRooms.delete(roomId);
     removeUserFromRoom(roomId, userId);
 
-    io.to(`voice:${roomId}`).emit("voice:presence", {
+    io.to(`room:${roomId}`).emit("voice:presence", {
       roomId,
       users: getUsersInRoom(roomId),
     });

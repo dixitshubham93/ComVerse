@@ -112,9 +112,11 @@ export function useRoomSocket(
 
   const sendMessage = useCallback(
     (content: string, contentType: string = 'TEXT') => {
-      if (!socketRef.current?.connected || !roomId) {
-        throw new Error('Not connected to WebSocket');
+      if (!socketRef.current?.connected) {
+        console.warn('Cannot send message: Not connected to WebSocket');
+        return;
       }
+      if (!roomId) return;
 
       socketRef.current.emit('room:message', {
         roomId,
@@ -126,19 +128,18 @@ export function useRoomSocket(
   );
 
   const joinVoice = useCallback(() => {
-    if (!socketRef.current?.connected || !roomId) {
+    if (!socketRef.current?.connected) {
       throw new Error('Not connected to WebSocket');
     }
+    if (!roomId) return;
 
     socketRef.current.emit('voice:join', { roomId });
   }, [roomId]);
 
   const leaveVoice = useCallback(() => {
-    if (!socketRef.current?.connected || !roomId) {
-      throw new Error('Not connected to WebSocket');
+    if (socketRef.current?.connected && roomId) {
+      socketRef.current.emit('voice:leave', { roomId });
     }
-
-    socketRef.current.emit('voice:leave', { roomId });
   }, [roomId]);
 
   const sendSignal = useCallback((to: number, signal: any) => {

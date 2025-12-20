@@ -35,18 +35,6 @@ interface VoiceCallRoomProps {
   onGoToUserSpace?: () => void;
 }
 
-const currentUserMock = {
-  name: 'Alex Rivera',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
-};
-
-const MOCK_USERS: VoiceUser[] = [
-  { id: '1', name: 'Sarah Wilson', avatar: '👩‍💼', isTalking: false, isMuted: false, isOnline: true, userId: 101 },
-  { id: '2', name: 'James Chen', avatar: '👨‍💻', isTalking: false, isMuted: false, isOnline: true, userId: 102 },
-  { id: '3', name: 'Elena Rodriguez', avatar: '👩‍🎨', isTalking: false, isMuted: false, isOnline: true, userId: 103 },
-  { id: '4', name: 'Marcus Thorne', avatar: '👨‍🚀', isTalking: false, isMuted: false, isOnline: true, userId: 104 },
-];
-
 export function VoiceCallRoom({ 
   roomName: initialRoomName,
   roomId,
@@ -58,11 +46,11 @@ export function VoiceCallRoom({
   onGoToHome,
   onGoToUserSpace,
 }: VoiceCallRoomProps) {
-  const { user } = useAuth();
-    const currentUser = {
-      name: user?.username || 'Guest',
-      avatar: user?.avatarUrl || user?.username?.charAt(0).toUpperCase() || 'G',
-    };
+    const { user } = useAuth();
+      const currentUser = {
+        name: user?.username || 'Guest',
+        avatar: user?.avatar || user?.username?.charAt(0).toUpperCase() || 'G',
+      };
 
 
   const [users, setUsers] = useState<VoiceUser[]>([]);
@@ -609,21 +597,24 @@ export function VoiceCallRoom({
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(40, 245, 204, 0.1) inset',
               }}
             >
-              {!isInCall ? (
-                /* Join Call Button */
-                <button
-                  onClick={handleJoinCall}
-                  className="px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                    boxShadow: '0 4px 16px rgba(40, 245, 204, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-                    animation: 'pulse-glow 2s ease-in-out infinite',
-                  }}
-                >
-                  <Phone className="w-4.5 h-4.5 text-black" />
-                  <span className="text-black font-semibold text-sm" style={{ fontSize: '0.875rem' }}>Join Call</span>
-                </button>
-              ) : (
+                {!isInCall ? (
+                  /* Join Call Button */
+                  <button
+                    onClick={handleJoinCall}
+                    disabled={!isConnected}
+                    className={`px-6 py-3 rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{
+                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                      boxShadow: isConnected ? '0 4px 16px rgba(40, 245, 204, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset' : 'none',
+                      animation: isConnected ? 'pulse-glow 2s ease-in-out infinite' : 'none',
+                    }}
+                  >
+                    <Phone className="w-4.5 h-4.5 text-black" />
+                    <span className="text-black font-semibold text-sm" style={{ fontSize: '0.875rem' }}>
+                      {isConnected ? 'Join Call' : 'Connecting...'}
+                    </span>
+                  </button>
+                ) : (
                 <>
                   {/* Mute Toggle */}
                   <button

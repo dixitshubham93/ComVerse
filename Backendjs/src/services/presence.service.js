@@ -8,7 +8,7 @@ export const addUserToRoom = (roomId, user) => {
   roomPresenceMap.get(roomId).set(user.id, {
     id: user.id,
     username: user.username,
-    avatarUrl: user.avatarUrl
+    avatarUrl: user.avatarUrl || user.avatar || null
   });
 };
 
