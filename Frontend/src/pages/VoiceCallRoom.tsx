@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Phone, PhoneOff, Volume2, Hash } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
 import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
 import { useAuth } from '../contexts/AuthContext';
+import Peer from 'simple-peer';
 
 interface VoiceUser {
   id: string;
@@ -34,24 +35,7 @@ interface VoiceCallRoomProps {
   onGoToUserSpace?: () => void;
 }
 
-// Mock connected users
-const mockUsers: VoiceUser[] = [
-  { id: '1', name: 'Alex Rivera', avatar: '👤', isTalking: true, isMuted: false, isOnline: true },
-  { id: '2', name: 'Sarah Chen', avatar: '👩', isTalking: false, isMuted: false, isOnline: true },
-  { id: '3', name: 'Marcus Johnson', avatar: '👨', isTalking: false, isMuted: true, isOnline: true },
-  { id: '4', name: 'Elena Kowalski', avatar: '👩', isTalking: false, isMuted: false, isOnline: true },
-  { id: '5', name: 'David Park', avatar: '👤', isTalking: true, isMuted: false, isOnline: true },
-];
-
-// Mock voice rooms
-const voiceRooms: VoiceRoom[] = [
-  { id: 'v1', name: 'Main Voice Lounge', activeUsers: 5 },
-  { id: 'v2', name: 'Gaming Lounge', activeUsers: 3 },
-  { id: 'v3', name: 'Study Room', activeUsers: 2 },
-  { id: 'v4', name: 'Music Jam', activeUsers: 4 },
-];
-
-const currentUser = {
+const currentUserMock = {
   name: 'Alex Rivera',
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
 };
@@ -72,12 +56,98 @@ export function VoiceCallRoom({
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(70);
   const [users, setUsers] = useState<VoiceUser[]>([]);
-  const [showSettings, setShowSettings] = useState(false);
   const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
 
-  // Convert UserDto to VoiceUser
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
+  const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
+
+  // WebSocket connection for presence and signaling
+  const { isConnected, joinVoice, leaveVoice, sendSignal } = useRoomSocket(roomId, communityId, {
+    onPresence: (presenceUsers: UserDto[]) => {
+      const convertedUsers = presenceUsers.map(convertUserDto);
+      setUsers(convertedUsers);
+      
+      if (isInCall) {
+        // Handle peer connections
+        presenceUsers.forEach(presenceUser => {
+          if (presenceUser.id !== user?.id && !peersRef.current.has(presenceUser.id)) {
+            // Initiate connection to new user
+            createPeer(presenceUser.id, true);
+          }
+        });
+        
+        // Cleanup disconnected users
+        const presenceIds = new Set(presenceUsers.map(u => u.id));
+        peersRef.current.forEach((peer, userId) => {
+          if (!presenceIds.has(userId)) {
+            peer.destroy();
+            peersRef.current.delete(userId);
+            const audio = audioElementsRef.current.get(userId);
+            if (audio) {
+              audio.remove();
+              audioElementsRef.current.delete(userId);
+            }
+          }
+        });
+      }
+    },
+    onSignal: (data) => {
+      const peer = peersRef.current.get(data.from);
+      if (peer) {
+        peer.signal(data.signal);
+      } else if (isInCall) {
+        // Create peer if it doesn't exist yet (responding to initiator)
+        const newPeer = createPeer(data.from, false);
+        newPeer.signal(data.signal);
+      }
+    }
+  });
+
+  const createPeer = (targetUserId: number, initiator: boolean) => {
+    const peer = new Peer({
+      initiator,
+      trickle: false,
+      stream: localStreamRef.current || undefined,
+    });
+
+    peer.on('signal', (signal) => {
+      sendSignal(targetUserId, signal);
+    });
+
+    peer.on('stream', (stream) => {
+      // Create and play audio element
+      let audio = audioElementsRef.current.get(targetUserId);
+      if (!audio) {
+        audio = document.createElement('audio');
+        audio.autoplay = true;
+        audioElementsRef.current.set(targetUserId, audio);
+      }
+      audio.srcObject = stream;
+      audio.volume = volume / 100;
+    });
+
+    peer.on('error', (err) => {
+      console.error('Peer error:', err);
+      peer.destroy();
+      peersRef.current.delete(targetUserId);
+    });
+
+    peer.on('close', () => {
+      const audio = audioElementsRef.current.get(targetUserId);
+      if (audio) {
+        audio.remove();
+        audioElementsRef.current.delete(targetUserId);
+      }
+      peersRef.current.delete(targetUserId);
+    });
+
+    peersRef.current.set(targetUserId, peer);
+    return peer;
+  };
+
   const convertUserDto = (dto: UserDto): VoiceUser => {
     return {
       id: dto.id.toString(),
@@ -90,12 +160,10 @@ export function VoiceCallRoom({
     };
   };
 
-  // Load initial voice room metadata (optional, presence handled via WebSocket)
   useEffect(() => {
     const loadMetadata = async () => {
       try {
         setIsLoadingMetadata(true);
-        // Try to load metadata, but it's optional since presence is WebSocket-based
         const metadata: VoiceRoomMetadata = await getVoiceRoomMetadata(roomId);
         if (metadata.users.length > 0) {
           const convertedUsers = metadata.users.map(convertUserDto);
@@ -103,7 +171,6 @@ export function VoiceCallRoom({
         }
       } catch (error) {
         console.error('Error loading voice room metadata:', error);
-        // Not critical, presence will be updated via WebSocket
       } finally {
         setIsLoadingMetadata(false);
       }
@@ -114,62 +181,29 @@ export function VoiceCallRoom({
     }
   }, [roomId]);
 
-  // WebSocket connection for presence
-  const { isConnected, joinVoice, leaveVoice } = useRoomSocket(roomId, communityId, {
-    onPresence: (presenceUsers: UserDto[]) => {
-      const convertedUsers = presenceUsers.map(convertUserDto);
-      setUsers(convertedUsers);
-    },
-  });
-
-  // Simulate talking animation (only for visual effect, real audio will come later)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setUsers(prevUsers =>
-        prevUsers.map(user => ({
-          ...user,
-          isTalking: Math.random() > 0.7 && !user.isMuted,
-        }))
-      );
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Join voice on mount if needed
-  useEffect(() => {
-    if (isConnected && isInCall) {
-      try {
-        joinVoice();
-      } catch (error) {
-        console.error('Error joining voice:', error);
-      }
-    }
-
-    return () => {
-      if (isInCall) {
-        try {
-          leaveVoice();
-        } catch (error) {
-          console.error('Error leaving voice:', error);
-        }
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, isInCall]);
-
-  const handleJoinCall = () => {
+  const handleJoinCall = async () => {
     try {
-      joinVoice();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStreamRef.current = stream;
       setIsInCall(true);
+      joinVoice();
     } catch (error) {
-      console.error('Error joining voice call:', error);
+      console.error('Error accessing microphone:', error);
+      alert('Could not access microphone. Please check permissions.');
     }
   };
 
   const handleLeaveCall = () => {
     try {
       leaveVoice();
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+      }
+      peersRef.current.forEach(peer => peer.destroy());
+      peersRef.current.clear();
+      audioElementsRef.current.forEach(audio => audio.remove());
+      audioElementsRef.current.clear();
       setIsInCall(false);
       setIsMuted(false);
     } catch (error) {
@@ -178,8 +212,26 @@ export function VoiceCallRoom({
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
+    }
   };
+
+  useEffect(() => {
+    audioElementsRef.current.forEach(audio => {
+      audio.volume = volume / 100;
+    });
+  }, [volume]);
+
+  useEffect(() => {
+    return () => {
+      handleLeaveCall();
+    };
+  }, []);
 
   const handleRoomSwitch = (room: VoiceRoom) => {
     if (room.name === currentRoomName) return;
