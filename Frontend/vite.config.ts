@@ -14,6 +14,8 @@
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
       'util': 'util',
+      'buffer': 'buffer',
+      'process': 'process/browser',
       'vaul@1.1.2': 'vaul',
           'sonner@2.0.3': 'sonner',
           'recharts@2.15.2': 'recharts',
@@ -59,8 +61,12 @@
       target: 'esnext',
       outDir: 'build',
     },
-    server: {
-      port: 3000,
-      open: true,
-    },
-  });
+      server: {
+        port: 3000,
+        open: true,
+        hmr: {
+          host: 'localhost',
+          protocol: 'ws',
+        },
+      },
+    });
