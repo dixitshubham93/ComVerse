@@ -40,6 +40,13 @@ const currentUserMock = {
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
 };
 
+const MOCK_USERS: VoiceUser[] = [
+  { id: '1', name: 'Sarah Wilson', avatar: '👩‍💼', isTalking: false, isMuted: false, isOnline: true, userId: 101 },
+  { id: '2', name: 'James Chen', avatar: '👨‍💻', isTalking: false, isMuted: false, isOnline: true, userId: 102 },
+  { id: '3', name: 'Elena Rodriguez', avatar: '👩‍🎨', isTalking: false, isMuted: false, isOnline: true, userId: 103 },
+  { id: '4', name: 'Marcus Thorne', avatar: '👨‍🚀', isTalking: false, isMuted: false, isOnline: true, userId: 104 },
+];
+
 export function VoiceCallRoom({ 
   roomName: initialRoomName,
   roomId,
@@ -52,10 +59,17 @@ export function VoiceCallRoom({
   onGoToUserSpace,
 }: VoiceCallRoomProps) {
   const { user } = useAuth();
-  const [isInCall, setIsInCall] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(70);
-  const [users, setUsers] = useState<VoiceUser[]>([]);
+  const currentUser = {
+    name: user?.username || 'Guest',
+    avatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
+  };
+
+    const [users, setUsers] = useState<VoiceUser[]>([]);
+    const voiceRooms: VoiceRoom[] = [
+      { id: '1', name: initialRoomName, activeUsers: users.length },
+      { id: '2', name: 'Gaming Zone', activeUsers: 0 },
+      { id: '3', name: 'Music Lounge', activeUsers: 0 },
+    ];
   const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
@@ -243,7 +257,7 @@ export function VoiceCallRoom({
       setCurrentRoomName(room.name);
       // Update users based on room
       const newUserCount = room.activeUsers;
-      setUsers(mockUsers.slice(0, newUserCount));
+        setUsers(MOCK_USERS.slice(0, newUserCount));
       setIsTransitioning(false);
     }, 350);
   };
