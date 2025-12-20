@@ -257,7 +257,12 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: {
 
         <Canvas camera={{ position: [0, 0, 18], fov: 60 }} className="absolute inset-0 z-10" onCreated={({ gl }) => { gl.domElement.style.pointerEvents = "auto"; }}>
           <Suspense fallback={null}>
-            <Environment preset="night" />
+            <Environment background={false}>
+              <mesh scale={100}>
+                <sphereGeometry args={[1, 64, 64]} />
+                <meshBasicMaterial color="#050a10" side={THREE.BackSide} />
+              </mesh>
+            </Environment>
             <ambientLight intensity={0.4} />
             <pointLight position={[10, 10, 10]} intensity={0.6} />
             <pointLight position={[-10, -10, -10]} intensity={0.3} />
