@@ -430,7 +430,7 @@ export function DMChat({
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="max-w-xs rounded-lg border border-[#04372f]"
+                  className="max-w-full max-h-[300px] object-contain rounded-lg border border-[#04372f]"
                 />
                 <button
                   className="absolute top-2 right-2 p-1 rounded-full bg-red-500 hover:bg-red-600 transition-colors"

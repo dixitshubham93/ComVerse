@@ -752,7 +752,7 @@ export function MemesPostsPage({
                           className="relative mt-4 rounded-xl overflow-hidden"
                           style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
                         >
-                          <img src={uploadPreview} alt="Preview" className="w-full max-h-[280px] object-contain bg-black/50" />
+                            <img src={uploadPreview} alt="Preview" className="w-full max-h-[40vh] object-contain bg-black/50 rounded-lg" />
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}

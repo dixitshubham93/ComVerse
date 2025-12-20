@@ -132,17 +132,17 @@ export function ChatMessage({
           {/* Message Text */}
           <div className="text-[#e0e0e0] break-words">{message}</div>
 
-          {/* Image */}
-          {image && (
-            <div className="mt-2">
-              <img
-                src={image}
-                alt="Attached"
-                className="max-w-md rounded-lg border border-[#04372f]"
-                style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.1)' }}
-              />
-            </div>
-          )}
+            {/* Image */}
+            {image && (
+              <div className="mt-2">
+                <img
+                  src={image}
+                  alt="Attached"
+                  className="max-w-full max-h-[400px] object-contain rounded-lg border border-[#04372f]"
+                  style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.1)' }}
+                />
+              </div>
+            )}
 
           {/* Reactions */}
           {reactions.length > 0 && (
