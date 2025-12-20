@@ -12,9 +12,9 @@
       },
       resolve: {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-        alias: {
-          'util': 'path-browserify', // Use a harmless shim or path-browserify if util is missing
-          'vaul@1.1.2': 'vaul',
+    alias: {
+      'util': 'util',
+      'vaul@1.1.2': 'vaul',
           'sonner@2.0.3': 'sonner',
           'recharts@2.15.2': 'recharts',
           'react-resizable-panels@2.1.7': 'react-resizable-panels',
