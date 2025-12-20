@@ -129,17 +129,21 @@ export function useRoomSocket(
 
   const joinVoice = useCallback(() => {
     if (!socketRef.current?.connected) {
-      throw new Error('Not connected to WebSocket');
+      console.warn('Cannot join voice: Not connected to WebSocket');
+      return false;
     }
-    if (!roomId) return;
+    if (!roomId) return false;
 
     socketRef.current.emit('voice:join', { roomId });
+    return true;
   }, [roomId]);
 
   const leaveVoice = useCallback(() => {
     if (socketRef.current?.connected && roomId) {
       socketRef.current.emit('voice:leave', { roomId });
+      return true;
     }
+    return false;
   }, [roomId]);
 
   const sendSignal = useCallback((to: number, signal: any) => {
