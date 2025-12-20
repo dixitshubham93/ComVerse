@@ -247,11 +247,11 @@ import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
     );
   };
 
-  useEffect(() => {
+    useEffect(() => {
     const loadMetadata = async () => {
       try {
         setIsLoadingMetadata(true);
-        const metadata: VoiceRoomMetadata = await getVoiceRoomMetadata(roomId);
+        const metadata: VoiceRoomMetadata = await getVoiceRoomMetadata(currentRoomId);
         if (metadata.users.length > 0) {
           const convertedUsers = metadata.users.map(convertUserDto);
           setUsers(convertedUsers);
@@ -263,10 +263,10 @@ import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
       }
     };
 
-    if (roomId) {
+    if (currentRoomId) {
       loadMetadata();
     }
-  }, [roomId]);
+  }, [currentRoomId]);
 
   const handleJoinCall = async () => {
     try {
