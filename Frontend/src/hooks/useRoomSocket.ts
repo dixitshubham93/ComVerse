@@ -72,6 +72,19 @@ export function useRoomSocket(
       setError(null);
       
       socket.emit('room:join', { roomId });
+      // Also emit voice:join if we want to auto-join, but typically we wait for user action
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconnected after', attemptNumber, 'attempts');
+      setIsConnected(true);
+      setIsConnecting(false);
+      socket.emit('room:join', { roomId });
+    });
+
+    socket.on('reconnecting', (attemptNumber) => {
+      console.log('Socket reconnecting, attempt:', attemptNumber);
+      setIsConnecting(true);
     });
 
     socket.on('connect_error', (err) => {

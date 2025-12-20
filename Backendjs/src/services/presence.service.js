@@ -25,5 +25,8 @@ export const removeUserFromRoom = (roomId, userId) => {
 export const getUsersInRoom = (roomId) => {
   const usersMap = roomPresenceMap.get(roomId);
   if (!usersMap) return [];
-  return Array.from(usersMap.values());
+  return Array.from(usersMap.values()).map(user => ({
+    ...user,
+    id: Number(user.id)
+  }));
 };
