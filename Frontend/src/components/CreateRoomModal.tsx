@@ -11,6 +11,7 @@ const ROOM_TYPE_MAP: Record<string, RoomType> = {
   'General Chat': RoomType.GENERAL,
   'Voice Call': RoomType.VOICE_CHAT,
   'Meme & Post': RoomType.POSTS,
+  'VS Battle': RoomType.VS_BATTLE,
 };
 
 const ROOM_TYPES = [
@@ -18,6 +19,7 @@ const ROOM_TYPES = [
   'General Chat',
   'Voice Call',
   'Meme & Post',
+  'VS Battle',
 ];
 
 interface CreateRoomModalProps {

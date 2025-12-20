@@ -15,6 +15,7 @@ export enum RoomType {
   GENERAL = 'GENERAL',
   VOICE_CHAT = 'VOICE_CHAT',
   POSTS = 'POSTS',
+  VS_BATTLE = 'VS_BATTLE',
 }
 
 /**

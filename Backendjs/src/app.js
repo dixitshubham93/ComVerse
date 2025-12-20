@@ -11,6 +11,7 @@ import messageRoutes from "./routes/message.routes.js";
 import dmRoutes from "./routes/dm.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import membershipRoutes from "./routes/membership.routes.js";
+import battleRoutes from "./routes/battle.routes.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/dm", dmRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/memberships", membershipRoutes);
+app.use("/api/battles", battleRoutes);
 
 // ===== ERROR HANDLER (MUST BE LAST) =====
 app.use(errorHandler);

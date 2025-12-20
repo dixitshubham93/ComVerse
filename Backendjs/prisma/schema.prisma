@@ -36,6 +36,44 @@ enum RoomType {
   GENERAL
   VOICE_CHAT
   POSTS
+  VS_BATTLE
+}
+
+/////////////////////
+// BATTLE
+/////////////////////
+model Battle {
+  id        BigInt    @id @default(autoincrement())
+  status    String    @default("ACTIVE") // ACTIVE, COMPLETED
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  roomId BigInt
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  post1Id BigInt
+  post2Id BigInt
+  post1   Post   @relation("post1Battles", fields: [post1Id], references: [id], onDelete: Cascade)
+  post2   Post   @relation("post2Battles", fields: [post2Id], references: [id], onDelete: Cascade)
+
+  votes BattleVote[]
+
+  @@map("battles")
+}
+
+model BattleVote {
+  id        BigInt   @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  battleId BigInt
+  userId   BigInt
+  postId   BigInt // The post the user voted for
+
+  battle Battle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([battleId, userId])
+  @@map("battle_votes")
 }
 
 enum PostType {
@@ -62,6 +100,7 @@ model User {
   sentDMs     DirectMessage[] @relation("sentMessages")
   receivedDMs DirectMessage[] @relation("receivedMessages")
   memberships Membership[]
+  battleVotes BattleVote[]
 
   @@map("users")
 }
@@ -119,6 +158,7 @@ model Room {
 
   posts    Post[]
   messages Message[]
+  battles  Battle[]
 
   @@map("rooms")
 }
@@ -139,8 +179,10 @@ model Post {
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  comments Comment[]
-  likes    PostLike[]
+  comments     Comment[]
+  likes        PostLike[]
+  battlesAsP1  Battle[]   @relation("post1Battles")
+  battlesAsP2  Battle[]   @relation("post2Battles")
 
   @@map("posts")
 }
