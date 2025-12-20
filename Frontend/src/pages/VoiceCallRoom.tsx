@@ -64,12 +64,16 @@ export function VoiceCallRoom({
     avatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
   };
 
-    const [users, setUsers] = useState<VoiceUser[]>([]);
-    const voiceRooms: VoiceRoom[] = [
-      { id: '1', name: initialRoomName, activeUsers: users.length },
-      { id: '2', name: 'Gaming Zone', activeUsers: 0 },
-      { id: '3', name: 'Music Lounge', activeUsers: 0 },
-    ];
+  const [users, setUsers] = useState<VoiceUser[]>([]);
+  const [isInCall, setIsInCall] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(80);
+  
+  const voiceRooms: VoiceRoom[] = [
+    { id: '1', name: initialRoomName, activeUsers: users.length },
+    { id: '2', name: 'Gaming Zone', activeUsers: 0 },
+    { id: '3', name: 'Music Lounge', activeUsers: 0 },
+  ];
   const [currentRoomName, setCurrentRoomName] = useState(initialRoomName);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
@@ -84,36 +88,16 @@ export function VoiceCallRoom({
       const convertedUsers = presenceUsers.map(convertUserDto);
       setUsers(convertedUsers);
       
-      if (isInCall) {
-        // Handle peer connections
-        presenceUsers.forEach(presenceUser => {
-          if (presenceUser.id !== user?.id && !peersRef.current.has(presenceUser.id)) {
-            // Initiate connection to new user
-            createPeer(presenceUser.id, true);
-          }
-        });
-        
-        // Cleanup disconnected users
-        const presenceIds = new Set(presenceUsers.map(u => u.id));
-        peersRef.current.forEach((peer, userId) => {
-          if (!presenceIds.has(userId)) {
-            peer.destroy();
-            peersRef.current.delete(userId);
-            const audio = audioElementsRef.current.get(userId);
-            if (audio) {
-              audio.remove();
-              audioElementsRef.current.delete(userId);
-            }
-          }
-        });
-      }
+      // If we are in call, we might need to connect to new users
+      // or cleanup old users. This is also handled by the useEffect below.
     },
     onSignal: (data) => {
+      console.log('Received signal from:', data.from);
       const peer = peersRef.current.get(data.from);
       if (peer) {
         peer.signal(data.signal);
       } else if (isInCall) {
-        // Create peer if it doesn't exist yet (responding to initiator)
+        console.log('Creating non-initiator peer for:', data.from);
         const newPeer = createPeer(data.from, false);
         newPeer.signal(data.signal);
       }
@@ -121,6 +105,12 @@ export function VoiceCallRoom({
   });
 
   const createPeer = (targetUserId: number, initiator: boolean) => {
+    console.log(`Creating peer for ${targetUserId}, initiator: ${initiator}`);
+    if (peersRef.current.has(targetUserId)) {
+      console.log(`Peer for ${targetUserId} already exists, destroying old one`);
+      peersRef.current.get(targetUserId)?.destroy();
+    }
+
     const peer = new Peer({
       initiator,
       trickle: false,
@@ -132,11 +122,12 @@ export function VoiceCallRoom({
     });
 
     peer.on('stream', (stream) => {
-      // Create and play audio element
+      console.log(`Received stream from ${targetUserId}`);
       let audio = audioElementsRef.current.get(targetUserId);
       if (!audio) {
         audio = document.createElement('audio');
         audio.autoplay = true;
+        document.body.appendChild(audio); // Ensure it's in DOM for some browsers
         audioElementsRef.current.set(targetUserId, audio);
       }
       audio.srcObject = stream;
@@ -144,14 +135,16 @@ export function VoiceCallRoom({
     });
 
     peer.on('error', (err) => {
-      console.error('Peer error:', err);
+      console.error(`Peer error with ${targetUserId}:`, err);
       peer.destroy();
       peersRef.current.delete(targetUserId);
     });
 
     peer.on('close', () => {
+      console.log(`Peer connection with ${targetUserId} closed`);
       const audio = audioElementsRef.current.get(targetUserId);
       if (audio) {
+        audio.srcObject = null;
         audio.remove();
         audioElementsRef.current.delete(targetUserId);
       }
@@ -161,6 +154,27 @@ export function VoiceCallRoom({
     peersRef.current.set(targetUserId, peer);
     return peer;
   };
+
+  useEffect(() => {
+    if (isInCall) {
+      // Connect to any user that is currently in the room but not connected
+      users.forEach(u => {
+        const targetId = Number(u.userId);
+        if (targetId !== user?.id && !peersRef.current.has(targetId)) {
+          createPeer(targetId, true);
+        }
+      });
+
+      // Cleanup peers for users no longer in presence
+      const presenceIds = new Set(users.map(u => Number(u.userId)));
+      peersRef.current.forEach((peer, userId) => {
+        if (!presenceIds.has(userId)) {
+          console.log(`Cleaning up peer for ${userId} as they are no longer in presence`);
+          peer.destroy();
+        }
+      });
+    }
+  }, [isInCall, users, user?.id]);
 
   const convertUserDto = (dto: UserDto): VoiceUser => {
     return {
@@ -250,14 +264,12 @@ export function VoiceCallRoom({
   const handleRoomSwitch = (room: VoiceRoom) => {
     if (room.name === currentRoomName) return;
     
+    // For now, we only have one real room implementation per component instance
+    // but we can simulate switching for UI purposes or notify parent to change roomId
     setIsTransitioning(true);
     
-    // Simulate room switch with smooth transition
     setTimeout(() => {
       setCurrentRoomName(room.name);
-      // Update users based on room
-      const newUserCount = room.activeUsers;
-        setUsers(MOCK_USERS.slice(0, newUserCount));
       setIsTransitioning(false);
     }, 350);
   };

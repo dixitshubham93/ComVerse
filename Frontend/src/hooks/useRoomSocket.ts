@@ -38,6 +38,11 @@ export function useRoomSocket(
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const callbacksRef = useRef(callbacks);
+
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
 
   const connect = useCallback(() => {
     if (!roomId || !user?.token) {
@@ -45,7 +50,7 @@ export function useRoomSocket(
     }
 
     if (socketRef.current?.connected) {
-      socketRef.current.disconnect();
+      return;
     }
 
     const socket = io(WS_BASE_URL, {
@@ -59,36 +64,35 @@ export function useRoomSocket(
       setIsConnected(true);
       setError(null);
       
-      // Join general room for messages
       socket.emit('room:join', { roomId });
     });
 
     socket.on('connect_error', (err) => {
       console.error('Socket connection error:', err);
       setError(err.message);
-      callbacks.onError?.(err.message);
+      callbacksRef.current.onError?.(err.message);
       setIsConnected(false);
     });
 
     socket.on('room:message', (data: MessageDto) => {
-      callbacks.onMessage?.(data);
+      callbacksRef.current.onMessage?.(data);
     });
 
     socket.on('voice:presence', (data: { roomId: number, users: UserDto[] }) => {
       if (Number(data.roomId) === Number(roomId)) {
-        callbacks.onPresence?.(data.users);
+        callbacksRef.current.onPresence?.(data.users);
       }
     });
 
     socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
       if (Number(data.roomId) === Number(roomId)) {
-        callbacks.onSignal?.(data);
+        callbacksRef.current.onSignal?.(data);
       }
     });
 
     socket.on('room:error', (data: { message: string }) => {
       setError(data.message);
-      callbacks.onError?.(data.message);
+      callbacksRef.current.onError?.(data.message);
     });
 
     socket.on('disconnect', () => {
@@ -96,7 +100,7 @@ export function useRoomSocket(
     });
 
     socketRef.current = socket;
-  }, [roomId, user?.token, callbacks]);
+  }, [roomId, user?.token]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {

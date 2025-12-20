@@ -6,6 +6,11 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 
+// Polyfill for simple-peer
+if (typeof (window as any).global === 'undefined') {
+  (window as any).global = window;
+}
+
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthProvider>
