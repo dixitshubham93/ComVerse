@@ -59,10 +59,11 @@ export function VoiceCallRoom({
   onGoToUserSpace,
 }: VoiceCallRoomProps) {
   const { user } = useAuth();
-  const currentUser = {
-    name: user?.username || 'Guest',
-    avatar: user?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
-  };
+    const currentUser = {
+      name: user?.username || 'Guest',
+      avatar: user?.avatarUrl || user?.username?.charAt(0).toUpperCase() || 'G',
+    };
+
 
   const [users, setUsers] = useState<VoiceUser[]>([]);
   const [isInCall, setIsInCall] = useState(false);
@@ -180,12 +181,63 @@ export function VoiceCallRoom({
     return {
       id: dto.id.toString(),
       name: dto.username,
-      avatar: dto.avatarUrl || '👤',
+      avatar: dto.avatarUrl || dto.username.charAt(0).toUpperCase(),
       isTalking: false,
       isMuted: false,
       isOnline: true,
       userId: dto.id,
     };
+  };
+
+  const renderAvatar = (user: VoiceUser | { name: string, avatar: string }, size: string = 'w-28 h-28', textSize: string = 'text-4xl') => {
+    const isUrl = user.avatar.startsWith('http') || user.avatar.startsWith('/');
+    
+    return (
+      <div
+        className={`relative ${size} rounded-full flex items-center justify-center ${!isUrl ? textSize : ''} transition-all duration-300 group-hover:scale-110 overflow-hidden`}
+        style={{
+          background: (user as any).isTalking
+            ? 'linear-gradient(135deg, rgba(40, 245, 204, 0.3), rgba(4, 173, 123, 0.3))'
+            : 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 55, 47, 0.4))',
+          border: `2px solid ${(user as any).isTalking ? '#28f5cc' : 'rgba(40, 245, 204, 0.3)'}`,
+          boxShadow: (user as any).isTalking
+            ? '0 0 30px rgba(40, 245, 204, 0.5), inset 0 0 20px rgba(40, 245, 204, 0.2)'
+            : '0 0 15px rgba(40, 245, 204, 0.2)',
+        }}
+      >
+        {isUrl ? (
+          <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-white font-bold">{user.avatar}</span>
+        )}
+
+        {/* Online Indicator */}
+        {(user as any).isOnline && (
+          <div
+            className="absolute bottom-1 right-1 w-5 h-5 rounded-full border-2"
+            style={{
+              background: '#04ad7b',
+              borderColor: 'rgba(0, 0, 0, 0.8)',
+              boxShadow: '0 0 12px #04ad7b',
+            }}
+          />
+        )}
+
+        {/* Muted Indicator */}
+        {(user as any).isMuted && (
+          <div
+            className="absolute bottom-1 left-1 w-7 h-7 rounded-full flex items-center justify-center border-2"
+            style={{
+              background: 'rgba(220, 38, 38, 0.9)',
+              borderColor: 'rgba(0, 0, 0, 0.8)',
+              boxShadow: '0 0 12px rgba(220, 38, 38, 0.6)',
+            }}
+          >
+            <MicOff className="w-4 h-4 text-white" />
+          </div>
+        )}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -413,155 +465,138 @@ export function VoiceCallRoom({
                 </div>
               </div>
 
-              {/* User Count Badge - Refined */}
-              <div
-                className="px-3.5 py-2 rounded-lg flex items-center gap-2.5"
-                style={{
-                  background: 'rgba(4, 55, 47, 0.5)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(40, 245, 204, 0.2)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                }}
-              >
-                <div className="flex -space-x-2">
-                  {users.slice(0, 3).map((user, i) => (
-                    <div
-                      key={user.id}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs border-2 transition-transform duration-200 hover:scale-110"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.3), rgba(4, 173, 123, 0.2))',
-                        borderColor: 'rgba(0, 0, 0, 0.4)',
-                        zIndex: 3 - i,
-                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
-                      }}
-                    >
-                      {user.avatar}
-                    </div>
-                  ))}
+                {/* User Count Badge - Refined */}
+                <div
+                  className="px-3.5 py-2 rounded-lg flex items-center gap-2.5"
+                  style={{
+                    background: 'rgba(4, 55, 47, 0.5)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(40, 245, 204, 0.2)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  }}
+                >
+                  <div className="flex -space-x-2">
+                    {users.slice(0, 3).map((u, i) => (
+                      <div key={u.id} className="relative transition-transform duration-200 hover:scale-110" style={{ zIndex: 3 - i }}>
+                        {renderAvatar(u, 'w-7 h-7', 'text-[10px]')}
+                      </div>
+                    ))}
+                    {isInCall && !users.find(u => Number(u.userId) === user?.id) && (
+                      <div className="relative transition-transform duration-200 hover:scale-110" style={{ zIndex: 0 }}>
+                        {renderAvatar(currentUser, 'w-7 h-7', 'text-[10px]')}
+                      </div>
+                    )}
+                  </div>
+                  <div className="h-4 w-px bg-[rgba(40,245,204,0.2)]" />
+                  <span className="text-[#28f5cc] text-xs font-medium" style={{ fontSize: '0.75rem' }}>
+                    {(users.find(u => Number(u.userId) === user?.id) ? users.length : (isInCall ? users.length + 1 : users.length))} <span className="text-[#9aa0aa] font-normal">active</span>
+                  </span>
                 </div>
-                <div className="h-4 w-px bg-[rgba(40,245,204,0.2)]" />
-                <span className="text-[#28f5cc] text-xs font-medium" style={{ fontSize: '0.75rem' }}>
-                  {users.length} <span className="text-[#9aa0aa] font-normal">active</span>
-                </span>
-              </div>
+
             </div>
           </div>
 
-          {/* Voice Users Grid */}
-          <div 
-            className="flex-1 flex items-center justify-center p-12 overflow-y-auto transition-opacity duration-350"
-            style={{
-              opacity: isTransitioning ? 0.5 : 1,
-            }}
-          >
-            {isLoadingMetadata ? (
-              <div className="flex items-center justify-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#28f5cc]"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl w-full">
-                {users.length === 0 ? (
-                  <div className="col-span-full text-center text-[#747c88]">
-                    No users in voice channel
-                  </div>
-                ) : (
-                  users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex flex-col items-center gap-3 group transition-all duration-300"
-                  style={{
-                    animation: 'fade-scale-in 0.4s ease-out',
-                  }}
-                >
-                  {/* Avatar Container with Talking Ring */}
-                  <div className="relative">
-                    {/* Holographic Background Plate */}
-                    <div
-                      className="absolute inset-0 rounded-full blur-xl transition-all duration-300"
-                      style={{
-                        background: user.isTalking
-                          ? 'radial-gradient(circle, rgba(40, 245, 204, 0.4) 0%, transparent 70%)'
-                          : 'radial-gradient(circle, rgba(40, 245, 204, 0.15) 0%, transparent 70%)',
-                        transform: user.isTalking ? 'scale(1.3)' : 'scale(1)',
-                      }}
-                    />
-
-                    {/* Talking Indicator Ring */}
-                    {user.isTalking && (
-                      <div
-                        className="absolute inset-0 rounded-full"
-                        style={{
-                          border: '3px solid #28f5cc',
-                          boxShadow: '0 0 20px rgba(40, 245, 204, 0.6), inset 0 0 20px rgba(40, 245, 204, 0.3)',
-                          animation: 'pulse-ring 1.5s ease-in-out infinite',
-                          transform: 'scale(1.15)',
-                        }}
-                      />
-                    )}
-
-                    {/* Avatar */}
-                    <div
-                      className="relative w-28 h-28 rounded-full flex items-center justify-center text-4xl transition-all duration-300 group-hover:scale-110"
-                      style={{
-                        background: user.isTalking
-                          ? 'linear-gradient(135deg, rgba(40, 245, 204, 0.3), rgba(4, 173, 123, 0.3))'
-                          : 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 55, 47, 0.4))',
-                        border: `2px solid ${user.isTalking ? '#28f5cc' : 'rgba(40, 245, 204, 0.3)'}`,
-                        boxShadow: user.isTalking
-                          ? '0 0 30px rgba(40, 245, 204, 0.5), inset 0 0 20px rgba(40, 245, 204, 0.2)'
-                          : '0 0 15px rgba(40, 245, 204, 0.2)',
-                      }}
-                    >
-                      {user.avatar}
-
-                      {/* Online Indicator */}
-                      {user.isOnline && (
+            {/* Voice Users Grid */}
+            <div 
+              className="flex-1 flex items-center justify-center p-12 overflow-y-auto transition-opacity duration-350"
+              style={{
+                opacity: isTransitioning ? 0.5 : 1,
+              }}
+            >
+              {isLoadingMetadata ? (
+                <div className="flex items-center justify-center">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#28f5cc]"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl w-full">
+                  {users.length === 0 && !isInCall ? (
+                    <div className="col-span-full text-center text-[#747c88]">
+                      No users in voice channel
+                    </div>
+                  ) : (
+                    <>
+                      {/* Current User in Grid */}
+                      {isInCall && !users.find(u => Number(u.userId) === user?.id) && (
                         <div
-                          className="absolute bottom-1 right-1 w-5 h-5 rounded-full border-2"
-                          style={{
-                            background: '#04ad7b',
-                            borderColor: 'rgba(0, 0, 0, 0.8)',
-                            boxShadow: '0 0 12px #04ad7b',
-                          }}
-                        />
-                      )}
-
-                      {/* Muted Indicator */}
-                      {user.isMuted && (
-                        <div
-                          className="absolute bottom-1 left-1 w-7 h-7 rounded-full flex items-center justify-center border-2"
-                          style={{
-                            background: 'rgba(220, 38, 38, 0.9)',
-                            borderColor: 'rgba(0, 0, 0, 0.8)',
-                            boxShadow: '0 0 12px rgba(220, 38, 38, 0.6)',
-                          }}
+                          className="flex flex-col items-center gap-3 group transition-all duration-300"
+                          style={{ animation: 'fade-scale-in 0.4s ease-out' }}
                         >
-                          <MicOff className="w-4 h-4 text-white" />
+                          <div className="relative">
+                            <div
+                              className="absolute inset-0 rounded-full blur-xl transition-all duration-300"
+                              style={{
+                                background: 'radial-gradient(circle, rgba(40, 245, 204, 0.15) 0%, transparent 70%)',
+                              }}
+                            />
+                            {renderAvatar({ ...currentUser, isTalking: false, isMuted, isOnline: true } as any)}
+                          </div>
+                          <div
+                            className="px-3.5 py-2 rounded-lg text-center transition-all duration-200"
+                            style={{
+                              background: 'rgba(4, 55, 47, 0.5)',
+                              backdropFilter: 'blur(12px)',
+                              border: '1px solid rgba(40, 245, 204, 0.3)',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                            }}
+                          >
+                            <span className="text-[#28f5cc] text-sm font-semibold" style={{ fontSize: '0.8125rem', letterSpacing: '-0.01em' }}>
+                              {currentUser.name} (You)
+                            </span>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
 
-                  {/* User Name */}
-                  <div
-                    className="px-3.5 py-2 rounded-lg text-center transition-all duration-200"
-                    style={{
-                      background: 'rgba(4, 55, 47, 0.5)',
-                      backdropFilter: 'blur(12px)',
-                      border: '1px solid rgba(40, 245, 204, 0.15)',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                    }}
-                  >
-                    <span className="text-white text-sm font-medium" style={{ fontSize: '0.8125rem', letterSpacing: '-0.01em' }}>
-                      {user.name}
-                    </span>
-                  </div>
+                      {/* Other Users in Grid */}
+                      {users.map((u) => (
+                        <div
+                          key={u.id}
+                          className="flex flex-col items-center gap-3 group transition-all duration-300"
+                          style={{ animation: 'fade-scale-in 0.4s ease-out' }}
+                        >
+                          <div className="relative">
+                            <div
+                              className="absolute inset-0 rounded-full blur-xl transition-all duration-300"
+                              style={{
+                                background: u.isTalking
+                                  ? 'radial-gradient(circle, rgba(40, 245, 204, 0.4) 0%, transparent 70%)'
+                                  : 'radial-gradient(circle, rgba(40, 245, 204, 0.15) 0%, transparent 70%)',
+                                transform: u.isTalking ? 'scale(1.3)' : 'scale(1)',
+                              }}
+                            />
+                            {u.isTalking && (
+                              <div
+                                className="absolute inset-0 rounded-full"
+                                style={{
+                                  border: '3px solid #28f5cc',
+                                  boxShadow: '0 0 20px rgba(40, 245, 204, 0.6), inset 0 0 20px rgba(40, 245, 204, 0.3)',
+                                  animation: 'pulse-ring 1.5s ease-in-out infinite',
+                                  transform: 'scale(1.15)',
+                                }}
+                              />
+                            )}
+                            {renderAvatar(u)}
+                          </div>
+                          <div
+                            className="px-3.5 py-2 rounded-lg text-center transition-all duration-200"
+                            style={{
+                              background: 'rgba(4, 55, 47, 0.5)',
+                              backdropFilter: 'blur(12px)',
+                              border: '1px solid rgba(40, 245, 204, 0.15)',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                            }}
+                          >
+                            <span className="text-white text-sm font-medium" style={{ fontSize: '0.8125rem', letterSpacing: '-0.01em' }}>
+                              {u.name} {Number(u.userId) === user?.id ? '(You)' : ''}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+
 
           {/* Control Bar - Floating at Bottom */}
           <div className="p-6 flex justify-center">

@@ -104,15 +104,27 @@ export function CommunitySidebar({
                   />
                 )}
 
-                {/* User Info Overlay */}
-                <div className="relative z-10 flex items-center gap-3 p-4 h-full">
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-12 h-12 rounded-full border-2 border-[#28f5cc] flex-shrink-0"
-                    style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}
-                  />
-                  <div className="flex-1 min-w-0">
+                  {/* User Info Overlay */}
+                  <div className="relative z-10 flex items-center gap-3 p-4 h-full">
+                    <div className="relative flex-shrink-0">
+                      {currentUser.avatar.startsWith('http') || currentUser.avatar.startsWith('/') ? (
+                        <img
+                          src={currentUser.avatar}
+                          alt={currentUser.name}
+                          className="w-12 h-12 rounded-full border-2 border-[#28f5cc]"
+                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}
+                        />
+                      ) : (
+                        <div 
+                          className="w-12 h-12 rounded-full border-2 border-[#28f5cc] flex items-center justify-center bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] text-black font-bold text-lg"
+                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}
+                        >
+                          {currentUser.avatar}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+
                     <p className="text-white text-sm font-bold truncate">{currentUser.name}</p>
                     <span
                       className="text-xs px-2 py-0.5 rounded-full inline-block mt-1"

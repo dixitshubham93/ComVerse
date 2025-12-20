@@ -1,6 +1,7 @@
 import { verifyToken } from "../utils/jwt.js";
+import { prisma } from "../config/db.js";
 
-export const socketAuth = (socket, next) => {
+export const socketAuth = async (socket, next) => {
   try {
     // token can come from auth or headers
     const token =
@@ -12,11 +13,27 @@ export const socketAuth = (socket, next) => {
     }
 
     const decoded = verifyToken(token);
+    const userId = BigInt(decoded.id);
+
+    // Fetch full user info for presence
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        email: true,
+      }
+    });
+
+    if (!user) {
+      return next(new Error("User not found"));
+    }
 
     // attach authenticated user to socket
     socket.user = {
-      id: BigInt(decoded.id),
-      email: decoded.email,
+      ...user,
+      id: user.id // keep as BigInt for consistency
     };
 
     next();
