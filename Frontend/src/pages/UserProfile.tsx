@@ -405,10 +405,22 @@ export function UserProfile() {
                     </div>
                   </div>
 
-                  {/* Post Content - Placeholder for now */}
-                  <p className="text-white mb-4 leading-relaxed">
-                    Post content will be displayed here when posts are fully implemented.
-                  </p>
+                  {/* Post Content */}
+                  {post.caption && (
+                    <p className="text-white mb-4 leading-relaxed">
+                      {post.caption}
+                    </p>
+                  )}
+
+                  {post.mediaUrl && (
+                    <div className="mb-4 rounded-lg overflow-hidden border border-[rgba(40,245,204,0.1)]">
+                      <img 
+                        src={post.mediaUrl} 
+                        alt="Post media" 
+                        className="w-full h-auto max-h-[500px] object-contain bg-black/20"
+                      />
+                    </div>
+                  )}
 
                   {/* Post Actions */}
                   <div className="flex items-center gap-6 pt-4 border-t border-[rgba(40,245,204,0.1)]">
