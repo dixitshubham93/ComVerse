@@ -645,137 +645,139 @@ export function MemesPostsPage({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg rounded-2xl overflow-hidden"
-              style={{
-                background: 'linear-gradient(145deg, rgba(10, 30, 30, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
-                border: '1px solid rgba(40, 245, 204, 0.15)',
-                boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(40, 245, 204, 0.1)' }}>
-                <h3 className="text-white font-semibold text-lg">Create Post</h3>
-                <div className="flex items-center gap-3">
-                  {uploadStep === 'details' && (
+                className="relative w-full max-w-lg rounded-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(10, 30, 30, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
+                  border: '1px solid rgba(40, 245, 204, 0.15)',
+                  boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-5 flex-shrink-0" style={{ borderBottom: '1px solid rgba(40, 245, 204, 0.1)' }}>
+                  <h3 className="text-white font-semibold text-lg">Create Post</h3>
+                  <div className="flex items-center gap-3">
+                    {uploadStep === 'details' && (
+                      <motion.button
+                        whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleUpload}
+                        disabled={uploading}
+                        className="px-5 py-2 rounded-xl font-semibold text-sm disabled:opacity-50"
+                        style={{
+                          background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                          color: '#000',
+                        }}
+                      >
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Share'}
+                      </motion.button>
+                    )}
                     <motion.button
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleUpload}
+                      whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={resetUpload}
                       disabled={uploading}
-                      className="px-5 py-2 rounded-xl font-semibold text-sm disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                        color: '#000',
-                      }}
+                      className="p-2 rounded-xl transition-colors"
                     >
-                      {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Share'}
+                      <X className="w-5 h-5 text-white/60" />
                     </motion.button>
-                  )}
-                  <motion.button
-                    whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={resetUpload}
-                    disabled={uploading}
-                    className="p-2 rounded-xl transition-colors"
-                  >
-                    <X className="w-5 h-5 text-white/60" />
-                  </motion.button>
+                  </div>
                 </div>
-              </div>
 
-              {uploadStep === 'select' ? (
-                <div className="p-10 flex flex-col items-center justify-center min-h-[350px]">
-                  <motion.div 
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', damping: 15 }}
-                    className="relative mb-8"
-                  >
-                    <div className="absolute inset-0 rounded-full bg-[#28f5cc]/20 animate-ping" style={{ animationDuration: '2s' }} />
-                    <div 
-                      className="relative w-24 h-24 rounded-full flex items-center justify-center"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 173, 123, 0.1))',
-                        border: '2px solid rgba(40, 245, 204, 0.3)',
-                      }}
-                    >
-                      <ImagePlus className="w-10 h-10 text-[#28f5cc]" />
-                    </div>
-                  </motion.div>
-                  <h3 className="text-white text-xl font-semibold mb-2">Share Your Moment</h3>
-                  <p className="text-white/40 text-sm mb-8 text-center max-w-xs">Upload photos to share with your community</p>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)' }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-8 py-3.5 rounded-xl font-semibold"
-                    style={{
-                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                      color: '#000',
-                      boxShadow: '0 4px 20px rgba(40, 245, 204, 0.25)',
-                    }}
-                  >
-                    Choose Photo
-                  </motion.button>
-                </div>
-                ) : (
-                  <div className="p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
-                          {currentUserAvatar ? (
-                            <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
-                              {currentUsername.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                <div className="flex-1 overflow-y-auto">
+                  {uploadStep === 'select' ? (
+                    <div className="p-10 flex flex-col items-center justify-center min-h-[350px]">
+                      <motion.div 
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', damping: 15 }}
+                        className="relative mb-8"
+                      >
+                        <div className="absolute inset-0 rounded-full bg-[#28f5cc]/20 animate-ping" style={{ animationDuration: '2s' }} />
+                        <div 
+                          className="relative w-24 h-24 rounded-full flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 173, 123, 0.1))',
+                            border: '2px solid rgba(40, 245, 204, 0.3)',
+                          }}
+                        >
+                          <ImagePlus className="w-10 h-10 text-[#28f5cc]" />
                         </div>
-                      <div className="flex-1 min-w-0">
-                        <textarea
-                          value={uploadCaption}
-                          onChange={(e) => setUploadCaption(e.target.value)}
-                          placeholder="What's on your mind?"
-                          className="w-full bg-transparent text-white text-[16px] placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
-                          autoFocus
-                        />
-                        {uploadPreview && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="relative mt-4 rounded-xl overflow-hidden bg-black/20"
-                            style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
-                          >
-                              <img 
-                                src={uploadPreview} 
-                                alt="Preview" 
-                                className="w-full h-auto max-h-[350px] object-contain block mx-auto" 
-                              />
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => {
-                                setUploadFile(null);
-                                setUploadPreview(null);
-                                setUploadStep('select');
-                              }}
-                              className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors z-10"
-                              style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
-                            >
-                              <X className="w-4 h-4 text-white" />
-                            </motion.button>
-                          </motion.div>
-                        )}
-                      </div>
+                      </motion.div>
+                      <h3 className="text-white text-xl font-semibold mb-2">Share Your Moment</h3>
+                      <p className="text-white/40 text-sm mb-8 text-center max-w-xs">Upload photos to share with your community</p>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)' }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-8 py-3.5 rounded-xl font-semibold"
+                        style={{
+                          background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                          color: '#000',
+                          boxShadow: '0 4px 20px rgba(40, 245, 204, 0.25)',
+                        }}
+                      >
+                        Choose Photo
+                      </motion.button>
                     </div>
+                    ) : (
+                      <div className="p-5">
+                          <div className="flex items-start gap-4">
+                            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#28f5cc]/20" style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}>
+                              {currentUserAvatar ? (
+                                <img src={currentUserAvatar} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-black font-bold text-xs">
+                                  {currentUsername.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                          <div className="flex-1 min-w-0">
+                            <textarea
+                              value={uploadCaption}
+                              onChange={(e) => setUploadCaption(e.target.value)}
+                              placeholder="What's on your mind?"
+                              className="w-full bg-transparent text-white text-[16px] placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
+                              autoFocus
+                            />
+                            {uploadPreview && (
+                              <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative mt-4 rounded-xl overflow-hidden bg-black/20"
+                                style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+                              >
+                                  <img 
+                                    src={uploadPreview} 
+                                    alt="Preview" 
+                                    className="w-full h-auto max-h-[40vh] object-contain block mx-auto" 
+                                  />
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => {
+                                    setUploadFile(null);
+                                    setUploadPreview(null);
+                                    setUploadStep('select');
+                                  }}
+                                  className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors z-10"
+                                  style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+                                >
+                                  <X className="w-4 h-4 text-white" />
+                                </motion.button>
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+                    </div>
+                  )}
                 </div>
-              )}
 
               {uploading && (
                 <motion.div 
