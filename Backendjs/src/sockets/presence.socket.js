@@ -12,6 +12,7 @@ export const registerPresenceSocket = (io, socket) => {
         const user = socket.user;
         const rId = String(roomId);
         const userId = Number(user.id);
+        console.log(`[Presence] User ${userId} (${user.username}) joining voice room ${rId}`);
 
         socket.join(`voice:${rId}`);
         socket.join(`room:${rId}`);
@@ -19,9 +20,12 @@ export const registerPresenceSocket = (io, socket) => {
         joinedRooms.add(rId);
         addUserToRoom(rId, { ...user, id: userId });
 
+        const usersInRoom = getUsersInRoom(rId);
+        console.log(`[Presence] Room ${rId} now has ${usersInRoom.length} users`);
+
         io.to(`room:${rId}`).emit("voice:presence", {
           roomId: rId,
-          users: getUsersInRoom(rId),
+          users: usersInRoom,
         });
       } catch (err) {
         console.error("Error in voice:join:", err);
@@ -32,14 +36,18 @@ export const registerPresenceSocket = (io, socket) => {
       try {
         const rId = String(roomId);
         const userId = Number(socket.user.id);
+        console.log(`[Presence] User ${userId} leaving voice room ${rId}`);
 
         socket.leave(`voice:${rId}`);
         joinedRooms.delete(rId);
         removeUserFromRoom(rId, userId);
 
+        const usersInRoom = getUsersInRoom(rId);
+        console.log(`[Presence] Room ${rId} now has ${usersInRoom.length} users`);
+
         io.to(`room:${rId}`).emit("voice:presence", {
           roomId: rId,
-          users: getUsersInRoom(rId),
+          users: usersInRoom,
         });
       } catch (err) {
         console.error("Error in voice:leave:", err);

@@ -165,10 +165,14 @@ export function VoiceCallRoom({
       console.log('[VC] Presence update:', newPresence.map(u => u.username));
       const currentUserId = Number(user?.id);
       
-      if (isInCallRef.current) {
-        const newIds = new Set(newPresence.map(u => u.id));
+        if (isInCallRef.current) {
+          const newIds = new Set(newPresence.map(u => u.id));
+          
+          if (newPresence.length === 1) {
+            console.log('[VC] I am the only one in the room. Waiting for others to join...');
+          }
 
-        // Deterministic peer creation: person with higher ID initiates
+          // Deterministic peer creation: person with higher ID initiates
         newPresence.forEach(u => {
           if (u.id !== currentUserId && !peersRef.current.has(u.id)) {
             const shouldIInitiate = currentUserId > u.id;
@@ -226,7 +230,7 @@ export function VoiceCallRoom({
           handleLeaveCall(true);
           return;
         }
-        console.log('[VC] Join event emitted');
+        console.log(`[VC] Join event emitted for user ${user?.id}. I am now online and ready for peers.`);
       } catch (err) {
         console.error('[VC] Media failed:', err);
         alert('Microphone access is required to join the voice channel.');
