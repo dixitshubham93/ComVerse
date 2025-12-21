@@ -65,124 +65,121 @@ import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
   
-    const localStreamRef = useRef<MediaStream | null>(null);
-    const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
-    const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
-  
-    // WebSocket connection for presence and signaling
-    const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, error: socketError } = useRoomSocket(currentRoomId, communityId, {
-      onPresence: (presenceUsers: UserDto[]) => {
-        const convertedUsers = presenceUsers.map(convertUserDto);
-        setUsers(convertedUsers);
-      },
-      onSignal: (data) => {
-        console.log('Received signal from:', data.from);
-        const peer = peersRef.current.get(data.from);
-        if (peer) {
-          peer.signal(data.signal);
-        } else if (isInCall) {
-          console.log('Creating non-initiator peer for:', data.from);
-          const newPeer = createPeer(data.from, false);
-          newPeer.signal(data.signal);
-        }
-      }
-    });
-  
-    // Fetch all voice rooms for the community
-    useEffect(() => {
-      const fetchRooms = async () => {
-        try {
-          const allRooms = await getCommunityRooms(communityId);
-          const vRooms = allRooms
-            .filter(r => r.type === RoomType.VOICE_CHAT)
-            .map(r => ({
-              id: r.id.toString(),
-              name: r.name,
-              activeUsers: 0 // Ideally this comes from a separate presence API or socket
-            }));
-          setVoiceRooms(vRooms);
-          
-          // Update current room name if it changed
-          const current = allRooms.find(r => r.id === currentRoomId);
-          if (current) setCurrentRoomName(current.name);
-        } catch (error) {
-          console.error('Error fetching voice rooms:', error);
-        }
-      };
-      fetchRooms();
-    }, [communityId, currentRoomId]);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
+  const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
+  const presenceRef = useRef<UserDto[]>([]);
 
-  const createPeer = (targetUserId: number, initiator: boolean) => {
-    console.log(`Creating peer for ${targetUserId}, initiator: ${initiator}`);
+  const destroyPeer = useCallback((userId: number) => {
+    console.log(`[VC] Destroying peer for user ${userId}`);
+    const peer = peersRef.current.get(userId);
+    if (peer) {
+      peer.destroy();
+      peersRef.current.delete(userId);
+    }
+    const audio = audioElementsRef.current.get(userId);
+    if (audio) {
+      audio.srcObject = null;
+      audio.remove();
+      audioElementsRef.current.delete(userId);
+    }
+  }, []);
+
+  const createPeer = useCallback((targetUserId: number, initiator: boolean) => {
+    console.log(`[VC] Creating peer for ${targetUserId}, initiator: ${initiator}`);
+    
     if (peersRef.current.has(targetUserId)) {
-      console.log(`Peer for ${targetUserId} already exists, destroying old one`);
-      peersRef.current.get(targetUserId)?.destroy();
+      console.log(`[VC] Peer for ${targetUserId} already exists, cleaning up before recreation`);
+      destroyPeer(targetUserId);
     }
 
     const peer = new Peer({
       initiator,
       trickle: false,
       stream: localStreamRef.current || undefined,
+      config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }] }
     });
 
     peer.on('signal', (signal) => {
+      console.log(`[VC] Sending signal to ${targetUserId}, type: ${signal.type || 'ice'}`);
       sendSignal(targetUserId, signal);
     });
 
     peer.on('stream', (stream) => {
-      console.log(`Received stream from ${targetUserId}`);
+      console.log(`[VC] Received remote stream from ${targetUserId}`);
       let audio = audioElementsRef.current.get(targetUserId);
       if (!audio) {
         audio = document.createElement('audio');
         audio.autoplay = true;
-        document.body.appendChild(audio); // Ensure it's in DOM for some browsers
+        // In some browsers, audio must be in DOM to play
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
         audioElementsRef.current.set(targetUserId, audio);
       }
       audio.srcObject = stream;
       audio.volume = volume / 100;
+      
+      // Attempt to play (handles some browser restrictions)
+      audio.play().catch(err => console.warn(`[VC] Error playing audio for ${targetUserId}:`, err));
     });
 
     peer.on('error', (err) => {
-      console.error(`Peer error with ${targetUserId}:`, err);
-      peer.destroy();
-      peersRef.current.delete(targetUserId);
+      console.error(`[VC] Peer error with ${targetUserId}:`, err);
+      destroyPeer(targetUserId);
     });
 
     peer.on('close', () => {
-      console.log(`Peer connection with ${targetUserId} closed`);
-      const audio = audioElementsRef.current.get(targetUserId);
-      if (audio) {
-        audio.srcObject = null;
-        audio.remove();
-        audioElementsRef.current.delete(targetUserId);
-      }
-      peersRef.current.delete(targetUserId);
+      console.log(`[VC] Peer connection with ${targetUserId} closed`);
+      destroyPeer(targetUserId);
     });
 
     peersRef.current.set(targetUserId, peer);
     return peer;
-  };
+  }, [sendSignal, volume, destroyPeer]);
 
-  useEffect(() => {
-    if (isInCall) {
-      // Connect to any user that is currently in the room but not connected
-      users.forEach(u => {
-        const targetId = Number(u.userId);
-        if (targetId !== user?.id && !peersRef.current.has(targetId)) {
-          createPeer(targetId, true);
-        }
-      });
+  // WebSocket connection for presence and signaling
+  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, error: socketError } = useRoomSocket(currentRoomId, communityId, {
+    onPresence: (newPresence: UserDto[]) => {
+      console.log('[VC] Presence updated:', newPresence.map(u => u.username));
+      
+      if (isInCall) {
+        const currentUserId = Number(user?.id);
+        const prevIds = new Set(presenceRef.current.map(u => u.id));
+        const newIds = new Set(newPresence.map(u => u.id));
 
-      // Cleanup peers for users no longer in presence
-      const presenceIds = new Set(users.map(u => Number(u.userId)));
-      peersRef.current.forEach((peer, userId) => {
-        if (!presenceIds.has(userId)) {
-          console.log(`Cleaning up peer for ${userId} as they are no longer in presence`);
-          peer.destroy();
-        }
-      });
+        // 1. Identify new users who joined (they were not in prev presence)
+        // Existing users (like me) initiate to newly joined users
+        newPresence.forEach(u => {
+          if (u.id !== currentUserId && !prevIds.has(u.id)) {
+            console.log(`[VC] New user detected: ${u.username} (${u.id}). Initiating call.`);
+            createPeer(u.id, true);
+          }
+        });
+
+        // 2. Identify users who left
+        presenceRef.current.forEach(u => {
+          if (!newIds.has(u.id)) {
+            console.log(`[VC] User left: ${u.username} (${u.id}). Cleaning up peer.`);
+            destroyPeer(u.id);
+          }
+        });
+      }
+
+      presenceRef.current = newPresence;
+      setUsers(newPresence.map(convertUserDto));
+    },
+    onSignal: (data) => {
+      console.log(`[VC] Received signal from ${data.from}, type: ${data.signal.type || 'ice'}`);
+      const peer = peersRef.current.get(data.from);
+      if (peer) {
+        peer.signal(data.signal);
+      } else if (isInCall) {
+        console.log(`[VC] No peer for ${data.from} yet. Creating non-initiator peer.`);
+        const newPeer = createPeer(data.from, false);
+        newPeer.signal(data.signal);
+      }
     }
-  }, [isInCall, users, user?.id]);
+  });
 
   const convertUserDto = (dto: UserDto): VoiceUser => {
     return {
