@@ -1,21 +1,13 @@
-    import React from 'react';
-    import { createRoot } from "react-dom/client";
-    import App from "./App.tsx";
-    import "./index.css";
-    import { AuthProvider } from "./contexts/AuthContext";
-    import { BrowserRouter } from "react-router-dom";
-    import { Toaster } from "sonner";
-    import { Buffer } from 'buffer';
-    import process from 'process';
-    import util from 'util';
-    
-    // Polyfill for simple-peer
-    (window as any).global = window;
-    (window as any).Buffer = Buffer;
-    (window as any).process = process;
-    (window as any).util = util;
-    
-    createRoot(document.getElementById("root")!).render(
+import './polyfills';
+import React from 'react';
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { AuthProvider } from "./contexts/AuthContext";
+import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "sonner";
+
+createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthProvider>
       <App />

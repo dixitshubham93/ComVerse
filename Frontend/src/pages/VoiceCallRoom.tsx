@@ -166,25 +166,22 @@ export function VoiceCallRoom({
       const currentUserId = Number(user?.id);
       
       if (isInCallRef.current) {
-        const prevIds = new Set(presenceRef.current.map(u => u.id));
         const newIds = new Set(newPresence.map(u => u.id));
 
-        // Existing users (including us) should initiate to NEW users
+        // Deterministic peer creation: person with higher ID initiates
         newPresence.forEach(u => {
-          if (u.id !== currentUserId && !prevIds.has(u.id)) {
-            // If I was already in the call before this update
-            const wasIInCallAlready = presenceRef.current.some(p => p.id === currentUserId);
-            if (wasIInCallAlready) {
-              console.log(`[VC] I am an existing user, initiating to newcomer: ${u.username}`);
-              createPeer(u.id, true, (sig) => sendSignal(u.id, sig));
-            }
+          if (u.id !== currentUserId && !peersRef.current.has(u.id)) {
+            const shouldIInitiate = currentUserId > u.id;
+            console.log(`[VC] New peer detected: ${u.username}. Should I initiate? ${shouldIInitiate}`);
+            createPeer(u.id, shouldIInitiate, (sig) => sendSignal(u.id, sig));
           }
         });
 
         // Cleanup peers for users who left
-        presenceRef.current.forEach(u => {
-          if (!newIds.has(u.id) && u.id !== currentUserId) {
-            destroyPeer(u.id);
+        peersRef.current.forEach((peer, userId) => {
+          if (!newIds.has(userId)) {
+            console.log(`[VC] User ${userId} left, destroying peer`);
+            destroyPeer(userId);
           }
         });
       }
