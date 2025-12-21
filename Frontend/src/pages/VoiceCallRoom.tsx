@@ -7,6 +7,9 @@ import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
 import { useAuth } from '../contexts/AuthContext';
 import Peer from 'simple-peer';
 
+// Add this type helper
+type SimplePeerInstance = any; // Fallback for Peer.Instance if it causes issues
+
 interface VoiceUser {
   id: string;
   name: string;
@@ -66,7 +69,7 @@ export function VoiceCallRoom({
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
 
   const localStreamRef = useRef<MediaStream | null>(null);
-  const peersRef = useRef<Map<number, Peer.Instance>>(new Map());
+  const peersRef = useRef<Map<number, any>>(new Map()); // Using any here to bypass potential Peer.Instance type issues during HMR
   const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
   const presenceRef = useRef<UserDto[]>([]);
   const audioContainerRef = useRef<HTMLDivElement>(null);
@@ -207,25 +210,31 @@ export function VoiceCallRoom({
 
   const handleJoinCall = async () => {
     if (isInCall) return;
-    console.log('[VC] Starting join process...');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
-      isInCallRef.current = true;
-      setIsInCall(true);
-      
-      const success = joinVoice();
-      if (!success) {
-        console.error('[VC] Socket not connected, could not join');
-        handleLeaveCall(true);
+      console.log('[VC] Starting join process...');
+      if (!isConnected) {
+        console.error('[VC] Not connected to socket server');
+        alert('Not connected to voice server. Please wait or refresh.');
         return;
       }
-      console.log('[VC] Joined successfully');
-    } catch (err) {
-      console.error('[VC] Media failed:', err);
-      alert('Microphone access is required.');
-    }
-  };
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('[VC] Media stream obtained');
+        localStreamRef.current = stream;
+        isInCallRef.current = true;
+        setIsInCall(true);
+        
+        const success = joinVoice();
+        if (!success) {
+          console.error('[VC] Socket not connected, could not join');
+          handleLeaveCall(true);
+          return;
+        }
+        console.log('[VC] Join event emitted');
+      } catch (err) {
+        console.error('[VC] Media failed:', err);
+        alert('Microphone access is required to join the voice channel.');
+      }
+    };
 
   const handleLeaveCall = useCallback((isManual: boolean = false) => {
     if (!isInCallRef.current && !isManual) return;
@@ -382,13 +391,14 @@ export function VoiceCallRoom({
             {isLoadingMetadata ? (
               <div className="w-10 h-10 border-2 border-[#28f5cc] border-t-transparent rounded-full animate-spin" />
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-5xl">
-                {isInCall && !users.some(u => u.userId === user?.id) && (
-                  <div className="flex flex-col items-center gap-3">
-                    {renderAvatar({ ...currentUser, isTalking: false, isMuted, isOnline: true } as any)}
-                    <span className="text-[#28f5cc] text-xs font-bold px-2 py-1 bg-[rgba(4,55,47,0.5)] rounded border border-[#28f5cc]">{currentUser.name} (You)</span>
-                  </div>
-                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-5xl">
+                  {isInCall && !users.some(u => u.userId === Number(user?.id)) && (
+                    <div className="flex flex-col items-center gap-3">
+                      {renderAvatar({ ...currentUser, isTalking: false, isMuted, isOnline: true } as any)}
+                      <span className="text-[#28f5cc] text-xs font-bold px-2 py-1 bg-[rgba(4,55,47,0.5)] rounded border border-[#28f5cc]">{currentUser.name} (You)</span>
+                    </div>
+                  )}
+
                   {users.map(u => (
                     <div key={u.id} className="flex flex-col items-center gap-3">
                       {renderAvatar(u)}
