@@ -162,21 +162,21 @@ export function VoiceCallRoom({
 
   const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
     onPresence: (newPresence: UserDto[]) => {
-      console.log('[VC] Presence update:', newPresence.map(u => u.username));
+      console.log('[VC] Presence update received. Total users:', newPresence.length, newPresence.map(u => u.username));
       const currentUserId = Number(user?.id);
       
-        if (isInCallRef.current) {
-          const newIds = new Set(newPresence.map(u => u.id));
-          
-          if (newPresence.length === 1) {
-            console.log('[VC] I am the only one in the room. Waiting for others to join...');
-          }
+      if (isInCallRef.current) {
+        const newIds = new Set(newPresence.map(u => u.id));
+        
+        if (newPresence.length === 1 && newPresence[0].id === currentUserId) {
+          console.log('[VC] I am the only one in the room. Waiting for others to join...');
+        }
 
-          // Deterministic peer creation: person with higher ID initiates
+        // Deterministic peer creation: person with higher ID initiates
         newPresence.forEach(u => {
           if (u.id !== currentUserId && !peersRef.current.has(u.id)) {
             const shouldIInitiate = currentUserId > u.id;
-            console.log(`[VC] New peer detected: ${u.username}. Should I initiate? ${shouldIInitiate}`);
+            console.log(`[VC] New peer detected: ${u.username} (${u.id}). My ID: ${currentUserId}. Should I initiate? ${shouldIInitiate}`);
             createPeer(u.id, shouldIInitiate, (sig) => sendSignal(u.id, sig));
           }
         });
@@ -217,21 +217,22 @@ export function VoiceCallRoom({
         alert('Not connected to voice server. Please wait or refresh.');
         return;
       }
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log('[VC] Media stream obtained');
-        localStreamRef.current = stream;
-        isInCallRef.current = true;
-        setIsInCall(true);
-        
-        const success = joinVoice();
-        if (!success) {
-          console.error('[VC] Socket not connected, could not join');
-          handleLeaveCall(true);
-          return;
-        }
-        console.log(`[VC] Join event emitted for user ${user?.id}. I am now online and ready for peers.`);
-      } catch (err) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log('[VC] Media stream obtained successfully');
+          localStreamRef.current = stream;
+          isInCallRef.current = true;
+          setIsInCall(true);
+          
+          console.log(`[VC] Emitting voice:join for user ${user?.id}...`);
+          const success = joinVoice();
+          if (!success) {
+            console.error('[VC] Socket not connected, could not join');
+            handleLeaveCall(true);
+            return;
+          }
+          console.log(`[VC] Join event emitted. isOnline for local user is now effectively true.`);
+        } catch (err) {
         console.error('[VC] Media failed:', err);
         alert('Microphone access is required to join the voice channel.');
       }

@@ -21,7 +21,7 @@ export const registerPresenceSocket = (io, socket) => {
         addUserToRoom(rId, { ...user, id: userId });
 
         const usersInRoom = getUsersInRoom(rId);
-        console.log(`[Presence] Room ${rId} now has ${usersInRoom.length} users`);
+        console.log(`[Presence] Room ${rId} full list:`, usersInRoom.map(u => `${u.username}(${u.id})`));
 
         io.to(`room:${rId}`).emit("voice:presence", {
           roomId: rId,
