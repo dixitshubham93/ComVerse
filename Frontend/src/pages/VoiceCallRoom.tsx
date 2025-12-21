@@ -53,6 +53,12 @@ export function VoiceCallRoom({
 
   const [users, setUsers] = useState<VoiceUser[]>([]);
   const [isInCall, setIsInCall] = useState(false);
+  const isInCallRef = useRef(false);
+
+  useEffect(() => {
+    isInCallRef.current = isInCall;
+  }, [isInCall]);
+
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(80);
   
@@ -102,13 +108,11 @@ export function VoiceCallRoom({
       
       const currentUserId = Number(user?.id);
       
-      if (isInCall) {
+      if (isInCallRef.current) {
         const prevIds = new Set(presenceRef.current.map(u => u.id));
         const newIds = new Set(newPresence.map(u => u.id));
 
         // 1. Identify users who just joined (Requirement 2: Existing users initiate)
-        // If presenceRef.current was empty, it means we just joined, so we don't initiate to anyone.
-        // Existing users in the room will see us join and initiate to us.
         if (presenceRef.current.length > 0) {
           newPresence.forEach(u => {
             if (u.id !== currentUserId && !prevIds.has(u.id)) {
@@ -136,9 +140,8 @@ export function VoiceCallRoom({
       let peer = peersRef.current.get(data.from);
       if (peer) {
         peer.signal(data.signal);
-      } else if (isInCall) {
+      } else if (isInCallRef.current) {
         // Requirement 2: Newly joined users -> initiator = false
-        // We receive a signal but have no peer, so we are the non-initiator
         console.log(`[VC] No peer for ${data.from} yet. Creating non-initiator peer.`);
         const newPeer = createPeer(data.from, false);
         newPeer.signal(data.signal);
@@ -215,6 +218,7 @@ export function VoiceCallRoom({
       console.log('[VC] Mic access granted');
       
       setIsInCall(true);
+      isInCallRef.current = true;
       joinVoice();
       
       // We don't initiate here. We wait for onPresence to see existing users.
@@ -225,7 +229,10 @@ export function VoiceCallRoom({
     }
   };
 
-  const handleLeaveCall = useCallback(() => {
+  const handleLeaveCall = useCallback((isManual: boolean = false) => {
+    // Only cleanup if we are actually in a call, or if it's a manual leave
+    if (!isInCall && !isManual) return;
+    
     console.log('[VC] Leaving call, cleaning up...');
     try {
       leaveVoice();
@@ -258,7 +265,7 @@ export function VoiceCallRoom({
     } catch (error) {
       console.error('[VC] Error during handleLeaveCall:', error);
     }
-  }, [leaveVoice]);
+  }, [leaveVoice, isInCall]);
 
   const toggleMute = () => {
     if (localStreamRef.current) {
