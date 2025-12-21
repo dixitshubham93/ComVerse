@@ -57,6 +57,7 @@ export const registerPresenceSocket = (io, socket) => {
     socket.on("voice:signal", ({ to, signal, roomId }) => {
       const rId = String(roomId);
       const fromId = Number(socket.user.id);
+      console.log(`[Presence] Signaling from ${fromId} to ${to} in room ${rId}`);
       io.to(`user:${to}`).emit("voice:signal", {
         from: fromId,
         signal,
@@ -68,6 +69,7 @@ export const registerPresenceSocket = (io, socket) => {
       try {
         const rId = String(roomId);
         const userId = Number(socket.user.id);
+        console.log(`[Presence] User ${userId} mute status in room ${rId}: ${isMuted}`);
         io.to(`room:${rId}`).emit("voice:mute", {
           roomId: rId,
           userId,
@@ -78,10 +80,13 @@ export const registerPresenceSocket = (io, socket) => {
       }
     });
 
-    socket.join(`user:${Number(socket.user.id)}`);
+    const myUserId = Number(socket.user.id);
+    socket.join(`user:${myUserId}`);
+    console.log(`[Presence] Socket ${socket.id} joined user:${myUserId}`);
 
     socket.on("disconnect", () => {
       const userId = Number(socket.user.id);
+      console.log(`[Presence] User ${userId} disconnected, cleaning up ${joinedRooms.size} rooms`);
       joinedRooms.forEach(rId => {
         removeUserFromRoom(rId, userId);
         io.to(`room:${rId}`).emit("voice:presence", {

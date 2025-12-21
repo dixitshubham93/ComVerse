@@ -48,9 +48,9 @@ export const registerMessageSocket = (io, socket) => {
       });
 
       io.to(`room:${roomId}`).emit("room:message", {
-        id: message.id,
-        roomId,
-        userId,
+        id: Number(message.id),
+        roomId: Number(roomId),
+        userId: Number(userId),
         content,
         contentType,
         createdAt: message.createdAt,

@@ -97,22 +97,26 @@ export function useRoomSocket(
     });
 
     socket.on('room:message', (data: MessageDto) => {
+      console.log('[Socket] Received room:message', data);
       callbacksRef.current.onMessage?.(data);
     });
 
     socket.on('voice:presence', (data: { roomId: number, users: UserDto[] }) => {
+      console.log('[Socket] Received voice:presence', data);
       if (Number(data.roomId) === Number(roomId)) {
         callbacksRef.current.onPresence?.(data.users);
       }
     });
 
       socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
+        console.log('[Socket] Received voice:signal from', data.from);
         if (Number(data.roomId) === Number(roomId)) {
           callbacksRef.current.onSignal?.(data);
         }
       });
 
       socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number }) => {
+        console.log('[Socket] Received voice:mute from', data.userId, ':', data.isMuted);
         if (Number(data.roomId) === Number(roomId)) {
           callbacksRef.current.onMute?.({ userId: data.userId, isMuted: data.isMuted });
         }
