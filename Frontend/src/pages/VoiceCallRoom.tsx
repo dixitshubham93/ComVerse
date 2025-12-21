@@ -389,12 +389,12 @@ export function VoiceCallRoom({
                     <span className="text-[#28f5cc] text-xs font-bold px-2 py-1 bg-[rgba(4,55,47,0.5)] rounded border border-[#28f5cc]">{currentUser.name} (You)</span>
                   </div>
                 )}
-                {users.map(u => (
-                  <div key={u.id} className="flex flex-col items-center gap-3">
-                    {renderAvatar(u)}
-                    <span className="text-white text-xs font-medium">{u.name} {u.userId === user?.id ? '(You)' : ''}</span>
-                  </div>
-                ))}
+                  {users.map(u => (
+                    <div key={u.id} className="flex flex-col items-center gap-3">
+                      {renderAvatar(u)}
+                      <span className="text-white text-xs font-medium">{u.name} {u.userId === Number(user?.id) ? '(You)' : ''}</span>
+                    </div>
+                  ))}
                 {!isInCall && users.length === 0 && <p className="col-span-full text-[#747c88]">Channel is empty</p>}
               </div>
             )}

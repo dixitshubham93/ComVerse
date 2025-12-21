@@ -1,4 +1,22 @@
 import { createRoom, getRoomsByCommunity, deleteRoom as deleteRoomService } from "../services/room.service.js";
+import { getUsersInRoom } from "../services/presence.service.js";
+
+export const getVoiceMetadata = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const users = getUsersInRoom(String(roomId));
+    res.json({
+      success: true,
+      data: {
+        roomId: Number(roomId),
+        activeUsers: users.length,
+        users
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const create = async (req, res, next) => {
   try {

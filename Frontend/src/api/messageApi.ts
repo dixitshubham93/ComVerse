@@ -128,8 +128,21 @@ export interface VoiceRoomMetadata {
  */
 export const getVoiceRoomMetadata = async (roomId: number): Promise<VoiceRoomMetadata> => {
   try {
-    // Note: This endpoint may not exist yet, returning empty for now
-    // Presence will be handled via WebSocket
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/voice-metadata`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch metadata: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.success && result.data) {
+      return result.data;
+    }
     return {
       roomId,
       activeUsers: 0,
@@ -137,7 +150,11 @@ export const getVoiceRoomMetadata = async (roomId: number): Promise<VoiceRoomMet
     };
   } catch (error) {
     console.error('Error fetching voice room metadata:', error);
-    throw error;
+    return {
+      roomId,
+      activeUsers: 0,
+      users: [],
+    };
   }
 };
 
