@@ -56,6 +56,20 @@ export const registerPresenceSocket = (io, socket) => {
       });
     });
 
+    socket.on("voice:mute", ({ roomId, isMuted }) => {
+      try {
+        const rId = String(roomId);
+        const userId = Number(socket.user.id);
+        io.to(`room:${rId}`).emit("voice:mute", {
+          roomId: rId,
+          userId,
+          isMuted
+        });
+      } catch (err) {
+        console.error("Error in voice:mute:", err);
+      }
+    });
+
     socket.join(`user:${Number(socket.user.id)}`);
 
     socket.on("disconnect", () => {

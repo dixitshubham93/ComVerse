@@ -26,6 +26,7 @@ export interface RoomSocketCallbacks {
   onMessageDeleted?: (messageId: number) => void;
   onPresence?: (users: UserDto[]) => void;
   onSignal?: (data: { from: number; signal: any; roomId: number }) => void;
+  onMute?: (data: { userId: number; isMuted: boolean }) => void;
   onError?: (error: string) => void;
 }
 
@@ -105,11 +106,17 @@ export function useRoomSocket(
       }
     });
 
-    socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
-      if (Number(data.roomId) === Number(roomId)) {
-        callbacksRef.current.onSignal?.(data);
-      }
-    });
+      socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
+        if (Number(data.roomId) === Number(roomId)) {
+          callbacksRef.current.onSignal?.(data);
+        }
+      });
+
+      socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number }) => {
+        if (Number(data.roomId) === Number(roomId)) {
+          callbacksRef.current.onMute?.({ userId: data.userId, isMuted: data.isMuted });
+        }
+      });
 
     socket.on('room:error', (data: { message: string }) => {
       setError(data.message);
@@ -176,6 +183,11 @@ export function useRoomSocket(
     socketRef.current.emit('voice:signal', { to, signal, roomId });
   }, [roomId]);
 
+  const sendMute = useCallback((isMuted: boolean) => {
+    if (!socketRef.current?.connected || !roomId) return;
+    socketRef.current.emit('voice:mute', { roomId, isMuted });
+  }, [roomId]);
+
   useEffect(() => {
     connect();
     return () => disconnect();
@@ -189,6 +201,7 @@ export function useRoomSocket(
     joinVoice,
     leaveVoice,
     sendSignal,
+    sendMute,
     reconnect: connect,
     socket: socketRef.current
   };
