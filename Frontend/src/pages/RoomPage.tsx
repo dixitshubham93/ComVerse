@@ -16,6 +16,10 @@ interface RoomPageProps {
   onBack: () => void;
 }
 
+const mockMessages = [
+  { id: 1, user: 'System', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=System', timestamp: '10:00 AM', message: 'Welcome to the room!' },
+];
+
 export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
   const [message, setMessage] = useState('');
   const [isInVoice, setIsInVoice] = useState(false);
@@ -172,20 +176,21 @@ export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
           </p>
         </div>
 
-        <div className="p-4 space-y-2">
-          {participants.length > 0 ? (
-            participants.map((participant) => (
-              <div
-                key={participant.userId}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.05)] transition-colors"
-              >
-                <div className="relative">
-                  <img
-                    src={participant.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.username}`}
-                    alt={participant.username}
-                    className="w-8 h-8 rounded-full"
-                    style={{ border: '1.5px solid rgba(40, 245, 204, 0.3)' }}
-                  />
+          <div className="p-4 space-y-2">
+            {participants.length > 0 ? (
+              participants.map((participant) => (
+                <div
+                  key={participant.id}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.05)] transition-colors"
+                >
+                  <div className="relative">
+                    <img
+                      src={participant.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.username}`}
+                      alt={participant.username}
+                      className="w-8 h-8 rounded-full"
+                      style={{ border: '1.5px solid rgba(40, 245, 204, 0.3)' }}
+                    />
+
                   <div
                     className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#04372f]"
                     style={{

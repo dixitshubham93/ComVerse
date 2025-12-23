@@ -7,6 +7,17 @@ import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
 import { useAuth } from '../contexts/AuthContext';
 import Peer from 'simple-peer';
 
+const convertUserDto = (u: UserDto): VoiceUser => ({
+  id: u.id.toString(),
+  name: u.username,
+  avatar: u.avatarUrl || u.username.charAt(0).toUpperCase(),
+  isTalking: false,
+  isMuted: false,
+  isOnline: true,
+  inCall: !!u.inCall,
+  userId: u.id
+});
+
 // Add this type helper
 type SimplePeerInstance = any; // Fallback for Peer.Instance if it causes issues
 
