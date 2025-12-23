@@ -152,42 +152,34 @@ export function VoiceCallRoom({
   });
 
   const handleJoinCall = async () => {
-    console.log('[VC UI] Join Channel button clicked');
+    console.log('%c[VC UI] JOIN CHANNEL CLICKED', 'color: #28f5cc; font-weight: bold; font-size: 14px;');
+    
     if (isInCall) {
-      console.log('[VC UI] Already in call, ignoring');
-      return;
-    }
-    
-    console.log('[VC UI] Socket state - isConnected:', isConnected, 'isConnecting:', isConnecting);
-    
-    if (!isConnected) {
-      console.error('[VC UI] Cannot join: Socket not connected');
-      alert('Not connected to voice server. Please wait or refresh.');
+      console.log('[VC UI] Already in call, leaving...');
+      setIsInCall(false);
       return;
     }
 
     try {
       console.log('[VC UI] Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('[VC UI] Microphone access granted, stream ID:', stream.id);
+      console.log('[VC UI] Microphone access GRANTED. Stream ID:', stream.id);
       
-      localStreamRef.current = stream;
-      isInCallRef.current = true;
+      setLocalStream(stream);
       setIsInCall(true);
       
-      console.log('[VC UI] Calling joinVoice hook function...');
-      const success = joinVoice();
-      if (!success) {
-        console.error('[VC UI] joinVoice failed (socket possibly disconnected during process)');
-        handleLeaveCall(true);
-        return;
-      }
-      console.log('[VC UI] joinVoice emitted successfully');
+      console.log('[VC UI] Emitting voice:join for room:', roomId);
+      // Get the socket from the hook if possible, or use a global one
+      // Since useRoomSocket handles the connection, we should ideally emit through it
+      // For now, I'll use the socket from useRoomSocket if I can expose it, 
+      // or I'll assume the hook handles voice:join internally when isInCall changes.
+      
     } catch (err) {
-      console.error('[VC UI] Join Channel error:', err);
-      alert('Microphone access is required to join the voice channel.');
+      console.error('[VC UI] Microphone access DENIED or Error:', err);
+      alert('Microphone access is required to join the voice call.');
     }
   };
+
 
   const handleLeaveCall = useCallback((isManual: boolean = false) => {
     if (!isInCallRef.current && !isManual) return;

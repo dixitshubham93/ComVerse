@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Send, Smile, Paperclip, Phone, PhoneOff } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
+import { useRoomSocket } from '../hooks/useRoomSocket';
+import { useAuth } from '../contexts/AuthContext';
 
 interface RoomPageProps {
   room: {
@@ -14,62 +16,29 @@ interface RoomPageProps {
   onBack: () => void;
 }
 
-const mockMessages = [
-  {
-    id: '1',
-    user: 'Sarah Chen',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-    message: 'Hey everyone! Just joined this room 👋',
-    timestamp: '10:23 AM',
-  },
-  {
-    id: '2',
-    user: 'Alex Rivera',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
-    message: 'Welcome! Great to have you here',
-    timestamp: '10:24 AM',
-  },
-  {
-    id: '3',
-    user: 'Mike Johnson',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    message: 'Anyone want to discuss the latest tech updates?',
-    timestamp: '10:25 AM',
-  },
-];
-
-const activeParticipants = [
-  {
-    name: 'Alex Rivera',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop',
-    isOnline: true,
-  },
-  {
-    name: 'Sarah Chen',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-    isOnline: true,
-  },
-  {
-    name: 'Mike Johnson',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    isOnline: true,
-  },
-  {
-    name: 'Emma Davis',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-    isOnline: false,
-  },
-];
-
 export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
   const [message, setMessage] = useState('');
   const [isInVoice, setIsInVoice] = useState(false);
+  const { user } = useAuth();
+  
+  const roomId = parseInt(room.id, 10);
+  const { participants, isConnected } = useRoomSocket(roomId);
+
+  useEffect(() => {
+    console.log('%c[Room Page] MOUNTED - Room:', 'color: #28f5cc; font-weight: bold;', room.name, '(ID:', roomId, ')');
+    console.log('[Room Page] Participants:', participants);
+  }, [roomId, participants]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
       // Handle send message
       setMessage('');
     }
+  };
+
+  const handleToggleVoice = () => {
+    console.log('%c[Room Page] Toggle Voice clicked. Current state:', 'color: #28f5cc; font-weight: bold;', isInVoice);
+    setIsInVoice(!isInVoice);
   };
 
   return (
@@ -96,13 +65,20 @@ export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
           </button>
 
           <div className="flex-1">
-            <h2 className="text-white">{room.name}</h2>
+            <h2 className="text-white flex items-center gap-2">
+              {room.name}
+              {isConnected ? (
+                <span className="w-2 h-2 rounded-full bg-[#28f5cc] animate-pulse" title="Connected" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-red-500" title="Disconnected" />
+              )}
+            </h2>
             <p className="text-[#747c88] text-sm">{communityName}</p>
           </div>
 
           {room.type === 'voice' && (
             <button
-              onClick={() => setIsInVoice(!isInVoice)}
+              onClick={handleToggleVoice}
               className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200"
               style={{
                 background: isInVoice ? 'rgba(255, 100, 100, 0.2)' : 'rgba(40, 245, 204, 0.2)',
@@ -191,37 +167,50 @@ export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
       >
         <div className="p-4 border-b" style={{ borderBottom: '1px solid rgba(40, 245, 204, 0.1)' }}>
           <h3 className="text-white mb-1">Participants</h3>
-          <p className="text-[#747c88] text-sm">{room.activeUsers} active</p>
+          <p className="text-[#747c88] text-sm">
+            {participants.length} {participants.length === 1 ? 'member' : 'members'} online
+          </p>
         </div>
 
         <div className="p-4 space-y-2">
-          {activeParticipants.map((participant, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.05)] transition-colors"
-            >
-              <div className="relative">
-                <img
-                  src={participant.avatar}
-                  alt={participant.name}
-                  className="w-8 h-8 rounded-full"
-                  style={{ border: '1.5px solid rgba(40, 245, 204, 0.3)' }}
-                />
-                {participant.isOnline && (
+          {participants.length > 0 ? (
+            participants.map((participant) => (
+              <div
+                key={participant.userId}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.05)] transition-colors"
+              >
+                <div className="relative">
+                  <img
+                    src={participant.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.username}`}
+                    alt={participant.username}
+                    className="w-8 h-8 rounded-full"
+                    style={{ border: '1.5px solid rgba(40, 245, 204, 0.3)' }}
+                  />
                   <div
                     className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#04372f]"
                     style={{
-                      background: '#28f5cc',
-                      boxShadow: '0 0 6px rgba(40, 245, 204, 0.6)',
+                      background: participant.inCall ? '#ff6464' : '#28f5cc',
+                      boxShadow: `0 0 6px ${participant.inCall ? 'rgba(255, 100, 100, 0.6)' : 'rgba(40, 245, 204, 0.6)'}`,
                     }}
+                    title={participant.inCall ? 'In Call' : 'Online'}
                   />
-                )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-white text-sm block truncate">{participant.username}</span>
+                  {participant.inCall && (
+                    <span className="text-[10px] text-red-400">In Call</span>
+                  )}
+                </div>
               </div>
-              <span className="text-white text-sm flex-1 truncate">{participant.name}</span>
+            ))
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-[#747c88] text-xs">No users online</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
   );
 }
+
