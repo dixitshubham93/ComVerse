@@ -129,21 +129,28 @@ export function VoiceCallRoom({
       sendSignal(userId, signal);
     });
 
-    peer.on('stream', (remoteStream: MediaStream) => {
-      console.log(`[VC] Received remote stream from user ${userId}`);
-      let audio = audioElementsRef.current.get(userId);
-      if (!audio) {
-        audio = document.createElement('audio');
-        audio.autoplay = true;
-        audio.dataset.userId = userId.toString();
-        audioElementsRef.current.set(userId, audio);
-        if (audioContainerRef.current) {
-          audioContainerRef.current.appendChild(audio);
+      peer.on('stream', (remoteStream: MediaStream) => {
+        console.log(`[VC] Received remote stream from user ${userId}`);
+        let audio = audioElementsRef.current.get(userId);
+        if (!audio) {
+          audio = document.createElement('audio');
+          audio.autoplay = true;
+          audio.playsInline = true; // Added for better mobile/browser support
+          audio.dataset.userId = userId.toString();
+          audioElementsRef.current.set(userId, audio);
+          if (audioContainerRef.current) {
+            audioContainerRef.current.appendChild(audio);
+          }
         }
-      }
-      audio.srcObject = remoteStream;
-      audio.volume = volumeRef.current / 100;
-    });
+        audio.srcObject = remoteStream;
+        audio.volume = volumeRef.current / 100;
+        
+        // Explicitly call play to handle browser restrictions
+        audio.play().catch(err => {
+          console.warn(`[VC] Auto-play prevented for user ${userId}:`, err);
+          // Some browsers require a click even after interaction if they're strict
+        });
+      });
 
     peer.on('error', (err: any) => {
       console.error(`[VC] Peer error with ${userId}:`, err);

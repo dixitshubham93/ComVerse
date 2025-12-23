@@ -19,15 +19,14 @@ export const initSocket = (server) => {
   // Use the central socket authentication middleware
   io.use(socketAuth);
 
-  io.on('connection', (socket) => {
-    console.log(`[Socket] Client connected: ${socket.id} - User: ${socket.user?.username} (${socket.user?.id})`);
+    io.on('connection', (socket) => {
+      console.log(`[Socket] Client connected: ${socket.id} - User: ${socket.user?.username} (${socket.user?.id})`);
 
-    // Register all socket handlers
-    registerPresenceSocket(io, socket);
-    registerVoiceHandlers(io, socket);
-    registerMessageSocket(io, socket);
+      // Register all socket handlers
+      registerVoiceHandlers(io, socket);
+      registerMessageSocket(io, socket);
 
-    socket.on('error', (error) => {
+      socket.on('error', (error) => {
       console.error(`[Socket] Error for ${socket.id}:`, error);
       socket.emit('room:error', { message: error.message });
     });
