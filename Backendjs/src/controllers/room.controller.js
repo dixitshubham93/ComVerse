@@ -1,21 +1,21 @@
 import { createRoom, getRoomsByCommunity, deleteRoom as deleteRoomService } from "../services/room.service.js";
-import { getUsersInRoom } from "../services/presence.service.js";
+import { voicePresence } from "../sockets/voice.presence.js";
 
 export const getVoiceMetadata = async (req, res, next) => {
   try {
     const { roomId } = req.params;
-    const users = getUsersInRoom(roomId);
+    const users = voicePresence.getUsers(roomId);
     
-    // Ensure all user IDs are numbers
+    // Ensure all user IDs are numbers or strings as expected by frontend
     const formattedUsers = users.map(user => ({
       ...user,
-      id: Number(user.id)
+      id: user.id.toString()
     }));
     
     res.json({
       success: true,
       data: {
-        roomId: Number(roomId),
+        roomId,
         activeUsers: formattedUsers.length,
         users: formattedUsers
       }
