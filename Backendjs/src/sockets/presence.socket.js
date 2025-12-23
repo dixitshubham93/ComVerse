@@ -23,8 +23,15 @@ export const registerPresenceSocket = (io, socket) => {
         const usersInRoom = getUsersInRoom(rId);
         console.log(`[Presence] Room ${rId} full list:`, usersInRoom.map(u => `${u.username}(${u.id})`));
 
+        // Emit to everyone in the room
         io.to(`room:${rId}`).emit("voice:presence", {
-          roomId: rId,
+          roomId: Number(rId),
+          users: usersInRoom,
+        });
+
+        // Explicitly emit to the sender to ensure they get the initial state even if room join takes a tick
+        socket.emit("voice:presence", {
+          roomId: Number(rId),
           users: usersInRoom,
         });
       } catch (err) {
@@ -46,7 +53,7 @@ export const registerPresenceSocket = (io, socket) => {
         console.log(`[Presence] Room ${rId} now has ${usersInRoom.length} users`);
 
         io.to(`room:${rId}`).emit("voice:presence", {
-          roomId: rId,
+          roomId: Number(rId),
           users: usersInRoom,
         });
       } catch (err) {
@@ -55,14 +62,21 @@ export const registerPresenceSocket = (io, socket) => {
     });
 
     socket.on("voice:signal", ({ to, signal, roomId }) => {
-      const rId = String(roomId);
-      const fromId = Number(socket.user.id);
-      console.log(`[Presence] Signaling from ${fromId} to ${to} in room ${rId}`);
-      io.to(`user:${to}`).emit("voice:signal", {
-        from: fromId,
-        signal,
-        roomId: Number(rId)
-      });
+      try {
+        const rId = String(roomId);
+        const fromId = Number(socket.user.id);
+        const targetId = Number(to);
+        
+        console.log(`[Presence] Signaling from ${fromId} to ${targetId} in room ${rId}`);
+        
+        io.to(`user:${targetId}`).emit("voice:signal", {
+          from: fromId,
+          signal,
+          roomId: Number(rId)
+        });
+      } catch (err) {
+        console.error("Error in voice:signal:", err);
+      }
     });
 
     socket.on("voice:mute", ({ roomId, isMuted }) => {

@@ -101,21 +101,31 @@ export function useRoomSocket(
       callbacksRef.current.onMessage?.(data);
     });
 
-    socket.on('voice:presence', (data: { roomId: number, users: UserDto[] }) => {
+    socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
       console.log('[Socket] Received voice:presence', data);
-      if (Number(data.roomId) === Number(roomId)) {
+      const receivedRoomId = Number(data.roomId);
+      const currentRoomId = Number(roomId);
+      
+      console.log(`[Socket] Comparing presence roomId: ${receivedRoomId} === ${currentRoomId}`);
+      if (receivedRoomId === currentRoomId) {
+        console.log('[Socket] Room match, calling onPresence with', data.users.length, 'users');
         callbacksRef.current.onPresence?.(data.users);
+      } else {
+        console.warn(`[Socket] Room mismatch! Expected ${currentRoomId}, got ${receivedRoomId}`);
       }
     });
 
-    socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
-      console.log('[Socket] Received voice:signal from', data.from);
+    socket.on('voice:signal', (data: { from: number, signal: any, roomId: number | string }) => {
+      console.log('[Socket] Received voice:signal from', data.from, 'for room', data.roomId);
       if (Number(data.roomId) === Number(roomId)) {
-        callbacksRef.current.onSignal?.(data);
+        callbacksRef.current.onSignal?.({
+          ...data,
+          roomId: Number(data.roomId)
+        });
       }
     });
 
-    socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number }) => {
+    socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number | string }) => {
       console.log('[Socket] Received voice:mute from', data.userId, ':', data.isMuted);
       if (Number(data.roomId) === Number(roomId)) {
         callbacksRef.current.onMute?.({ userId: Number(data.userId), isMuted: data.isMuted });

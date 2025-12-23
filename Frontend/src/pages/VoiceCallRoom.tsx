@@ -167,6 +167,7 @@ export function VoiceCallRoom({
       
       if (isInCallRef.current) {
         const newIds = new Set(newPresence.map(u => Number(u.id)));
+        console.log('[VC] Current in-call state is true. Checking for new peers...');
         
         if (newPresence.length === 1 && Number(newPresence[0].id) === currentUserId) {
           console.log('[VC] I am the only one in the room. Waiting for others to join...');
@@ -178,7 +179,10 @@ export function VoiceCallRoom({
           if (userId !== currentUserId && !peersRef.current.has(userId)) {
             const shouldIInitiate = currentUserId > userId;
             console.log(`[VC] New peer detected: ${u.username} (${userId}). My ID: ${currentUserId}. Should I initiate? ${shouldIInitiate}`);
-            createPeer(userId, shouldIInitiate, (sig) => sendSignal(userId, sig));
+            createPeer(userId, shouldIInitiate, (sig) => {
+              console.log(`[VC] Sending signal to ${userId}`);
+              sendSignal(userId, sig);
+            });
           }
         });
 

@@ -2,10 +2,11 @@
 const roomPresenceMap = new Map();
 
 export const addUserToRoom = (roomId, user) => {
-  if (!roomPresenceMap.has(roomId)) {
-    roomPresenceMap.set(roomId, new Map());
+  const rId = String(roomId);
+  if (!roomPresenceMap.has(rId)) {
+    roomPresenceMap.set(rId, new Map());
   }
-  roomPresenceMap.get(roomId).set(Number(user.id), {
+  roomPresenceMap.get(rId).set(Number(user.id), {
     id: Number(user.id),
     username: user.username,
     avatarUrl: user.avatarUrl || user.avatar || null
@@ -13,17 +14,19 @@ export const addUserToRoom = (roomId, user) => {
 };
 
 export const removeUserFromRoom = (roomId, userId) => {
-  if (!roomPresenceMap.has(roomId)) return;
+  const rId = String(roomId);
+  if (!roomPresenceMap.has(rId)) return;
 
-  roomPresenceMap.get(roomId).delete(Number(userId));
+  roomPresenceMap.get(rId).delete(Number(userId));
 
-  if (roomPresenceMap.get(roomId).size === 0) {
-    roomPresenceMap.delete(roomId);
+  if (roomPresenceMap.get(rId).size === 0) {
+    roomPresenceMap.delete(rId);
   }
 };
 
 export const getUsersInRoom = (roomId) => {
-  const usersMap = roomPresenceMap.get(roomId);
+  const rId = String(roomId);
+  const usersMap = roomPresenceMap.get(rId);
   if (!usersMap) return [];
   return Array.from(usersMap.values());
 };
