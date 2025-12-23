@@ -6,10 +6,15 @@ export const addUserToRoom = (roomId, user) => {
   if (!roomPresenceMap.has(rId)) {
     roomPresenceMap.set(rId, new Map());
   }
-  roomPresenceMap.get(rId).set(Number(user.id), {
-    id: Number(user.id),
+  
+  const userId = Number(user.id);
+  const existing = roomPresenceMap.get(rId).get(userId) || {};
+  
+  roomPresenceMap.get(rId).set(userId, {
+    id: userId,
     username: user.username,
-    avatarUrl: user.avatarUrl || user.avatar || null
+    avatarUrl: user.avatarUrl || user.avatar || null,
+    inCall: user.inCall !== undefined ? user.inCall : (existing.inCall || false)
   });
 };
 

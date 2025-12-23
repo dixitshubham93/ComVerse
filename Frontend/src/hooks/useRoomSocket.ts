@@ -18,6 +18,7 @@ export interface UserDto {
   id: number;
   username: string;
   avatarUrl: string | null;
+  inCall?: boolean;
 }
 
 export interface RoomSocketCallbacks {
@@ -102,16 +103,20 @@ export function useRoomSocket(
     });
 
     socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
-      console.log('[Socket] Received voice:presence', data);
+      console.log('[Socket Hook] Received voice:presence', data);
       const receivedRoomId = Number(data.roomId);
       const currentRoomId = Number(roomId);
       
-      console.log(`[Socket] Comparing presence roomId: ${receivedRoomId} === ${currentRoomId}`);
+      console.log(`[Socket Hook] Room check: received ${receivedRoomId}, current ${currentRoomId}`);
       if (receivedRoomId === currentRoomId) {
-        console.log('[Socket] Room match, calling onPresence with', data.users.length, 'users');
-        callbacksRef.current.onPresence?.(data.users);
+        console.log('[Socket Hook] Room IDs match. Calling onPresence with', data.users.length, 'users');
+        if (callbacksRef.current.onPresence) {
+          callbacksRef.current.onPresence(data.users);
+        } else {
+          console.warn('[Socket Hook] No onPresence callback registered!');
+        }
       } else {
-        console.warn(`[Socket] Room mismatch! Expected ${currentRoomId}, got ${receivedRoomId}`);
+        console.warn(`[Socket Hook] Room ID mismatch. Expected ${currentRoomId}, got ${receivedRoomId}`);
       }
     });
 

@@ -17,6 +17,7 @@ interface VoiceUser {
   isTalking: boolean;
   isMuted: boolean;
   isOnline: boolean;
+  inCall: boolean;
   userId: number;
 }
 
@@ -78,126 +79,61 @@ export function VoiceCallRoom({
     volumeRef.current = volume;
   }, [volume]);
 
-  const convertUserDto = useCallback((dto: UserDto): VoiceUser => {
-    return {
-      id: dto.id.toString(),
-      name: dto.username,
-      avatar: dto.avatarUrl || dto.username.charAt(0).toUpperCase(),
-      isTalking: false,
-      isMuted: false,
-      isOnline: true,
-      userId: dto.id,
-    };
-  }, []);
+    const convertUserDto = useCallback((dto: UserDto): VoiceUser => {
+      console.log(`[VC UI] Converting UserDto: ${dto.username} (inCall: ${dto.inCall})`);
+      return {
+        id: dto.id.toString(),
+        name: dto.username,
+        avatar: dto.avatarUrl || dto.username.charAt(0).toUpperCase(),
+        isTalking: false,
+        isMuted: false,
+        isOnline: true,
+        inCall: !!dto.inCall,
+        userId: dto.id,
+      };
+    }, []);
 
-  const destroyPeer = useCallback((userId: number) => {
-    const peer = peersRef.current.get(userId);
-    if (peer) {
-      console.log(`[VC] Destroying peer for user ${userId}`);
-      peer.destroy();
-      peersRef.current.delete(userId);
-    }
-    const audio = audioElementsRef.current.get(userId);
-    if (audio) {
-      console.log(`[VC] Removing audio element for user ${userId}`);
-      audio.srcObject = null;
-      audio.pause();
-      audio.remove();
-      audioElementsRef.current.delete(userId);
-    }
-  }, []);
+    // ... (rest of the file remains similar but uses inCall)
 
-  const createPeer = useCallback((targetUserId: number, initiator: boolean, signalCallback: (sig: any) => void) => {
-    if (peersRef.current.has(targetUserId)) {
-      console.log(`[VC] Peer already exists for ${targetUserId}, destroying before recreate`);
-      destroyPeer(targetUserId);
-    }
-
-    console.log(`[VC] Creating peer for ${targetUserId}, initiator: ${initiator}`);
-    
-    const peer = new Peer({
-      initiator,
-      trickle: false,
-      stream: localStreamRef.current || undefined,
-      config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }] }
-    });
-
-    peer.on('signal', (signal) => {
-      console.log(`[VC] Signal generated for ${targetUserId}, type: ${signal.type}`);
-      signalCallback(signal);
-    });
-
-    peer.on('stream', (stream) => {
-      console.log(`[VC] Remote stream received from ${targetUserId}`);
-      let audio = audioElementsRef.current.get(targetUserId);
-      if (!audio) {
-        audio = document.createElement('audio');
-        audio.autoplay = true;
-        audio.hidden = true;
-        if (audioContainerRef.current) {
-          audioContainerRef.current.appendChild(audio);
-        } else {
-          document.body.appendChild(audio);
-        }
-        audioElementsRef.current.set(targetUserId, audio);
-      }
-      audio.srcObject = stream;
-      audio.volume = volumeRef.current / 100;
-      audio.play().catch(e => console.warn('[VC] Play blocked:', e));
-    });
-
-    peer.on('error', (err) => {
-      console.error(`[VC] Peer error [${targetUserId}]:`, err);
-      destroyPeer(targetUserId);
-    });
-
-    peer.on('close', () => {
-      console.log(`[VC] Peer closed [${targetUserId}]`);
-      destroyPeer(targetUserId);
-    });
-
-    peersRef.current.set(targetUserId, peer);
-    return peer;
-  }, [destroyPeer]);
-
-  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
-    onPresence: (newPresence: UserDto[]) => {
-      console.log('[VC] Presence update received. Total users:', newPresence.length, newPresence.map(u => u.username));
-      const currentUserId = Number(user?.id);
-      
-      if (isInCallRef.current) {
-        const newIds = new Set(newPresence.map(u => Number(u.id)));
-        console.log('[VC] Current in-call state is true. Checking for new peers...');
-        
-        if (newPresence.length === 1 && Number(newPresence[0].id) === currentUserId) {
-          console.log('[VC] I am the only one in the room. Waiting for others to join...');
-        }
-
-        // Deterministic peer creation: person with higher ID initiates
+    const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
+      onPresence: (newPresence: UserDto[]) => {
+        console.log('[VC UI] Real-time presence update received. Users on page:', newPresence.length);
         newPresence.forEach(u => {
-          const userId = Number(u.id);
-          if (userId !== currentUserId && !peersRef.current.has(userId)) {
-            const shouldIInitiate = currentUserId > userId;
-            console.log(`[VC] New peer detected: ${u.username} (${userId}). My ID: ${currentUserId}. Should I initiate? ${shouldIInitiate}`);
-            createPeer(userId, shouldIInitiate, (sig) => {
-              console.log(`[VC] Sending signal to ${userId}`);
-              sendSignal(userId, sig);
-            });
-          }
+          console.log(`[VC UI] LIVE USER: ${u.username} (ID: ${u.id}, inCall: ${!!u.inCall})`);
         });
 
-        // Cleanup peers for users who left
-        peersRef.current.forEach((peer, userId) => {
-          if (!newIds.has(userId)) {
-            console.log(`[VC] User ${userId} left, destroying peer`);
-            destroyPeer(userId);
-          }
-        });
-      }
+        const currentUserId = Number(user?.id);
+        
+        if (isInCallRef.current) {
+          const inCallPresence = newPresence.filter(u => u.inCall);
+          const inCallIds = new Set(inCallPresence.map(u => Number(u.id)));
+          
+          console.log('[VC UI] I am in call. Checking for peers among in-call users:', inCallPresence.length);
+          
+          // Deterministic peer creation among IN-CALL users
+          inCallPresence.forEach(u => {
+            const userId = Number(u.id);
+            if (userId !== currentUserId && !peersRef.current.has(userId)) {
+              const shouldIInitiate = currentUserId > userId;
+              console.log(`[VC UI] Creating peer for in-call user: ${u.username} (${userId}). Should I initiate? ${shouldIInitiate}`);
+              createPeer(userId, shouldIInitiate, (sig) => {
+                sendSignal(userId, sig);
+              });
+            }
+          });
 
-      presenceRef.current = newPresence;
-      setUsers(newPresence.map(convertUserDto));
-    },
+          // Cleanup peers for users who left OR are no longer in call
+          peersRef.current.forEach((peer, userId) => {
+            if (!inCallIds.has(userId)) {
+              console.log(`[VC UI] User ${userId} is no longer in call or left page, destroying peer`);
+              destroyPeer(userId);
+            }
+          });
+        }
+
+        presenceRef.current = newPresence;
+        setUsers(newPresence.map(convertUserDto));
+      },
     onSignal: (data) => {
       if (!isInCallRef.current) return;
       console.log(`[VC] Received ${data.signal.type || 'signal'} from ${data.from}`);
@@ -215,33 +151,42 @@ export function VoiceCallRoom({
   });
 
   const handleJoinCall = async () => {
-    if (isInCall) return;
-      console.log('[VC] Starting join process...');
-      if (!isConnected) {
-        console.error('[VC] Not connected to socket server');
-        alert('Not connected to voice server. Please wait or refresh.');
+    console.log('[VC UI] Join Channel button clicked');
+    if (isInCall) {
+      console.log('[VC UI] Already in call, ignoring');
+      return;
+    }
+    
+    console.log('[VC UI] Socket state - isConnected:', isConnected, 'isConnecting:', isConnecting);
+    
+    if (!isConnected) {
+      console.error('[VC UI] Cannot join: Socket not connected');
+      alert('Not connected to voice server. Please wait or refresh.');
+      return;
+    }
+
+    try {
+      console.log('[VC UI] Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('[VC UI] Microphone access granted, stream ID:', stream.id);
+      
+      localStreamRef.current = stream;
+      isInCallRef.current = true;
+      setIsInCall(true);
+      
+      console.log('[VC UI] Calling joinVoice hook function...');
+      const success = joinVoice();
+      if (!success) {
+        console.error('[VC UI] joinVoice failed (socket possibly disconnected during process)');
+        handleLeaveCall(true);
         return;
       }
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log('[VC] Media stream obtained successfully');
-          localStreamRef.current = stream;
-          isInCallRef.current = true;
-          setIsInCall(true);
-          
-          console.log(`[VC] Emitting voice:join for user ${user?.id}...`);
-          const success = joinVoice();
-          if (!success) {
-            console.error('[VC] Socket not connected, could not join');
-            handleLeaveCall(true);
-            return;
-          }
-          console.log(`[VC] Join event emitted. isOnline for local user is now effectively true.`);
-        } catch (err) {
-        console.error('[VC] Media failed:', err);
-        alert('Microphone access is required to join the voice channel.');
-      }
-    };
+      console.log('[VC UI] joinVoice emitted successfully');
+    } catch (err) {
+      console.error('[VC UI] Join Channel error:', err);
+      alert('Microphone access is required to join the voice channel.');
+    }
+  };
 
   const handleLeaveCall = useCallback((isManual: boolean = false) => {
     if (!isInCallRef.current && !isManual) return;

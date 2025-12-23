@@ -7,33 +7,52 @@ import {
 export const registerPresenceSocket = (io, socket) => {
   const joinedRooms = new Set();
 
+    socket.on("room:join", ({ roomId }) => {
+      try {
+        const rId = String(roomId);
+        const userId = Number(socket.user.id);
+        console.log(`[Presence] User ${userId} joined room ${rId} (page view)`);
+        
+        socket.join(`room:${rId}`);
+        joinedRooms.add(rId);
+        
+        // Add to presence as "not in call" by default
+        addUserToRoom(rId, { ...socket.user, id: userId, inCall: false });
+        
+        const usersInRoom = getUsersInRoom(rId);
+        io.to(`room:${rId}`).emit("voice:presence", {
+          roomId: Number(rId),
+          users: usersInRoom,
+        });
+      } catch (err) {
+        console.error("Error in room:join presence:", err);
+      }
+    });
+
     socket.on("voice:join", ({ roomId }) => {
       try {
         const user = socket.user;
         const rId = String(roomId);
         const userId = Number(user.id);
-        console.log(`[Presence] User ${userId} (${user.username}) joining voice room ${rId}`);
+        console.log(`[Presence] User ${userId} (${user.username}) requesting to join voice room ${rId}`);
 
         socket.join(`voice:${rId}`);
-        socket.join(`room:${rId}`);
+        socket.join(`room:${rId}`); // Should already be joined but just in case
         
         joinedRooms.add(rId);
-        addUserToRoom(rId, { ...user, id: userId });
+        // Mark as "in call"
+        addUserToRoom(rId, { ...user, id: userId, inCall: true });
 
         const usersInRoom = getUsersInRoom(rId);
-        console.log(`[Presence] Room ${rId} full list:`, usersInRoom.map(u => `${u.username}(${u.id})`));
+        console.log(`[Presence] Room ${rId} membership updated. New total: ${usersInRoom.length}`);
 
-        // Emit to everyone in the room
-        io.to(`room:${rId}`).emit("voice:presence", {
+        const presencePayload = {
           roomId: Number(rId),
           users: usersInRoom,
-        });
-
-        // Explicitly emit to the sender to ensure they get the initial state even if room join takes a tick
-        socket.emit("voice:presence", {
-          roomId: Number(rId),
-          users: usersInRoom,
-        });
+        };
+        
+        io.to(`room:${rId}`).emit("voice:presence", presencePayload);
+        socket.emit("voice:presence", presencePayload);
       } catch (err) {
         console.error("Error in voice:join:", err);
       }
