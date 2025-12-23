@@ -68,13 +68,31 @@ export function useRoomSocket(
     });
 
     socket.on('connect', () => {
-      console.log('Socket connected successfully');
+      console.log('%c[Socket Hook] CONNECTED successfully!', 'color: #00ff00; font-weight: bold');
       setIsConnected(true);
       setIsConnecting(false);
       setError(null);
       
+      console.log(`%c[Socket Hook] Emitting room:join for room ${roomId}`, 'color: #00ffff');
       socket.emit('room:join', { roomId });
-      // Also emit voice:join if we want to auto-join, but typically we wait for user action
+    });
+
+    socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
+      console.log('%c[Socket Hook] RECEIVED voice:presence', 'color: #ffff00; font-weight: bold', data);
+      const receivedRoomId = Number(data.roomId);
+      const currentRoomId = Number(roomId);
+      
+      console.log(`[Socket Hook] Room check: received ${receivedRoomId}, current ${currentRoomId}`);
+      if (receivedRoomId === currentRoomId) {
+        console.log(`[Socket Hook] Match! Calling onPresence with ${data.users.length} users`);
+        if (callbacksRef.current.onPresence) {
+          callbacksRef.current.onPresence(data.users);
+        } else {
+          console.warn('[Socket Hook] No onPresence callback provided in hooks options!');
+        }
+      } else {
+        console.warn(`[Socket Hook] Room ID mismatch! Expected ${currentRoomId}, got ${receivedRoomId}`);
+      }
     });
 
     socket.on('reconnect', (attemptNumber) => {

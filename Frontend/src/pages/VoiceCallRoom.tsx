@@ -97,9 +97,10 @@ export function VoiceCallRoom({
 
     const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
       onPresence: (newPresence: UserDto[]) => {
-        console.log('[VC UI] Real-time presence update received. Users on page:', newPresence.length);
+        console.log('%c[VC UI] Real-time presence update received!', 'color: #ff00ff; font-weight: bold');
+        console.log('[VC UI] Users on page:', newPresence.length);
         newPresence.forEach(u => {
-          console.log(`[VC UI] LIVE USER: ${u.username} (ID: ${u.id}, inCall: ${!!u.inCall})`);
+          console.log(`%c[VC UI] LIVE USER: ${u.username} (ID: ${u.id}, inCall: ${!!u.inCall})`, 'color: #00ff00');
         });
 
         const currentUserId = Number(user?.id);

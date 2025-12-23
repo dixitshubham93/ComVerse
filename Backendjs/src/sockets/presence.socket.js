@@ -20,10 +20,17 @@ export const registerPresenceSocket = (io, socket) => {
         addUserToRoom(rId, { ...socket.user, id: userId, inCall: false });
         
         const usersInRoom = getUsersInRoom(rId);
-        io.to(`room:${rId}`).emit("voice:presence", {
+        const presencePayload = {
           roomId: Number(rId),
           users: usersInRoom,
-        });
+        };
+        
+        // Broadcast to all in room
+        io.to(`room:${rId}`).emit("voice:presence", presencePayload);
+        // Direct emit to the joining user to ensure they get it immediately
+        socket.emit("voice:presence", presencePayload);
+        
+        console.log(`[Presence] Emitted voice:presence to room:${rId} and user:${userId}. Total users: ${usersInRoom.length}`);
       } catch (err) {
         console.error("Error in room:join presence:", err);
       }
