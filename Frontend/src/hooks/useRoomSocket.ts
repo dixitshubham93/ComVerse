@@ -25,10 +25,12 @@ export interface RoomSocketCallbacks {
   onMessage?: (message: MessageDto) => void;
   onMessageUpdated?: (message: MessageDto) => void;
   onMessageDeleted?: (messageId: number) => void;
-  onPresence?: (users: UserDto[]) => void;
-  onSignal?: (data: { from: number; signal: any; roomId: number }) => void;
-  onMute?: (data: { userId: number; isMuted: boolean }) => void;
-  onError?: (error: string) => void;
+    onPresence?: (users: UserDto[]) => void;
+    onSignal?: (data: { from: number; signal: any; roomId: number }) => void;
+    onMute?: (data: { userId: number; isMuted: boolean }) => void;
+    onSpeaking?: (data: { userId: number; isSpeaking: boolean }) => void;
+    onError?: (error: string) => void;
+
 }
 
 export function useRoomSocket(
@@ -181,6 +183,13 @@ export function useRoomSocket(
       }
     });
 
+    // Voice speaking status
+    socket.on('voice:speaking', (data: { userId: number, isSpeaking: boolean, roomId: number | string }) => {
+      if (Number(data.roomId) === Number(roomId)) {
+        callbacksRef.current.onSpeaking?.({ userId: Number(data.userId), isSpeaking: data.isSpeaking });
+      }
+    });
+
     // Room errors
     socket.on('room:error', (data: { message: string }) => {
       console.error('[Socket Hook] 🚫 Room error:', data.message);
@@ -269,7 +278,15 @@ export function useRoomSocket(
       console.warn('[Socket Hook] ⚠️ Cannot send mute: Not connected');
       return;
     }
-    socketRef.current.emit('voice:mute', { roomId, isMuted });
+    socket.current.emit('voice:mute', { roomId, isMuted });
+  }, [roomId]);
+
+  const sendSpeaking = useCallback((isSpeaking: boolean) => {
+    if (!socketRef.current?.connected || !roomId) {
+      console.warn('[Socket Hook] ⚠️ Cannot send speaking: Not connected');
+      return;
+    }
+    socketRef.current.emit('voice:speaking', { roomId, isSpeaking });
   }, [roomId]);
 
   useEffect(() => {
@@ -287,6 +304,7 @@ export function useRoomSocket(
     leaveVoice,
     sendSignal,
     sendMute,
+    sendSpeaking,
     reconnect: connect,
     socket: socketRef.current
   };

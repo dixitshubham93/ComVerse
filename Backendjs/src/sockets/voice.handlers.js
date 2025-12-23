@@ -119,13 +119,28 @@ export const registerVoiceHandlers = (io, socket) => {
     const userId = Number(socket.user.id);
     
     io.to(`room:${rId}`).emit('voice:mute', {
-      roomId: Number(rId),
-      userId: userId,
-      isMuted
-    });
-  };
+        roomId: Number(rId),
+        userId: userId,
+        isMuted
+      });
+    };
 
-  // --- UTILS ---
+    const speakingVoice = ({ roomId, isSpeaking }) => {
+      if (!socket.user || !roomId) return;
+      
+      const rId = String(roomId);
+      const userId = Number(socket.user.id);
+      
+      // Broadcast to everyone in the room except sender (optional, but broadcast to all is easier for UI sync)
+      io.to(`room:${rId}`).emit('voice:speaking', {
+        roomId: Number(rId),
+        userId: userId,
+        isSpeaking
+      });
+    };
+
+    // --- UTILS ---
+
 
   const broadcastPresence = (rId) => {
     const users = getUsersInRoom(rId);
@@ -154,7 +169,9 @@ export const registerVoiceHandlers = (io, socket) => {
   socket.on('room:leave', leaveRoom);
   socket.on('voice:join', joinVoice);
   socket.on('voice:leave', leaveVoice);
-  socket.on('voice:signal', signalVoice);
-  socket.on('voice:mute', muteVoice);
-  socket.on('disconnect', handleDisconnect);
+    socket.on('voice:signal', signalVoice);
+    socket.on('voice:mute', muteVoice);
+    socket.on('voice:speaking', speakingVoice);
+    socket.on('disconnect', handleDisconnect);
+
 };

@@ -83,6 +83,9 @@ export function VoiceCallRoom({
   const audioElementsRef = useRef<Map<number, HTMLAudioElement>>(new Map());
   const presenceRef = useRef<UserDto[]>([]);
   const audioContainerRef = useRef<HTMLDivElement>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const destroyPeer = useCallback((userId: number) => {
     console.log(`[VC] Destroying peer for user ${userId}`);
@@ -135,7 +138,7 @@ export function VoiceCallRoom({
         if (!audio) {
           audio = document.createElement('audio');
           audio.autoplay = true;
-          audio.playsInline = true; // Added for better mobile/browser support
+          audio.playsInline = true;
           audio.dataset.userId = userId.toString();
           audioElementsRef.current.set(userId, audio);
           if (audioContainerRef.current) {
@@ -145,10 +148,8 @@ export function VoiceCallRoom({
         audio.srcObject = remoteStream;
         audio.volume = volumeRef.current / 100;
         
-        // Explicitly call play to handle browser restrictions
         audio.play().catch(err => {
           console.warn(`[VC] Auto-play prevented for user ${userId}:`, err);
-          // Some browsers require a click even after interaction if they're strict
         });
       });
 
@@ -167,7 +168,7 @@ export function VoiceCallRoom({
   }, [destroyPeer]);
 
   // Socket handlers using useRoomSocket hook
-  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(
+  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute, sendSpeaking } = useRoomSocket(
     currentRoomId, 
     communityId, 
     {
@@ -235,46 +236,91 @@ export function VoiceCallRoom({
       }, [createPeer]),
 
       onMute: useCallback(({ userId, isMuted }: { userId: number; isMuted: boolean }) => {
-        console.log(`[VC] User ${userId} mute status: ${isMuted}`);
         setUsers(prev => prev.map(u => 
           u.userId === userId ? { ...u, isMuted } : u
+        ));
+      }, []),
+
+      onSpeaking: useCallback(({ userId, isSpeaking }: { userId: number; isSpeaking: boolean }) => {
+        setUsers(prev => prev.map(u => 
+          u.userId === userId ? { ...u, isTalking: isSpeaking } : u
         ));
       }, [])
     }
   );
 
-  // ===== DEBUG SECTION - Place AFTER all declarations =====
+  // Audio analysis for local speaking detection
   useEffect(() => {
-    console.log('=== WEBSOCKET DEBUG ===');
-    console.log('1. User:', user);
-    console.log('2. User Token:', user?.token ? 'EXISTS ✓' : 'MISSING ✗');
-    console.log('3. Room ID:', currentRoomId);
-    console.log('4. Community ID:', communityId);
-    console.log('5. Is Connected:', isConnected);
-    console.log('6. Is Connecting:', isConnecting);
-    console.log('========================');
-  }, [user, currentRoomId, communityId, isConnected, isConnecting]);
+    if (!isInCall || !localStreamRef.current || isMuted) {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+      setUsers(prev => prev.map(u => 
+        u.userId === Number(user?.id) ? { ...u, isTalking: false } : u
+      ));
+      return;
+    }
+
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(localStreamRef.current);
+      source.connect(analyser);
+      analyser.fftSize = 256;
+      
+      analyserRef.current = analyser;
+      audioContextRef.current = audioContext;
+      
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      let wasSpeaking = false;
+      const checkSpeaking = () => {
+        if (!analyserRef.current) return;
+        
+        analyserRef.current.getByteFrequencyData(dataArray);
+        
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / bufferLength;
+        const isCurrentlySpeaking = average > 15; // Threshold for speaking
+        
+        if (isCurrentlySpeaking !== wasSpeaking) {
+          wasSpeaking = isCurrentlySpeaking;
+          sendSpeaking(isCurrentlySpeaking);
+          setUsers(prev => prev.map(u => 
+            u.userId === Number(user?.id) ? { ...u, isTalking: isCurrentlySpeaking } : u
+          ));
+        }
+        
+        animationFrameRef.current = requestAnimationFrame(checkSpeaking);
+      };
+      
+      checkSpeaking();
+    } catch (err) {
+      console.error('[VC] Audio analysis failed:', err);
+    }
+
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+    };
+  }, [isInCall, isMuted, user?.id, sendSpeaking]);
 
   useEffect(() => {
     const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8081';
-    console.log('WebSocket URL:', WS_URL);
-    
     fetch(`${WS_URL}/api/rooms/${currentRoomId}/voice-metadata`)
-      .then(res => {
-        console.log('✅ Backend is reachable');
-        return res.json();
-      })
-      .then(data => {
-        console.log('✅ API returned:', data);
-      })
-      .catch(err => {
-        console.error('❌ Backend NOT reachable:', err);
-        console.error('Make sure your backend is running on:', WS_URL);
-      });
+      .then(res => res.json())
+      .catch(err => console.error('❌ Backend NOT reachable:', err));
   }, [currentRoomId]);
-  // ===== END DEBUG SECTION =====
 
-  // Keep volume ref in sync
   useEffect(() => {
     volumeRef.current = volume;
     audioElementsRef.current.forEach(audio => {
@@ -283,13 +329,9 @@ export function VoiceCallRoom({
   }, [volume]);
 
   const handleJoinCall = async () => {
-    if (isInCall || !isConnected) {
-      console.log('[VC] Cannot join - already in call or not connected');
-      return;
-    }
+    if (isInCall || !isConnected) return;
 
     try {
-      console.log('[VC] Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -301,12 +343,10 @@ export function VoiceCallRoom({
       localStreamRef.current = stream;
       isInCallRef.current = true;
       
-      console.log('[VC] Emitting voice:join');
       const success = joinVoice();
       if (success) {
         setIsInCall(true);
       } else {
-        console.error('[VC] Failed to join voice');
         stream.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
         isInCallRef.current = false;
@@ -318,7 +358,6 @@ export function VoiceCallRoom({
   };
 
   const handleLeaveCall = useCallback((isManual: boolean = false) => {
-    console.log('[VC] Leaving call...');
     isInCallRef.current = false;
     setIsInCall(false);
     setIsMuted(false);
@@ -355,19 +394,15 @@ export function VoiceCallRoom({
         const newMuted = !track.enabled;
         setIsMuted(newMuted);
         sendMute(newMuted);
-        console.log(`[VC] Mute toggled: ${newMuted}`);
       }
     }
   };
 
-  // Load initial metadata
   useEffect(() => {
     const load = async () => {
       try {
         setIsLoadingMetadata(true);
-        console.log(`[VC] Loading metadata for room ${currentRoomId}`);
         const meta = await getVoiceRoomMetadata(currentRoomId);
-        console.log('[VC] Metadata loaded:', meta);
         setUsers(meta.users.map(convertUserDto));
       } catch (e) {
         console.error('[VC] Meta load error:', e);
@@ -378,29 +413,13 @@ export function VoiceCallRoom({
     if (currentRoomId) load();
   }, [currentRoomId]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (isInCallRef.current) {
-        console.log('[VC] Component unmounting, leaving call');
         handleLeaveCall();
       }
     };
   }, [handleLeaveCall]);
-
-  const handleRoomSwitch = (room: VoiceRoom) => {
-    const nid = parseInt(room.id, 10);
-    if (nid === currentRoomId) return;
-    
-    if (isInCall) {
-      handleLeaveCall(true);
-    }
-    
-    setIsTransitioning(true);
-    setCurrentRoomId(nid);
-    setCurrentRoomName(room.name);
-    setTimeout(() => setIsTransitioning(false), 350);
-  };
 
   const renderAvatar = (
     user: VoiceUser | { name: string; avatar: string }, 
@@ -421,8 +440,9 @@ export function VoiceCallRoom({
             : 'linear-gradient(135deg, rgba(40, 245, 204, 0.15), rgba(4, 55, 47, 0.4))',
           border: `2px solid ${isTalking ? '#28f5cc' : 'rgba(40, 245, 204, 0.3)'}`,
           boxShadow: isTalking
-            ? '0 0 30px rgba(40, 245, 204, 0.5), inset 0 0 20px rgba(40, 245, 204, 0.2)'
+            ? '0 0 30px rgba(40, 245, 204, 0.6), 0 0 60px rgba(40, 245, 204, 0.2)'
             : '0 0 15px rgba(40, 245, 204, 0.2)',
+          transform: isTalking ? 'scale(1.05)' : 'scale(1)',
         }}
       >
         {isUrl ? (
@@ -437,6 +457,9 @@ export function VoiceCallRoom({
           <div className="absolute bottom-1 left-1 w-7 h-7 rounded-full flex items-center justify-center border-2 bg-red-600 border-black shadow-[0_0_12px_red]">
             <MicOff className="w-4 h-4 text-white" />
           </div>
+        )}
+        {isTalking && (
+          <div className="absolute inset-0 rounded-full animate-pulse border-4 border-[#28f5cc]/30 pointer-events-none" />
         )}
       </div>
     );
