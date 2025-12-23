@@ -3,10 +3,6 @@ import { saveMessage } from "../services/message.service.js";
 
 export const registerMessageSocket = (io, socket) => {
 
-  socket.on("room:join", ({ roomId }) => {
-    socket.join(`room:${roomId}`);
-  });
-
   socket.on("room:message", async ({ roomId, content, contentType }) => {
     try {
       const userId = socket.user.id;

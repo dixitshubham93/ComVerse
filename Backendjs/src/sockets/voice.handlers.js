@@ -6,80 +6,101 @@ import {
   removeUserFromRoom
 } from '../services/presence.service.js';
 
+/**
+ * Unified room and voice handlers.
+ * Handles both general presence (who is in the room) and voice-specific state.
+ */
 export const registerVoiceHandlers = (io, socket) => {
-  const joinedVoiceRooms = new Set();
-  
-  const joinVoice = ({ roomId }) => {
-    if (!socket.user || !roomId) {
-      console.error('[Voice] Missing user or roomId in voice:join');
-      return;
-    }
+  // Track rooms this socket has joined
+  const joinedRooms = new Set();
+  const inVoiceRooms = new Set();
+
+  // --- GENERAL ROOM PRESENCE ---
+
+  const joinRoom = ({ roomId }) => {
+    if (!socket.user || !roomId) return;
     
     const rId = String(roomId);
     const userId = Number(socket.user.id);
     
-    console.log(`[Voice] User ${userId} (${socket.user.username}) joining voice in room ${rId}`);
+    console.log(`[Presence] User ${userId} (${socket.user.username}) joined room ${rId}`);
     
-    // Ensure user is in the Socket.IO room for broadcasting
     socket.join(`room:${rId}`);
-    joinedVoiceRooms.add(rId);
+    joinedRooms.add(rId);
     
-    // Add/Update user in presence store with current socketId
+    // Add to presence as "not in call" by default
+    addUserToRoom(rId, { 
+      ...socket.user, 
+      id: userId, 
+      inCall: false 
+    }, socket.id);
+    
+    broadcastPresence(rId);
+  };
+
+  const leaveRoom = ({ roomId }) => {
+    if (!socket.user || !roomId) return;
+    
+    const rId = String(roomId);
+    const userId = Number(socket.user.id);
+    
+    console.log(`[Presence] User ${userId} leaving room ${rId}`);
+    
+    socket.leave(`room:${rId}`);
+    joinedRooms.delete(rId);
+    inVoiceRooms.delete(rId);
+    
+    removeUserFromRoom(rId, userId);
+    broadcastPresence(rId);
+  };
+
+  // --- VOICE CALL LOGIC ---
+
+  const joinVoice = ({ roomId }) => {
+    if (!socket.user || !roomId) return;
+    
+    const rId = String(roomId);
+    const userId = Number(socket.user.id);
+    
+    console.log(`[Voice] User ${userId} joining voice in room ${rId}`);
+    
+    // Ensure they are in the socket room
+    socket.join(`room:${rId}`);
+    joinedRooms.add(rId);
+    inVoiceRooms.add(rId);
+    
+    // Update presence with inCall: true
     addUserToRoom(rId, { 
       ...socket.user, 
       id: userId, 
       inCall: true 
     }, socket.id);
     
-    // Broadcast updated presence to everyone in the room
-    const users = getUsersInRoom(rId);
-    console.log(`[Voice] Broadcasting presence update. Users in room:`, users.length);
-    
-    io.to(`room:${rId}`).emit('voice:presence', { 
-      roomId: Number(rId), 
-      users 
-    });
+    broadcastPresence(rId);
   };
 
   const leaveVoice = ({ roomId }) => {
-    if (!socket.user || !roomId) {
-      console.error('[Voice] Missing user or roomId in voice:leave');
-      return;
-    }
+    if (!socket.user || !roomId) return;
     
     const rId = String(roomId);
     const userId = Number(socket.user.id);
     
-    console.log(`[Voice] User ${userId} (${socket.user.username}) leaving voice in room ${rId}`);
+    console.log(`[Voice] User ${userId} leaving voice in room ${rId}`);
     
-    // Update user to be "not in call"
     updateUserCallStatus(rId, userId, false);
-    joinedVoiceRooms.delete(rId);
+    inVoiceRooms.delete(rId);
     
-    // Broadcast updated presence
-    const users = getUsersInRoom(rId);
-    console.log(`[Voice] Broadcasting presence update after leave. Users in room:`, users.length);
-    
-    io.to(`room:${rId}`).emit('voice:presence', { 
-      roomId: Number(rId), 
-      users 
-    });
+    broadcastPresence(rId);
   };
 
   const signalVoice = ({ roomId, to, signal }) => {
-    if (!socket.user || !roomId || !to || !signal) {
-      console.error('[Voice] Missing params in voice:signal');
-      return;
-    }
+    if (!socket.user || !roomId || !to || !signal) return;
     
     const rId = String(roomId);
     const fromUserId = Number(socket.user.id);
     const toUserId = Number(to);
     
-    // Find the target user's socket
     const users = getUsersInRoom(rId);
-    // Relaxed check: just check if user exists and has a socketId. 
-    // Handshake should proceed if they are in the room.
     const targetUser = users.find(u => Number(u.id) === toUserId);
     
     if (targetUser && targetUser.socketId) {
@@ -88,16 +109,11 @@ export const registerVoiceHandlers = (io, socket) => {
         from: fromUserId,
         signal
       });
-      console.log(`[Voice] Signal relayed from ${fromUserId} to ${toUserId} (socket: ${targetUser.socketId})`);
-    } else {
-      console.warn(`[Voice] Target user ${toUserId} not found or has no socketId in room ${rId}`);
     }
   };
 
   const muteVoice = ({ roomId, isMuted }) => {
-    if (!socket.user || !roomId) {
-      return;
-    }
+    if (!socket.user || !roomId) return;
     
     const rId = String(roomId);
     const userId = Number(socket.user.id);
@@ -109,23 +125,33 @@ export const registerVoiceHandlers = (io, socket) => {
     });
   };
 
+  // --- UTILS ---
+
+  const broadcastPresence = (rId) => {
+    const users = getUsersInRoom(rId);
+    io.to(`room:${rId}`).emit('voice:presence', { 
+      roomId: Number(rId), 
+      users 
+    });
+  };
+
   const handleDisconnect = () => {
     if (!socket.user) return;
     const userId = Number(socket.user.id);
     
-    joinedVoiceRooms.forEach(rId => {
-      console.log(`[Voice] Cleaning up user ${userId} from room ${rId} on disconnect`);
+    joinedRooms.forEach(rId => {
+      console.log(`[Presence] Cleaning up user ${userId} from room ${rId} on disconnect`);
       removeUserFromRoom(rId, userId);
-      
-      const users = getUsersInRoom(rId);
-      io.to(`room:${rId}`).emit('voice:presence', { 
-        roomId: Number(rId), 
-        users 
-      });
+      broadcastPresence(rId);
     });
-    joinedVoiceRooms.clear();
+    
+    joinedRooms.clear();
+    inVoiceRooms.clear();
   };
 
+  // Bind events
+  socket.on('room:join', joinRoom);
+  socket.on('room:leave', leaveRoom);
   socket.on('voice:join', joinVoice);
   socket.on('voice:leave', leaveVoice);
   socket.on('voice:signal', signalVoice);
