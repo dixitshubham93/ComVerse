@@ -23,32 +23,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('comverse_user');
-    const storedToken = localStorage.getItem('authToken');
-    
-    if (storedUser && storedToken) {
+  export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<User | null>(() => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        // Ensure id is a number
-        if (parsedUser.id) {
-          parsedUser.id = typeof parsedUser.id === 'string' ? parseInt(parsedUser.id, 10) : parsedUser.id;
+        const storedUser = localStorage.getItem('comverse_user');
+        const storedToken = localStorage.getItem('authToken');
+        
+        if (storedUser && storedToken) {
+          const parsedUser = JSON.parse(storedUser);
+          // Ensure id is a number
+          if (parsedUser.id) {
+            parsedUser.id = typeof parsedUser.id === 'string' ? parseInt(parsedUser.id, 10) : parsedUser.id;
+          }
+          // Include token in user object
+          parsedUser.token = storedToken;
+          return parsedUser;
         }
-        // Include token in user object
-        parsedUser.token = storedToken;
-        setUser(parsedUser);
       } catch (e) {
-        console.error('Failed to parse stored user:', e);
-        localStorage.removeItem('comverse_user');
-        localStorage.removeItem('authToken');
+        console.error('Failed to parse stored user during initialization:', e);
       }
-    }
-  }, []);
+      return null;
+    });
 
+    // Remove the mount useEffect since we initialize in useState
+    // Keep Google OAuth check though
+    
     // Check for Google OAuth redirect on mount
     useEffect(() => {
       const urlParams = new URLSearchParams(window.location.search);
