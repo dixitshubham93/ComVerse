@@ -75,12 +75,55 @@ export function VoiceCallRoom({
   const presenceRef = useRef<UserDto[]>([]);
   const audioContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    volumeRef.current = volume;
-    audioElementsRef.current.forEach(a => {
-      a.volume = volume / 100;
-    });
-  }, [volume]);
+  const createPeerRef = useRef<any>(null);
+
+  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
+    onPresence: (newPresence: UserDto[]) => {
+      console.log('[VC] Presence update received');
+      const currentUserId = Number(user?.id);
+      
+      if (isInCallRef.current && localStreamRef.current) {
+        const inCallPresence = newPresence.filter(u => u.inCall);
+        const inCallIds = new Set(inCallPresence.map(u => Number(u.id)));
+        
+        inCallPresence.forEach(u => {
+          const userId = Number(u.id);
+          if (userId !== currentUserId && !peersRef.current.has(userId)) {
+            // Rule: Existing users initiate to newly joined users
+            const wasUserAlreadyInCall = presenceRef.current.some(p => Number(p.id) === userId && p.inCall);
+            if (!wasUserAlreadyInCall) {
+              console.log(`[VC] I am existing, initiating to new user ${userId}`);
+              createPeerRef.current?.(userId, true, localStreamRef.current!);
+            }
+          }
+        });
+
+        // Cleanup peers for users who left call
+        peersRef.current.forEach((_, userId) => {
+          if (!inCallIds.has(userId)) {
+            destroyPeer(userId);
+          }
+        });
+      }
+
+      presenceRef.current = newPresence;
+      setUsers(newPresence.map(convertUserDto));
+    },
+    onSignal: (data) => {
+      if (!isInCallRef.current || !localStreamRef.current) return;
+      console.log(`[VC] Received signal from ${data.from}`);
+      
+      let peer = peersRef.current.get(data.from);
+      if (!peer) {
+        console.log(`[VC] I am new user, responding to signal from existing user ${data.from}`);
+        peer = createPeerRef.current?.(data.from, false, localStreamRef.current);
+      }
+      if (peer) peer.signal(data.signal);
+    },
+    onMute: ({ userId, isMuted }) => {
+      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, isMuted } : u));
+    }
+  });
 
   const destroyPeer = useCallback((userId: number) => {
     console.log(`[VC] Destroying peer for user ${userId}`);
@@ -147,66 +190,9 @@ export function VoiceCallRoom({
     return peer;
   }, [destroyPeer, sendSignal]);
 
-  const convertUserDto = useCallback((dto: UserDto): VoiceUser => {
-    return {
-      id: dto.id.toString(),
-      name: dto.username,
-      avatar: dto.avatarUrl || dto.username.charAt(0).toUpperCase(),
-      isTalking: false,
-      isMuted: false,
-      isOnline: true,
-      inCall: !!dto.inCall,
-      userId: dto.id,
-    };
-  }, []);
-
-  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
-    onPresence: (newPresence: UserDto[]) => {
-      console.log('[VC] Presence update received');
-      const currentUserId = Number(user?.id);
-      
-      if (isInCallRef.current && localStreamRef.current) {
-        const inCallPresence = newPresence.filter(u => u.inCall);
-        const inCallIds = new Set(inCallPresence.map(u => Number(u.id)));
-        
-        inCallPresence.forEach(u => {
-          const userId = Number(u.id);
-          if (userId !== currentUserId && !peersRef.current.has(userId)) {
-            // Rule: Existing users initiate to newly joined users
-            const wasUserAlreadyInCall = presenceRef.current.some(p => Number(p.id) === userId && p.inCall);
-            if (!wasUserAlreadyInCall) {
-              console.log(`[VC] I am existing, initiating to new user ${userId}`);
-              createPeer(userId, true, localStreamRef.current!);
-            }
-          }
-        });
-
-        // Cleanup peers for users who left call
-        peersRef.current.forEach((_, userId) => {
-          if (!inCallIds.has(userId)) {
-            destroyPeer(userId);
-          }
-        });
-      }
-
-      presenceRef.current = newPresence;
-      setUsers(newPresence.map(convertUserDto));
-    },
-    onSignal: (data) => {
-      if (!isInCallRef.current || !localStreamRef.current) return;
-      console.log(`[VC] Received signal from ${data.from}`);
-      
-      let peer = peersRef.current.get(data.from);
-      if (!peer) {
-        console.log(`[VC] I am new user, responding to signal from existing user ${data.from}`);
-        peer = createPeer(data.from, false, localStreamRef.current);
-      }
-      peer.signal(data.signal);
-    },
-    onMute: ({ userId, isMuted }) => {
-      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, isMuted } : u));
-    }
-  });
+  useEffect(() => {
+    createPeerRef.current = createPeer;
+  }, [createPeer]);
 
   const handleJoinCall = async () => {
     if (isInCall) return;

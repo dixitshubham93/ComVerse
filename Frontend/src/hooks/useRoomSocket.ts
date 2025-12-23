@@ -40,6 +40,7 @@ export function useRoomSocket(
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<UserDto[]>([]);
   const socketRef = useRef<Socket | null>(null);
   const callbacksRef = useRef(callbacks);
 
@@ -82,16 +83,11 @@ export function useRoomSocket(
       const receivedRoomId = Number(data.roomId);
       const currentRoomId = Number(roomId);
       
-      console.log(`[Socket Hook] Room check: received ${receivedRoomId}, current ${currentRoomId}`);
       if (receivedRoomId === currentRoomId) {
-        console.log(`[Socket Hook] Match! Calling onPresence with ${data.users.length} users`);
+        setParticipants(data.users);
         if (callbacksRef.current.onPresence) {
           callbacksRef.current.onPresence(data.users);
-        } else {
-          console.warn('[Socket Hook] No onPresence callback provided in hooks options!');
         }
-      } else {
-        console.warn(`[Socket Hook] Room ID mismatch! Expected ${currentRoomId}, got ${receivedRoomId}`);
       }
     });
 
@@ -120,24 +116,6 @@ export function useRoomSocket(
       callbacksRef.current.onMessage?.(data);
     });
 
-    socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
-      console.log('[Socket Hook] Received voice:presence', data);
-      const receivedRoomId = Number(data.roomId);
-      const currentRoomId = Number(roomId);
-      
-      console.log(`[Socket Hook] Room check: received ${receivedRoomId}, current ${currentRoomId}`);
-      if (receivedRoomId === currentRoomId) {
-        console.log('[Socket Hook] Room IDs match. Calling onPresence with', data.users.length, 'users');
-        if (callbacksRef.current.onPresence) {
-          callbacksRef.current.onPresence(data.users);
-        } else {
-          console.warn('[Socket Hook] No onPresence callback registered!');
-        }
-      } else {
-        console.warn(`[Socket Hook] Room ID mismatch. Expected ${currentRoomId}, got ${receivedRoomId}`);
-      }
-    });
-
     socket.on('voice:signal', (data: { from: number, signal: any, roomId: number | string }) => {
       console.log('[Socket] Received voice:signal from', data.from, 'for room', data.roomId);
       if (Number(data.roomId) === Number(roomId)) {
@@ -162,6 +140,7 @@ export function useRoomSocket(
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+      setParticipants([]);
     });
 
     socketRef.current = socket;
@@ -175,6 +154,7 @@ export function useRoomSocket(
     }
     setIsConnected(false);
     setIsConnecting(false);
+    setParticipants([]);
   }, []);
 
   const sendMessage = useCallback(
@@ -234,6 +214,7 @@ export function useRoomSocket(
     isConnected,
     isConnecting,
     error,
+    participants,
     sendMessage,
     joinVoice,
     leaveVoice,

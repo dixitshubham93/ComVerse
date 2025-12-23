@@ -21,13 +21,13 @@ export function RoomPage({ room, communityName, onBack }: RoomPageProps) {
   const [isInVoice, setIsInVoice] = useState(false);
   const { user } = useAuth();
   
-  const roomId = parseInt(room.id, 10);
-  const { participants, isConnected } = useRoomSocket(roomId);
+    const roomId = parseInt(room.id, 10);
+    const { participants = [], isConnected } = useRoomSocket(roomId, null);
 
-  useEffect(() => {
-    console.log('%c[Room Page] MOUNTED - Room:', 'color: #28f5cc; font-weight: bold;', room.name, '(ID:', roomId, ')');
-    console.log('[Room Page] Participants:', participants);
-  }, [roomId, participants]);
+    useEffect(() => {
+      console.log('%c[Room Page] MOUNTED - Room:', 'color: #28f5cc; font-weight: bold;', room.name, '(ID:', roomId, ')');
+      console.log('[Room Page] Participants:', participants);
+    }, [roomId, participants]);
 
   const handleSendMessage = () => {
     if (message.trim()) {
