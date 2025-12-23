@@ -4,13 +4,20 @@ import { getUsersInRoom } from "../services/presence.service.js";
 export const getVoiceMetadata = async (req, res, next) => {
   try {
     const { roomId } = req.params;
-    const users = getUsersInRoom(String(roomId));
+    const users = getUsersInRoom(roomId);
+    
+    // Ensure all user IDs are numbers
+    const formattedUsers = users.map(user => ({
+      ...user,
+      id: Number(user.id)
+    }));
+    
     res.json({
       success: true,
       data: {
         roomId: Number(roomId),
-        activeUsers: users.length,
-        users
+        activeUsers: formattedUsers.length,
+        users: formattedUsers
       }
     });
   } catch (err) {

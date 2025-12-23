@@ -108,19 +108,19 @@ export function useRoomSocket(
       }
     });
 
-      socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
-        console.log('[Socket] Received voice:signal from', data.from);
-        if (Number(data.roomId) === Number(roomId)) {
-          callbacksRef.current.onSignal?.(data);
-        }
-      });
+    socket.on('voice:signal', (data: { from: number, signal: any, roomId: number }) => {
+      console.log('[Socket] Received voice:signal from', data.from);
+      if (Number(data.roomId) === Number(roomId)) {
+        callbacksRef.current.onSignal?.(data);
+      }
+    });
 
-      socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number }) => {
-        console.log('[Socket] Received voice:mute from', data.userId, ':', data.isMuted);
-        if (Number(data.roomId) === Number(roomId)) {
-          callbacksRef.current.onMute?.({ userId: data.userId, isMuted: data.isMuted });
-        }
-      });
+    socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number }) => {
+      console.log('[Socket] Received voice:mute from', data.userId, ':', data.isMuted);
+      if (Number(data.roomId) === Number(roomId)) {
+        callbacksRef.current.onMute?.({ userId: Number(data.userId), isMuted: data.isMuted });
+      }
+    });
 
     socket.on('room:error', (data: { message: string }) => {
       setError(data.message);

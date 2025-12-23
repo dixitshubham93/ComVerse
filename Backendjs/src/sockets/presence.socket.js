@@ -61,7 +61,7 @@ export const registerPresenceSocket = (io, socket) => {
       io.to(`user:${to}`).emit("voice:signal", {
         from: fromId,
         signal,
-        roomId: rId
+        roomId: Number(rId)
       });
     });
 
@@ -71,7 +71,7 @@ export const registerPresenceSocket = (io, socket) => {
         const userId = Number(socket.user.id);
         console.log(`[Presence] User ${userId} mute status in room ${rId}: ${isMuted}`);
         io.to(`room:${rId}`).emit("voice:mute", {
-          roomId: rId,
+          roomId: Number(rId),
           userId,
           isMuted
         });

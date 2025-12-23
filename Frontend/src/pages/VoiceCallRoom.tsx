@@ -166,18 +166,19 @@ export function VoiceCallRoom({
       const currentUserId = Number(user?.id);
       
       if (isInCallRef.current) {
-        const newIds = new Set(newPresence.map(u => u.id));
+        const newIds = new Set(newPresence.map(u => Number(u.id)));
         
-        if (newPresence.length === 1 && newPresence[0].id === currentUserId) {
+        if (newPresence.length === 1 && Number(newPresence[0].id) === currentUserId) {
           console.log('[VC] I am the only one in the room. Waiting for others to join...');
         }
 
         // Deterministic peer creation: person with higher ID initiates
         newPresence.forEach(u => {
-          if (u.id !== currentUserId && !peersRef.current.has(u.id)) {
-            const shouldIInitiate = currentUserId > u.id;
-            console.log(`[VC] New peer detected: ${u.username} (${u.id}). My ID: ${currentUserId}. Should I initiate? ${shouldIInitiate}`);
-            createPeer(u.id, shouldIInitiate, (sig) => sendSignal(u.id, sig));
+          const userId = Number(u.id);
+          if (userId !== currentUserId && !peersRef.current.has(userId)) {
+            const shouldIInitiate = currentUserId > userId;
+            console.log(`[VC] New peer detected: ${u.username} (${userId}). My ID: ${currentUserId}. Should I initiate? ${shouldIInitiate}`);
+            createPeer(userId, shouldIInitiate, (sig) => sendSignal(userId, sig));
           }
         });
 

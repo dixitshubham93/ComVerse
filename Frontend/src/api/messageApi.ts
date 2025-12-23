@@ -128,10 +128,12 @@ export interface VoiceRoomMetadata {
  */
 export const getVoiceRoomMetadata = async (roomId: number): Promise<VoiceRoomMetadata> => {
   try {
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/voice-metadata`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
 
