@@ -73,9 +73,6 @@ export function useRoomSocket(
       setIsConnected(true);
       setIsConnecting(false);
       setError(null);
-      
-      console.log(`%c[Socket Hook] Emitting room:join for room ${roomId}`, 'color: #00ffff');
-      socket.emit('room:join', { roomId });
     });
 
     socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
@@ -95,7 +92,6 @@ export function useRoomSocket(
       console.log('Socket reconnected after', attemptNumber, 'attempts');
       setIsConnected(true);
       setIsConnecting(false);
-      socket.emit('room:join', { roomId });
     });
 
     socket.on('reconnecting', (attemptNumber) => {
@@ -221,6 +217,12 @@ export function useRoomSocket(
     sendSignal,
     sendMute,
     reconnect: connect,
+    joinChat: () => {
+      if (socketRef.current?.connected && roomId) {
+        console.log(`%c[Socket Hook] Emitting room:join for room ${roomId}`, 'color: #00ffff');
+        socketRef.current.emit('room:join', { roomId });
+      }
+    },
     socket: socketRef.current
   };
 }

@@ -125,7 +125,7 @@ export function AnnouncementChat({
   };
 
   // WebSocket connection
-  const { isConnected, error: wsError, sendMessage } = useRoomSocket(roomId, communityId, {
+  const { isConnected, error: wsError, sendMessage, joinChat } = useRoomSocket(roomId, communityId, {
     onMessage: (message: MessageDto) => {
       setMessages((prev) => [...prev, convertMessageDto(message)]);
     },
@@ -141,6 +141,12 @@ export function AnnouncementChat({
       setSocketError(error);
     },
   });
+
+  useEffect(() => {
+    if (isConnected) {
+      joinChat();
+    }
+  }, [isConnected, joinChat]);
 
   useEffect(() => {
     if (wsError) {
