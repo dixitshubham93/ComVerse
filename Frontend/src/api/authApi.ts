@@ -5,7 +5,7 @@
 
 // Base API URL from environment variable
 const getBaseUrl = () => {
-  let url = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+    let url = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
   return url.replace(/\/$/, '');
 };
 

@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loginWithGoogle = () => {
       // Redirect to Google OAuth
-      let apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+      let apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
       
       // Clean up the URL to prevent double /api issues
       apiUrl = apiUrl.replace(/\/$/, ''); // Remove trailing slash

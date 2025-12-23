@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8080';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8081';
 
 export interface MessageDto {
   id: number;
