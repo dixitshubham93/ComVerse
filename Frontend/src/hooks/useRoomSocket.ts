@@ -49,71 +49,122 @@ export function useRoomSocket(
   }, [callbacks]);
 
   const connect = useCallback(() => {
-    if (!roomId || !user?.token) {
+    console.log('%c[Socket Hook] === CONNECTION ATTEMPT ===', 'color: #00ffff; font-weight: bold');
+    console.log('[Socket Hook] Room ID:', roomId);
+    console.log('[Socket Hook] User Token:', user?.token ? 'EXISTS ✓' : 'MISSING ✗');
+    console.log('[Socket Hook] WS URL:', WS_BASE_URL);
+
+    if (!roomId) {
+      console.warn('[Socket Hook] ⚠️ No room ID provided');
+      return;
+    }
+
+    if (!user?.token) {
+      console.error('[Socket Hook] ❌ No user token available');
+      setError('Authentication token missing');
       return;
     }
 
     if (socketRef.current?.connected) {
+      console.log('[Socket Hook] ✓ Already connected');
       setIsConnected(true);
       return;
     }
 
+    console.log('[Socket Hook] Creating new socket connection...');
     setIsConnecting(true);
+    
     const socket = io(WS_BASE_URL, {
       auth: {
         token: user.token
       },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
       timeout: 10000,
     });
 
+    // Connection successful
     socket.on('connect', () => {
-      console.log('%c[Socket Hook] CONNECTED successfully!', 'color: #00ff00; font-weight: bold');
+      console.log('%c[Socket Hook] ✅ CONNECTED successfully!', 'color: #00ff00; font-weight: bold');
+      console.log('[Socket Hook] Socket ID:', socket.id);
       setIsConnected(true);
       setIsConnecting(false);
       setError(null);
+      
+      console.log(`%c[Socket Hook] Emitting room:join for room ${roomId}`, 'color: #00ffff');
+      socket.emit('room:join', { roomId });
     });
 
+    // Voice presence updates
     socket.on('voice:presence', (data: { roomId: number | string, users: UserDto[] }) => {
-      console.log('%c[Socket Hook] RECEIVED voice:presence', 'color: #ffff00; font-weight: bold', data);
+      console.log('%c[Socket Hook] RECEIVED voice:presence', 'color: #ffff00; font-weight: bold');
+      console.log('[Socket Hook] Room:', data.roomId, 'Users:', data.users?.length);
+      
       const receivedRoomId = Number(data.roomId);
       const currentRoomId = Number(roomId);
       
       if (receivedRoomId === currentRoomId) {
+        console.log('[Socket Hook] ✓ Presence for current room, updating...');
         setParticipants(data.users);
         if (callbacksRef.current.onPresence) {
           callbacksRef.current.onPresence(data.users);
         }
+      } else {
+        console.log('[Socket Hook] ⚠️ Presence for different room, ignoring');
       }
     });
 
+    // Reconnection events
     socket.on('reconnect', (attemptNumber) => {
-      console.log('Socket reconnected after', attemptNumber, 'attempts');
+      console.log('[Socket Hook] ♻️ Reconnected after', attemptNumber, 'attempts');
       setIsConnected(true);
       setIsConnecting(false);
+      socket.emit('room:join', { roomId });
     });
 
     socket.on('reconnecting', (attemptNumber) => {
-      console.log('Socket reconnecting, attempt:', attemptNumber);
+      console.log('[Socket Hook] 🔄 Reconnecting, attempt:', attemptNumber);
       setIsConnecting(true);
     });
 
+    socket.on('reconnect_failed', () => {
+      console.error('[Socket Hook] ❌ Reconnection failed after all attempts');
+      setError('Failed to reconnect');
+      setIsConnected(false);
+      setIsConnecting(false);
+    });
+
+    // Connection errors
     socket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
-      setError(err.message);
+      console.error('%c[Socket Hook] ❌ CONNECTION ERROR', 'color: #ff0000; font-weight: bold');
+      console.error('[Socket Hook] Error:', err.message);
+      console.error('[Socket Hook] Error details:', err);
+      
+      if (err.message.includes('Authentication')) {
+        console.error('[Socket Hook] 🔐 Auth failed - check your JWT token');
+        setError('Authentication failed - please login again');
+      } else if (err.message.includes('timeout')) {
+        console.error('[Socket Hook] ⏱️ Connection timeout - check backend URL');
+        setError('Connection timeout - is backend running?');
+      } else {
+        setError(err.message);
+      }
+      
       callbacksRef.current.onError?.(err.message);
       setIsConnected(false);
       setIsConnecting(false);
     });
 
+    // Room messages
     socket.on('room:message', (data: MessageDto) => {
-      console.log('[Socket] Received room:message', data);
+      console.log('[Socket Hook] 💬 Received room:message', data);
       callbacksRef.current.onMessage?.(data);
     });
 
+    // Voice signaling
     socket.on('voice:signal', (data: { from: number, signal: any, roomId: number | string }) => {
-      console.log('[Socket] Received voice:signal from', data.from, 'for room', data.roomId);
+      console.log('[Socket Hook] 📡 Received voice:signal from', data.from, 'for room', data.roomId);
       if (Number(data.roomId) === Number(roomId)) {
         callbacksRef.current.onSignal?.({
           ...data,
@@ -122,19 +173,33 @@ export function useRoomSocket(
       }
     });
 
+    // Voice mute status
     socket.on('voice:mute', (data: { userId: number, isMuted: boolean, roomId: number | string }) => {
-      console.log('[Socket] Received voice:mute from', data.userId, ':', data.isMuted);
+      console.log('[Socket Hook] 🔇 Received voice:mute from', data.userId, ':', data.isMuted);
       if (Number(data.roomId) === Number(roomId)) {
         callbacksRef.current.onMute?.({ userId: Number(data.userId), isMuted: data.isMuted });
       }
     });
 
+    // Room errors
     socket.on('room:error', (data: { message: string }) => {
+      console.error('[Socket Hook] 🚫 Room error:', data.message);
       setError(data.message);
       callbacksRef.current.onError?.(data.message);
     });
 
-    socket.on('disconnect', () => {
+    // Disconnection
+    socket.on('disconnect', (reason) => {
+      console.log('%c[Socket Hook] ❌ DISCONNECTED', 'color: #ff6600; font-weight: bold');
+      console.log('[Socket Hook] Reason:', reason);
+      
+      if (reason === 'io server disconnect') {
+        console.log('[Socket Hook] Server disconnected us - reconnecting...');
+        socket.connect();
+      } else if (reason === 'transport close' || reason === 'ping timeout') {
+        console.log('[Socket Hook] Connection lost - will auto-reconnect');
+      }
+      
       setIsConnected(false);
       setParticipants([]);
     });
@@ -144,7 +209,7 @@ export function useRoomSocket(
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
-      console.log('Disconnecting socket');
+      console.log('[Socket Hook] Manually disconnecting socket');
       socketRef.current.disconnect();
       socketRef.current = null;
     }
@@ -156,7 +221,7 @@ export function useRoomSocket(
   const sendMessage = useCallback(
     (content: string, contentType: string = 'TEXT') => {
       if (!socketRef.current?.connected) {
-        console.warn('Cannot send message: Not connected to WebSocket');
+        console.warn('[Socket Hook] ⚠️ Cannot send message: Not connected');
         return;
       }
       if (!roomId) return;
@@ -172,19 +237,19 @@ export function useRoomSocket(
 
   const joinVoice = useCallback(() => {
     if (!socketRef.current?.connected) {
-      console.warn('Cannot join voice: Not connected to WebSocket');
+      console.warn('[Socket Hook] ⚠️ Cannot join voice: Not connected to WebSocket');
       return false;
     }
     if (!roomId) return false;
 
-    console.log('Emitting voice:join for room:', roomId);
+    console.log('[Socket Hook] 🎤 Emitting voice:join for room:', roomId);
     socketRef.current.emit('voice:join', { roomId });
     return true;
   }, [roomId]);
 
   const leaveVoice = useCallback(() => {
     if (socketRef.current?.connected && roomId) {
-      console.log('Emitting voice:leave for room:', roomId);
+      console.log('[Socket Hook] 🔇 Emitting voice:leave for room:', roomId);
       socketRef.current.emit('voice:leave', { roomId });
       return true;
     }
@@ -192,12 +257,18 @@ export function useRoomSocket(
   }, [roomId]);
 
   const sendSignal = useCallback((to: number, signal: any) => {
-    if (!socketRef.current?.connected || !roomId) return;
+    if (!socketRef.current?.connected || !roomId) {
+      console.warn('[Socket Hook] ⚠️ Cannot send signal: Not connected');
+      return;
+    }
     socketRef.current.emit('voice:signal', { to, signal, roomId });
   }, [roomId]);
 
   const sendMute = useCallback((isMuted: boolean) => {
-    if (!socketRef.current?.connected || !roomId) return;
+    if (!socketRef.current?.connected || !roomId) {
+      console.warn('[Socket Hook] ⚠️ Cannot send mute: Not connected');
+      return;
+    }
     socketRef.current.emit('voice:mute', { roomId, isMuted });
   }, [roomId]);
 
@@ -217,12 +288,6 @@ export function useRoomSocket(
     sendSignal,
     sendMute,
     reconnect: connect,
-    joinChat: () => {
-      if (socketRef.current?.connected && roomId) {
-        console.log(`%c[Socket Hook] Emitting room:join for room ${roomId}`, 'color: #00ffff');
-        socketRef.current.emit('room:join', { roomId });
-      }
-    },
     socket: socketRef.current
   };
 }

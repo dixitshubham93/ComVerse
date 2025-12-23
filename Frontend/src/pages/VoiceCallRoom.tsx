@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Phone, PhoneOff, Volume2, Hash } from 'lucide-react';
+import { Mic, MicOff, Phone, PhoneOff, Volume2 } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { useRoomSocket, UserDto } from '../hooks/useRoomSocket';
-import { getVoiceRoomMetadata, VoiceRoomMetadata } from '../api/messageApi';
+import { getVoiceRoomMetadata } from '../api/messageApi';
 import { useAuth } from '../contexts/AuthContext';
 import Peer from 'simple-peer';
 
@@ -17,9 +17,6 @@ const convertUserDto = (u: UserDto): VoiceUser => ({
   inCall: !!u.inCall,
   userId: u.id
 });
-
-// Add this type helper
-type SimplePeerInstance = any; // Fallback for Peer.Instance if it causes issues
 
 interface VoiceUser {
   id: string;
@@ -61,6 +58,7 @@ export function VoiceCallRoom({
   onGoToUserSpace,
 }: VoiceCallRoomProps) {
   const { user } = useAuth();
+  
   const currentUser = {
     name: user?.username || 'Guest',
     avatar: user?.avatar || user?.username?.charAt(0).toUpperCase() || 'G',
@@ -86,61 +84,15 @@ export function VoiceCallRoom({
   const presenceRef = useRef<UserDto[]>([]);
   const audioContainerRef = useRef<HTMLDivElement>(null);
 
-  const createPeerRef = useRef<any>(null);
-
-  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(currentRoomId, communityId, {
-    onPresence: (newPresence: UserDto[]) => {
-      console.log('[VC] Presence update received');
-      const currentUserId = Number(user?.id);
-      
-      if (isInCallRef.current && localStreamRef.current) {
-        const inCallPresence = newPresence.filter(u => u.inCall);
-        const inCallIds = new Set(inCallPresence.map(u => Number(u.id)));
-        
-        inCallPresence.forEach(u => {
-          const userId = Number(u.id);
-          if (userId !== currentUserId && !peersRef.current.has(userId)) {
-            // Rule: Existing users initiate to newly joined users
-            const wasUserAlreadyInCall = presenceRef.current.some(p => Number(p.id) === userId && p.inCall);
-            if (!wasUserAlreadyInCall) {
-              console.log(`[VC] I am existing, initiating to new user ${userId}`);
-              createPeerRef.current?.(userId, true, localStreamRef.current!);
-            }
-          }
-        });
-
-        // Cleanup peers for users who left call
-        peersRef.current.forEach((_, userId) => {
-          if (!inCallIds.has(userId)) {
-            destroyPeer(userId);
-          }
-        });
-      }
-
-      presenceRef.current = newPresence;
-      setUsers(newPresence.map(convertUserDto));
-    },
-    onSignal: (data) => {
-      if (!isInCallRef.current || !localStreamRef.current) return;
-      console.log(`[VC] Received signal from ${data.from}`);
-      
-      let peer = peersRef.current.get(data.from);
-      if (!peer) {
-        console.log(`[VC] I am new user, responding to signal from existing user ${data.from}`);
-        peer = createPeerRef.current?.(data.from, false, localStreamRef.current);
-      }
-      if (peer) peer.signal(data.signal);
-    },
-    onMute: ({ userId, isMuted }) => {
-      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, isMuted } : u));
-    }
-  });
-
   const destroyPeer = useCallback((userId: number) => {
     console.log(`[VC] Destroying peer for user ${userId}`);
     const peer = peersRef.current.get(userId);
     if (peer) {
-      peer.destroy();
+      try {
+        peer.destroy();
+      } catch (err) {
+        console.error(`[VC] Error destroying peer ${userId}:`, err);
+      }
       peersRef.current.delete(userId);
     }
     const audio = audioElementsRef.current.get(userId);
@@ -153,10 +105,10 @@ export function VoiceCallRoom({
   }, []);
 
   const createPeer = useCallback((userId: number, initiator: boolean, stream: MediaStream) => {
-    console.log(`[VC] Creating peer for ${userId}, initiator: ${initiator}`);
+    console.log(`[VC] Creating peer for user ${userId}, initiator: ${initiator}`);
     
-    // Cleanup existing if any
     if (peersRef.current.has(userId)) {
+      console.log(`[VC] Cleaning up existing peer for ${userId}`);
       destroyPeer(userId);
     }
 
@@ -164,6 +116,12 @@ export function VoiceCallRoom({
       initiator,
       stream,
       trickle: false,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
     });
 
     peer.on('signal', (signal: any) => {
@@ -172,7 +130,7 @@ export function VoiceCallRoom({
     });
 
     peer.on('stream', (remoteStream: MediaStream) => {
-      console.log(`[VC] Received remote stream from ${userId}`);
+      console.log(`[VC] Received remote stream from user ${userId}`);
       let audio = audioElementsRef.current.get(userId);
       if (!audio) {
         audio = document.createElement('audio');
@@ -199,32 +157,156 @@ export function VoiceCallRoom({
 
     peersRef.current.set(userId, peer);
     return peer;
-  }, [destroyPeer, sendSignal]);
+  }, [destroyPeer]);
+
+  // Socket handlers using useRoomSocket hook
+  const { isConnected, isConnecting, joinVoice, leaveVoice, sendSignal, sendMute } = useRoomSocket(
+    currentRoomId, 
+    communityId, 
+    {
+      onPresence: useCallback((newPresence: UserDto[]) => {
+        console.log('[VC] Presence update received:', newPresence.length, 'users');
+        const currentUserId = Number(user?.id);
+        
+        setUsers(newPresence.map(convertUserDto));
+        
+        if (isInCallRef.current && localStreamRef.current) {
+          const inCallUsers = newPresence.filter(u => u.inCall && Number(u.id) !== currentUserId);
+          const previousInCallIds = new Set(
+            presenceRef.current.filter(u => u.inCall).map(u => Number(u.id))
+          );
+          
+          console.log('[VC] In-call users:', inCallUsers.length);
+          
+          inCallUsers.forEach(u => {
+            const userId = Number(u.id);
+            const wasAlreadyInCall = previousInCallIds.has(userId);
+            
+            if (!peersRef.current.has(userId) && !wasAlreadyInCall) {
+              const shouldInitiate = currentUserId > userId;
+              console.log(`[VC] New user ${userId} joined. My ID: ${currentUserId}, I initiate: ${shouldInitiate}`);
+              
+              if (shouldInitiate) {
+                createPeer(userId, true, localStreamRef.current!);
+              }
+            }
+          });
+
+          const inCallIds = new Set(inCallUsers.map(u => Number(u.id)));
+          peersRef.current.forEach((_, userId) => {
+            if (!inCallIds.has(userId)) {
+              console.log(`[VC] User ${userId} left call, destroying peer`);
+              destroyPeer(userId);
+            }
+          });
+        }
+
+        presenceRef.current = newPresence;
+      }, [user?.id, createPeer, destroyPeer]),
+
+      onSignal: useCallback((data: { from: number; signal: any; roomId: number }) => {
+        if (!isInCallRef.current || !localStreamRef.current) {
+          console.log('[VC] Ignoring signal - not in call');
+          return;
+        }
+        
+        console.log(`[VC] Received signal from user ${data.from}`);
+        
+        let peer = peersRef.current.get(data.from);
+        if (!peer) {
+          console.log(`[VC] Creating peer in response to signal from ${data.from}`);
+          peer = createPeer(data.from, false, localStreamRef.current);
+        }
+        
+        if (peer) {
+          try {
+            peer.signal(data.signal);
+          } catch (err) {
+            console.error(`[VC] Error signaling peer ${data.from}:`, err);
+          }
+        }
+      }, [createPeer]),
+
+      onMute: useCallback(({ userId, isMuted }: { userId: number; isMuted: boolean }) => {
+        console.log(`[VC] User ${userId} mute status: ${isMuted}`);
+        setUsers(prev => prev.map(u => 
+          u.userId === userId ? { ...u, isMuted } : u
+        ));
+      }, [])
+    }
+  );
+
+  // ===== DEBUG SECTION - Place AFTER all declarations =====
+  useEffect(() => {
+    console.log('=== WEBSOCKET DEBUG ===');
+    console.log('1. User:', user);
+    console.log('2. User Token:', user?.token ? 'EXISTS ✓' : 'MISSING ✗');
+    console.log('3. Room ID:', currentRoomId);
+    console.log('4. Community ID:', communityId);
+    console.log('5. Is Connected:', isConnected);
+    console.log('6. Is Connecting:', isConnecting);
+    console.log('========================');
+  }, [user, currentRoomId, communityId, isConnected, isConnecting]);
 
   useEffect(() => {
-    createPeerRef.current = createPeer;
-  }, [createPeer]);
+    const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8081';
+    console.log('WebSocket URL:', WS_URL);
+    
+    fetch(`${WS_URL}/api/rooms/${currentRoomId}/voice-metadata`)
+      .then(res => {
+        console.log('✅ Backend is reachable');
+        return res.json();
+      })
+      .then(data => {
+        console.log('✅ API returned:', data);
+      })
+      .catch(err => {
+        console.error('❌ Backend NOT reachable:', err);
+        console.error('Make sure your backend is running on:', WS_URL);
+      });
+  }, [currentRoomId]);
+  // ===== END DEBUG SECTION =====
+
+  // Keep volume ref in sync
+  useEffect(() => {
+    volumeRef.current = volume;
+    audioElementsRef.current.forEach(audio => {
+      audio.volume = volume / 100;
+    });
+  }, [volume]);
 
   const handleJoinCall = async () => {
-    if (isInCall) return;
+    if (isInCall || !isConnected) {
+      console.log('[VC] Cannot join - already in call or not connected');
+      return;
+    }
 
     try {
-      console.log('[VC] Requesting mic access...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
+      console.log('[VC] Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       
-      console.log('[VC] Joining voice room...');
+      localStreamRef.current = stream;
+      isInCallRef.current = true;
+      
+      console.log('[VC] Emitting voice:join');
       const success = joinVoice();
       if (success) {
         setIsInCall(true);
-        isInCallRef.current = true;
       } else {
+        console.error('[VC] Failed to join voice');
         stream.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
+        isInCallRef.current = false;
       }
     } catch (err) {
-      console.error('[VC] Mic access error:', err);
-      alert('Microphone access is required.');
+      console.error('[VC] Microphone access error:', err);
+      alert('Microphone access is required for voice chat.');
     }
   };
 
@@ -241,7 +323,13 @@ export function VoiceCallRoom({
       localStreamRef.current = null;
     }
     
-    peersRef.current.forEach(p => p.destroy());
+    peersRef.current.forEach(p => {
+      try {
+        p.destroy();
+      } catch (err) {
+        console.error('[VC] Error destroying peer:', err);
+      }
+    });
     peersRef.current.clear();
     
     audioElementsRef.current.forEach(a => {
@@ -256,19 +344,23 @@ export function VoiceCallRoom({
     if (localStreamRef.current) {
       const track = localStreamRef.current.getAudioTracks()[0];
       if (track) {
-        const newMuted = !track.enabled;
         track.enabled = !track.enabled;
-        setIsMuted(!track.enabled);
-        sendMute(!track.enabled);
+        const newMuted = !track.enabled;
+        setIsMuted(newMuted);
+        sendMute(newMuted);
+        console.log(`[VC] Mute toggled: ${newMuted}`);
       }
     }
   };
 
+  // Load initial metadata
   useEffect(() => {
     const load = async () => {
       try {
         setIsLoadingMetadata(true);
+        console.log(`[VC] Loading metadata for room ${currentRoomId}`);
         const meta = await getVoiceRoomMetadata(currentRoomId);
+        console.log('[VC] Metadata loaded:', meta);
         setUsers(meta.users.map(convertUserDto));
       } catch (e) {
         console.error('[VC] Meta load error:', e);
@@ -277,12 +369,13 @@ export function VoiceCallRoom({
       }
     };
     if (currentRoomId) load();
-  }, [currentRoomId, convertUserDto]);
+  }, [currentRoomId]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (isInCallRef.current) {
-        console.log('[VC] Component unmount, leaving call');
+        console.log('[VC] Component unmounting, leaving call');
         handleLeaveCall();
       }
     };
@@ -302,7 +395,11 @@ export function VoiceCallRoom({
     setTimeout(() => setIsTransitioning(false), 350);
   };
 
-  const renderAvatar = (user: VoiceUser | { name: string, avatar: string }, size: string = 'w-28 h-28', textSize: string = 'text-4xl') => {
+  const renderAvatar = (
+    user: VoiceUser | { name: string; avatar: string }, 
+    size: string = 'w-28 h-28', 
+    textSize: string = 'text-4xl'
+  ) => {
     const isUrl = user.avatar.startsWith('http') || user.avatar.startsWith('/');
     const isTalking = (user as VoiceUser).isTalking;
     const isMuted = (user as VoiceUser).isMuted;
@@ -338,6 +435,9 @@ export function VoiceCallRoom({
     );
   };
 
+  const inCallUsers = users.filter(u => u.inCall);
+  const inCallCount = inCallUsers.length;
+
   return (
     <div className="min-h-screen w-full overflow-hidden relative bg-black">
       <UserSpaceBackground />
@@ -365,13 +465,17 @@ export function VoiceCallRoom({
               <div>
                 <h1 className="text-white font-semibold">{currentRoomName}</h1>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#04ad7b]" />
-                  <span className="text-[#9aa0aa] text-[10px] uppercase tracking-wider">Voice Channel</span>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-[#04ad7b]' : 'bg-gray-500'}`} />
+                  <span className="text-[#9aa0aa] text-[10px] uppercase tracking-wider">
+                    {isConnecting ? 'Connecting...' : isConnected ? 'Voice Channel' : 'Disconnected'}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="px-4 py-2 rounded-lg bg-[rgba(4,55,47,0.5)] border border-[rgba(40,245,204,0.2)] flex items-center gap-3">
-              <span className="text-[#28f5cc] text-sm font-medium">{users.length} Active</span>
+              <span className="text-[#28f5cc] text-sm font-medium">
+                {inCallCount} in call
+              </span>
             </div>
           </header>
 
@@ -379,21 +483,21 @@ export function VoiceCallRoom({
             {isLoadingMetadata ? (
               <div className="w-10 h-10 border-2 border-[#28f5cc] border-t-transparent rounded-full animate-spin" />
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-5xl">
-                  {isInCall && !users.some(u => u.userId === Number(user?.id)) && (
-                    <div className="flex flex-col items-center gap-3">
-                      {renderAvatar({ ...currentUser, isTalking: false, isMuted, isOnline: true } as any)}
-                      <span className="text-[#28f5cc] text-xs font-bold px-2 py-1 bg-[rgba(4,55,47,0.5)] rounded border border-[#28f5cc]">{currentUser.name} (You)</span>
-                    </div>
-                  )}
-
-                  {users.map(u => (
-                    <div key={u.id} className="flex flex-col items-center gap-3">
-                      {renderAvatar(u)}
-                      <span className="text-white text-xs font-medium">{u.name} {u.userId === Number(user?.id) ? '(You)' : ''}</span>
-                    </div>
-                  ))}
-                {!isInCall && users.length === 0 && <p className="col-span-full text-[#747c88]">Channel is empty</p>}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-5xl">
+                {inCallUsers.map(u => (
+                  <div key={u.id} className="flex flex-col items-center gap-3">
+                    {renderAvatar(u)}
+                    <span className="text-white text-xs font-medium">
+                      {u.name} {u.userId === Number(user?.id) ? '(You)' : ''}
+                    </span>
+                  </div>
+                ))}
+                
+                {inCallCount === 0 && (
+                  <p className="col-span-full text-[#747c88] text-center">
+                    {isInCall ? 'Waiting for others to join...' : 'No one in the call. Click "Join Channel" to start!'}
+                  </p>
+                )}
               </div>
             )}
           </main>
@@ -404,21 +508,45 @@ export function VoiceCallRoom({
                 <button
                   onClick={handleJoinCall}
                   disabled={!isConnected || isConnecting}
-                  className="px-8 py-3 bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-bold rounded-xl flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50"
+                  className="px-8 py-3 bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-bold rounded-xl flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Phone className="w-5 h-5" />
-                  {isConnecting ? 'Connecting...' : 'Join Channel'}
+                  {isConnecting ? 'Connecting...' : !isConnected ? 'Connection Lost' : 'Join Channel'}
                 </button>
               ) : (
                 <>
-                  <button onClick={toggleMute} className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${isMuted ? 'bg-red-600 border-red-400' : 'bg-[rgba(40,245,204,0.1)] border-[rgba(40,245,204,0.3)]'}`}>
-                    {isMuted ? <MicOff className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-[#28f5cc]" />}
+                  <button 
+                    onClick={toggleMute} 
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${
+                      isMuted 
+                        ? 'bg-red-600 border-red-400' 
+                        : 'bg-[rgba(40,245,204,0.1)] border-[rgba(40,245,204,0.3)] hover:bg-[rgba(40,245,204,0.2)]'
+                    }`}
+                  >
+                    {isMuted ? (
+                      <MicOff className="w-5 h-5 text-white" />
+                    ) : (
+                      <Mic className="w-5 h-5 text-[#28f5cc]" />
+                    )}
                   </button>
+                  
                   <div className="flex items-center gap-3">
                     <Volume2 className="w-4 h-4 text-[#28f5cc]" />
-                    <input type="range" min="0" max="100" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className="w-24 accent-[#28f5cc]" />
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={volume} 
+                      onChange={(e) => setVolume(Number(e.target.value))} 
+                      className="w-24 accent-[#28f5cc]" 
+                    />
+                    <span className="text-[#28f5cc] text-sm w-8">{volume}%</span>
                   </div>
-                  <button onClick={() => handleLeaveCall(true)} className="w-12 h-12 rounded-xl flex items-center justify-center bg-red-600 hover:bg-red-700 text-white transition-all">
+                  
+                  <button 
+                    onClick={() => handleLeaveCall(true)} 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center bg-red-600 hover:bg-red-700 text-white transition-all"
+                  >
                     <PhoneOff className="w-5 h-5" />
                   </button>
                 </>

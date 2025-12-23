@@ -33,7 +33,7 @@ export const socketAuth = async (socket, next) => {
     // attach authenticated user to socket
     socket.user = {
       ...user,
-      id: user.id // keep as BigInt for consistency
+      id: Number(user.id) // Convert to Number for JSON serialization and consistency
     };
 
     next();

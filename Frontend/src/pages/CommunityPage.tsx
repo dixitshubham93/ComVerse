@@ -10,7 +10,7 @@ import { RoomPage } from './RoomPage';
 import { GeneralChat } from './GeneralChat';
 import { AnnouncementChat } from './AnnouncementChat';
 import { DMChat } from './DMChat';
-import { VoiceCallRoom } from './VoiceCallRoom';
+import { VoiceCallRoom } from './VoiceCallRoom.tsx';
 import { MemesPostsPage } from './MemesPostsPage';
 import { CreateRoomModal } from '../components/CreateRoomModal';
 import { getCommunityById, getCommunityStats, CommunityType, CommunityStatsDto } from '../api/communityApi';

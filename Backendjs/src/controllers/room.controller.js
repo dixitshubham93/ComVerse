@@ -1,21 +1,28 @@
-import { createRoom, getRoomsByCommunity, deleteRoom as deleteRoomService } from "../services/room.service.js";
-import { voicePresence } from "../sockets/voice.presence.js";
+// src/controllers/room.controller.js
+import { 
+  createRoom, 
+  getRoomsByCommunity, 
+  deleteRoom as deleteRoomService 
+} from "../services/room.service.js";
+import { getUsersInRoom } from "../services/presence.service.js";
 
 export const getVoiceMetadata = async (req, res, next) => {
   try {
     const { roomId } = req.params;
-    const users = voicePresence.getUsers(roomId);
+    const users = getUsersInRoom(roomId);
     
-    // Ensure all user IDs are numbers or strings as expected by frontend
+    // Format users for frontend
     const formattedUsers = users.map(user => ({
-      ...user,
-      id: user.id.toString()
+      id: Number(user.id),
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      inCall: user.inCall || false
     }));
     
     res.json({
       success: true,
       data: {
-        roomId,
+        roomId: Number(roomId),
         activeUsers: formattedUsers.length,
         users: formattedUsers
       }
@@ -32,7 +39,6 @@ export const create = async (req, res, next) => {
       ...req.body,
     });
 
-    // Convert BigInt to Number for JSON serialization
     const serializedRoom = {
       ...room,
       id: Number(room.id),
@@ -51,7 +57,6 @@ export const getByCommunity = async (req, res, next) => {
       BigInt(req.params.communityId)
     );
     
-    // Convert BigInt to Number for JSON serialization
     const serializedRooms = rooms.map(r => ({
       ...r,
       id: Number(r.id),

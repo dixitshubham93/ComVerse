@@ -8,6 +8,7 @@ interface User {
   email: string;
   avatar: string; // Maps to avatarUrl from backend
   age?: number;
+  token?: string;
 }
 
 interface AuthContextType {
@@ -15,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string, age: number, avatar: string, banner?: string) => Promise<void>;
-  setUserFromSignup: (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => void;
+  setUserFromSignup: (userData: { id: number; username: string; email: string; avatar: string; age?: number; token?: string }) => void;
   logout: () => void;
   loginWithGoogle: () => void;
 }
@@ -37,6 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (parsedUser.id) {
           parsedUser.id = typeof parsedUser.id === 'string' ? parseInt(parsedUser.id, 10) : parsedUser.id;
         }
+        // Include token in user object
+        parsedUser.token = storedToken;
         setUser(parsedUser);
       } catch (e) {
         console.error('Failed to parse stored user:', e);
@@ -69,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: userData.email,
             avatar: userData.avatarUrl || '',
             age: userData.age,
+            token: token,
           };
           
           setUser(newUser);
@@ -99,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: userData.email,
           avatar: userData.avatarUrl || '',
           age: userData.age,
+          token: token,
         };
         
         setUser(newUser);
@@ -118,17 +123,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     throw new Error('Please use the signup API directly from AuthCard');
   };
 
-  const setUserFromSignup = (userData: { id: number; username: string; email: string; avatar: string; age?: number }) => {
+  const setUserFromSignup = (userData: { id: number; username: string; email: string; avatar: string; age?: number; token?: string }) => {
     const newUser: User = {
       id: userData.id,
       username: userData.username,
       email: userData.email,
       avatar: userData.avatar,
       age: userData.age,
+      token: userData.token,
     };
     
     setUser(newUser);
     localStorage.setItem('comverse_user', JSON.stringify(newUser));
+    if (userData.token) {
+      localStorage.setItem('authToken', userData.token);
+    }
   };
 
     const loginWithGoogle = () => {
@@ -175,4 +184,3 @@ export function useAuth() {
   }
   return context;
 }
-
