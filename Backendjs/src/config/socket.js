@@ -1,7 +1,6 @@
 import { Server } from "socket.io";
 import { socketAuth } from "../middlewares/socketAuth.middleware.js";
 import { registerVoiceHandlers } from "../sockets/voice.handlers.js";
-import { registerPresenceSocket } from "../sockets/presence.sockets.js";
 import { registerMessageSocket } from "../sockets/message.socket.js";
 
 export const initSocket = (server) => {
