@@ -308,7 +308,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose }: { title: s
           />
         )}
 
-        <Canvas camera={{ position: [0, 0, 18], fov: 60 }} className="absolute inset-0 z-10" onCreated={({ gl }) => { gl.domElement.style.pointerEvents = "auto"; }}>
+        <Canvas camera={{ position: [0, 0, 32], fov: 50 }} className="absolute inset-0 z-10" onCreated={({ gl }) => { gl.domElement.style.pointerEvents = "auto"; }}>
           <Suspense fallback={null}>
             <Environment background={false}>
               <mesh scale={100}>
