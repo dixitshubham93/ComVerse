@@ -663,10 +663,18 @@ interface ExpandedRoomViewProps {
   onDelete: () => void;
 }
 
-function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoin, onDelete }: ExpandedRoomViewProps) {
+function ExpandedRoomView({
+  room,
+  communityName,
+  userRole,
+  stats,
+  onClose,
+  onJoin,
+  onDelete,
+}: ExpandedRoomViewProps) {
   const isOwner = userRole === MembershipRole.OWNER;
   const roomType = mapRoomTypeToFrontend(room.type);
-  
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-6 md:p-10 ml-16 lg:ml-20"
@@ -681,46 +689,82 @@ function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoi
       }}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl animate-in zoom-in-95 duration-300 mx-auto"
+        className="
+          relative w-full max-w-2xl max-h-[85vh]
+          overflow-y-auto rounded-2xl
+          animate-in zoom-in-95 duration-300
+        "
         style={{
           background: 'rgba(4, 55, 47, 0.95)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(40, 245, 204, 0.3)',
-          boxShadow: '0 0 40px rgba(40, 245, 204, 0.2), 0 8px 32px rgba(0, 0, 0, 0.5)',
+          boxShadow:
+            '0 0 40px rgba(40, 245, 204, 0.2), 0 8px 32px rgba(0, 0, 0, 0.5)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Back Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 left-4 z-10 p-2 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-colors"
-        >
-          <ArrowLeft className="w-6 h-6 text-[#28f5cc]" />
-        </button>
+        {/* ================= HEADER ================= */}
+        <div className="flex items-center gap-4 px-8 pt-8 pb-4">
+          {/* Back Button */}
+          <button
+            onClick={onClose}
+            className="
+              relative z-10
+              w-10 h-10
+              flex items-center justify-center
+              flex-shrink-0
+              rounded-full
+              border border-[rgba(40,245,204,0.4)]
+              bg-[rgba(4,55,47,0.6)]
+              hover:bg-[rgba(40,245,204,0.15)]
+              transition-all duration-200
+              hover:scale-105
+            "
+            style={{
+              boxShadow: '0 0 12px rgba(40, 245, 204, 0.25)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <ArrowLeft className="w-5 h-5 text-[#28f5cc]" />
+          </button>
 
-        {/* Content */}
-        <div className="p-8">
-          {/* Room Name */}
-          <h2 className="text-white text-3xl font-bold mb-4 pr-12">{room.name}</h2>
+          {/* Title */}
+          <h2 className="text-white text-3xl font-bold truncate">
+            {room.name}
+          </h2>
+        </div>
 
+        {/* ================= CONTENT ================= */}
+        <div className="px-8 pb-8">
           {/* Description */}
           <p className="text-[#747c88] text-lg mb-6">
             {room.config || 'No description available.'}
           </p>
 
-          {/* Stats Grid */}
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="glassmorphism rounded-xl p-4" style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}>
+            <div
+              className="glassmorphism rounded-xl p-4"
+              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
+            >
               <p className="text-[#747c88] text-sm mb-1">Active Members</p>
-              <p className="text-white text-2xl font-bold">{stats?.activeMembers || 0}</p>
+              <p className="text-white text-2xl font-bold">
+                {stats?.activeMembers || 0}
+              </p>
             </div>
-            <div className="glassmorphism rounded-xl p-4" style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}>
+
+            <div
+              className="glassmorphism rounded-xl p-4"
+              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
+            >
               <p className="text-[#747c88] text-sm mb-1">Total Members</p>
-              <p className="text-white text-2xl font-bold">{stats?.totalMembers || 0}</p>
+              <p className="text-white text-2xl font-bold">
+                {stats?.totalMembers || 0}
+              </p>
             </div>
           </div>
 
-          {/* Room Type Tag */}
+          {/* Room Type */}
           <div className="mb-6">
             <span
               className="inline-block px-4 py-2 rounded-full text-sm font-medium"
@@ -730,20 +774,32 @@ function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoi
                 color: '#28f5cc',
               }}
             >
-              {roomType === 'voice' ? 'Voice Chat' : roomType === 'memes' ? 'Memes & Posts' : roomType === 'announcements' ? 'Announcements' : 'General Chat'}
+              {roomType === 'voice'
+                ? 'Voice Chat'
+                : roomType === 'memes'
+                ? 'Memes & Posts'
+                : roomType === 'announcements'
+                ? 'Announcements'
+                : 'General Chat'}
             </span>
           </div>
 
-          {/* Last Activity - Placeholder */}
+          {/* Last Activity */}
           <div className="mb-6 text-[#747c88] text-sm">
             Last activity: Recently active
           </div>
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={onJoin}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform"
+              className="
+                flex items-center gap-2
+                px-6 py-3 rounded-lg
+                bg-gradient-to-r from-[#04ad7b] to-[#28f5cc]
+                text-black font-semibold
+                hover:scale-105 transition-transform
+              "
               style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
             >
               <LogIn className="w-5 h-5" />
@@ -753,14 +809,29 @@ function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoi
             {isOwner && (
               <>
                 <button
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-[#28f5cc] text-[#28f5cc] hover:bg-[rgba(40,245,204,0.1)] transition-colors"
+                  className="
+                    flex items-center gap-2
+                    px-6 py-3 rounded-lg
+                    border border-[#28f5cc]
+                    text-[#28f5cc]
+                    hover:bg-[rgba(40,245,204,0.1)]
+                    transition-colors
+                  "
                 >
                   <Edit2 className="w-5 h-5" />
                   Edit Room
                 </button>
+
                 <button
                   onClick={onDelete}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-red-500/50 text-red-400 hover:bg-[rgba(239,68,68,0.1)] transition-colors"
+                  className="
+                    flex items-center gap-2
+                    px-6 py-3 rounded-lg
+                    border border-red-500/50
+                    text-red-400
+                    hover:bg-[rgba(239,68,68,0.1)]
+                    transition-colors
+                  "
                 >
                   <Trash2 className="w-5 h-5" />
                   Delete Room
@@ -773,3 +844,4 @@ function ExpandedRoomView({ room, communityName, userRole, stats, onClose, onJoi
     </div>
   );
 }
+
