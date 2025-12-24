@@ -492,6 +492,7 @@ export function VoiceCallRoom({
         userRole={userRole}
         currentUser={currentUser}
         onShowMembers={() => {}}
+        onBack={onBack}
         onNavigate={(p) => p === 'home' && onBack()}
         onGoToHome={onGoToHome}
         onGoToUserSpace={onGoToUserSpace}

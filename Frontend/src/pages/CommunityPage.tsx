@@ -177,7 +177,7 @@ export function CommunityPage() {
 
   // Handle join room - navigate to appropriate page
   const handleJoinRoom = (room: RoomDto) => {
-    setExpandedRoom(null);
+    // Keep expandedRoom so we can return to it via onBack
     const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
     const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
     
@@ -270,7 +270,7 @@ export function CommunityPage() {
 
   const handleBackToMain = () => {
     setCurrentPage('main');
-    setSelectedRoom(null);
+    // Keep selectedRoom and expandedRoom so we return to the expanded view
     setDmTarget(null);
   };
 
@@ -407,10 +407,7 @@ export function CommunityPage() {
         communityName={community.name}
         communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
         userRole={getRoleString()}
-        onBack={() => {
-          setCurrentPage('main');
-          setSelectedRoom(null);
-        }}
+        onBack={handleBackToMain}
         onGoToHome={() => navigate('/')}
         onGoToUserSpace={() => navigate('/userspace')}
       />
@@ -441,10 +438,7 @@ export function CommunityPage() {
       <RoomPage
         room={selectedRoom}
         communityName={community.name}
-        onBack={() => {
-          setCurrentPage('main');
-          setSelectedRoom(null);
-        }}
+        onBack={handleBackToMain}
       />
     );
   }

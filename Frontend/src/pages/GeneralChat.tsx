@@ -389,8 +389,9 @@ export function GeneralChat({
         communityAvatar={communityAvatar}
         userRole={userRole}
         currentUser={currentUser}
+        onShowMembers={() => {}}
+        onBack={onBack}
         onNavigate={handleNavigate}
-        onLeave={onBack}
         onGoToHome={onGoToHome}
         onGoToUserSpace={onGoToUserSpace}
       />
