@@ -479,6 +479,9 @@ export function CommunityPage() {
           // If we're on a sub-page (room, manage, etc.), go back to main community page
           if (currentPage !== 'main') {
             setCurrentPage('main');
+          } else if (expandedRoom) {
+            // If we're in expanded room view, just close it instead of going back in history
+            setExpandedRoom(null);
           } else {
             // If we're already on the main page, go back in browser history
             navigate(-1);
