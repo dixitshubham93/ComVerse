@@ -5,23 +5,29 @@ import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/dr
 import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
 import { Phone, Image, MessageCircle, Megaphone, X, Plus } from 'lucide-react';
 
-interface Room {
+export interface Room {
   id: string;
   name: string;
   description: string;
   activeUsers: number;
+  totalMembers?: number;
+  lastActivity?: string;
   type: 'voice' | 'memes' | 'general' | 'announcements';
 }
 
-interface StackedRoomCardsProps {
+export interface StackedRoomCardsProps {
   onRoomSelect: (room: Room) => void;
   isMotionReduced?: boolean;
-  rooms?: Room[]; // Optional: if provided, use real data instead of dummy
-  onCreateRoom?: () => void; // Callback for create room button
-  canCreateRoom?: boolean; // Whether user can create rooms
+  rooms?: Room[];
+  onCreateRoom?: () => void;
+  canCreateRoom?: boolean;
+  onStackSelect?: (stackType: string) => void;
+  selectedStack?: string | null;
+  on3DViewToggle?: (isOpen: boolean) => void;
+  isOwner?: boolean;
 }
 
-const stackConfig = {
+export const stackConfig = {
   voice: { title: 'Voice Call', icon: Phone, color: '#28f5cc', floatDelay: 0 },
   memes: { title: 'Memes & Posts', icon: Image, color: '#04ad7b', floatDelay: 1.2 },
   general: { title: 'General Chat', icon: MessageCircle, color: '#28f5cc', floatDelay: 2.4 },
@@ -49,7 +55,7 @@ function iconForType(type) {
 }
 
 /* FloatingRoomCard adapted to your room object */
-function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom }) {
+function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom }) {
   const groupRef = useRef();
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -245,8 +251,8 @@ function RoomModal3D({ room, onClose, isOwner, onOpen }) {
 }
 
 /* ExpandedRoom3D component (use this where the grid was) */
-function ExpandedRoom3D({ title, rooms, onRoomOpen }) {
-  const [centeredRoom, setCenteredRoom] = useState(null);
+export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose }: { title: string, rooms: Room[], onRoomOpen: (room: Room, e: any) => void, onClose?: () => void }) {
+  const [centeredRoom, setCenteredRoom] = useState<Room | null>(null);
   const [isOwner] = useState(true); // wire to real auth
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
@@ -364,7 +370,10 @@ export function StackedRoomCards({
   isMotionReduced = false, 
   rooms = [], 
   onCreateRoom,
-  canCreateRoom = false 
+  canCreateRoom = false,
+  onStackSelect,
+  selectedStack: propsSelectedStack,
+  on3DViewToggle
 }: StackedRoomCardsProps) {
   // Organize rooms by type
   const roomStacks = useMemo(() => {
@@ -388,7 +397,21 @@ export function StackedRoomCards({
     return stacks;
   }, [rooms]);
 
-  const [selectedStack, setSelectedStack] = useState<keyof typeof roomStacks | null>(null);
+  const [internalSelectedStack, setInternalSelectedStack] = useState<keyof typeof roomStacks | null>(null);
+  const selectedStack = propsSelectedStack !== undefined ? propsSelectedStack : internalSelectedStack;
+  
+  const setSelectedStack = (stack: any) => {
+    if (onStackSelect) {
+      onStackSelect(stack);
+    } else {
+      setInternalSelectedStack(stack);
+    }
+    
+    if (on3DViewToggle) {
+      on3DViewToggle(!!stack);
+    }
+  };
+
   const [rocketPosition, setRocketPosition] = useState<{ x: number; y: number } | null>(null);
   const [isRocketFlying, setIsRocketFlying] = useState(false);
   const [targetRoom, setTargetRoom] = useState<Room | null>(null);
@@ -572,7 +595,13 @@ export function StackedRoomCards({
         >
           {/* Close Button */}
           <button
-            onClick={() => setSelectedStack(null)}
+            onClick={() => {
+              if (centeredRoom) {
+                setCenteredRoom(null);
+              } else if (onClose) {
+                onClose();
+              }
+            }}
             className="absolute top-4 right-4 z-50 p-3 rounded-full transition-all duration-200 hover:scale-110"
             style={{
               background: 'rgba(0, 0, 0, 0.6)',

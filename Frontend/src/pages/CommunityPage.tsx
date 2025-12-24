@@ -4,7 +4,7 @@ import { useParams, useNavigate, Routes, Route, useLocation } from 'react-router
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { CommunityMembersPanel } from '../components/CommunityMembersPanel';
-import { StackedRoomCards } from '../components/StackedRoomCards';
+import { StackedRoomCards, ExpandedRoom3D, stackConfig } from '../components/StackedRoomCards';
 import { CommunityDetail } from './CommunityDetail';
 import { RoomPage } from './RoomPage';
 import { GeneralChat } from './GeneralChat';
@@ -289,26 +289,40 @@ export function CommunityPage() {
         />
       )}
 
-      {/* Routes for different views */}
-      <Routes>
-        {/* Main Grid View */}
-        <Route 
-          index 
-          element={
-            <CommunityMainView 
-              community={community}
-              stats={stats}
-              rooms={rooms}
-              userRole={userRole}
-              onRoomSelect={handleRoomSelect}
-              onCreateRoom={() => setIsCreateRoomModalOpen(true)}
-              is3DViewOpen={is3DViewOpen}
-              setIs3DViewOpen={setIs3DViewOpen}
-            />
-          } 
-        />
+        {/* Routes for different views */}
+        <Routes>
+          {/* Main Grid View */}
+          <Route 
+            index 
+            element={
+              <CommunityMainView 
+                community={community}
+                stats={stats}
+                rooms={rooms}
+                userRole={userRole}
+                onRoomSelect={handleRoomSelect}
+                onStackSelect={(stackType: string) => navigate(`/community/${communityId}/3d/${stackType}`)}
+                onCreateRoom={() => setIsCreateRoomModalOpen(true)}
+                is3DViewOpen={is3DViewOpen}
+                setIs3DViewOpen={setIs3DViewOpen}
+              />
+            } 
+          />
 
-        {/* Expanded Room View (Overlay on top of Grid) */}
+          {/* 3D Stack View - Full Screen (minus sidebar) */}
+          <Route 
+            path="3d/:stackType" 
+            element={
+              <Community3DView 
+                community={community}
+                rooms={rooms}
+                onRoomSelect={handleRoomSelect}
+                onBack={handleBackToMain}
+              />
+            } 
+          />
+
+          {/* Expanded Room View (Overlay on top of Grid) */}
         <Route 
           path="expand/:roomId" 
           element={
@@ -421,8 +435,44 @@ export function CommunityPage() {
 
 // --- Route Wrappers to handle params and common props ---
 
+function Community3DView({ community, rooms, onRoomSelect, onBack }: any) {
+  const { stackType } = useParams<{ stackType: string }>();
+  const navigate = useNavigate();
+
+  // Map rooms for the 3D view
+  const mappedRooms = rooms.map((room: any) => {
+    const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
+    const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
+    
+    return {
+      id: room.id.toString(),
+      name: room.name,
+      description: room.config || '',
+      activeUsers: 0, 
+      type: frontendType,
+    };
+  }).filter((room: any) => room.type === stackType);
+
+  if (!stackType || !(stackType in stackConfig)) {
+    return null;
+  }
+
+  const config = (stackConfig as any)[stackType];
+
+  return (
+    <div className="relative ml-16 lg:ml-20 h-screen w-full overflow-hidden">
+      <ExpandedRoom3D
+        title={config.title}
+        rooms={mappedRooms}
+        onRoomOpen={(room) => onRoomSelect(room)}
+        onClose={onBack}
+      />
+    </div>
+  );
+}
+
 function CommunityMainView({ 
-  community, stats, rooms, userRole, onRoomSelect, onCreateRoom, is3DViewOpen, setIs3DViewOpen 
+  community, stats, rooms, userRole, onRoomSelect, onStackSelect, onCreateRoom, is3DViewOpen, setIs3DViewOpen 
 }: any) {
   // Map rooms to frontend format for StackedRoomCards
   const mappedRooms = rooms.map((room: any) => {
@@ -491,6 +541,7 @@ function CommunityMainView({
         <StackedRoomCards 
           onRoomSelect={onRoomSelect}
           rooms={mappedRooms}
+          onStackSelect={onStackSelect}
           onCreateRoom={onCreateRoom}
           canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
           isOwner={userRole === MembershipRole.OWNER}
