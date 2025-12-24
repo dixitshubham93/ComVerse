@@ -54,9 +54,9 @@ export function CommunitySidebar({
   return (
     <>
       {/* Sidebar */}
-        <div
-          className="fixed left-0 top-0 h-full z-[60] transition-all duration-300 ease-out"
-        style={{
+          <div
+            className="fixed left-0 top-0 h-full z-[100] transition-all duration-300 ease-out"
+          style={{
           width: isExpanded ? '280px' : '80px',
           background: 'rgba(4, 55, 47, 0.2)',
           backdropFilter: 'blur(16px)',
@@ -326,7 +326,7 @@ export function CommunitySidebar({
       {/* Overlay when expanded (mobile) */}
       {isExpanded && (
         <div
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/40 z-[90] lg:hidden backdrop-blur-sm"
           onClick={() => setIsExpanded(false)}
         />
       )}
@@ -344,7 +344,7 @@ interface LeaveCommunityModalProps {
 function LeaveCommunityModal({ communityName, onConfirm, onCancel }: LeaveCommunityModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4"
       style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}
       onClick={onCancel}
     >

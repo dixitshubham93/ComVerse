@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Clock, Plus, Pencil, Trash2, TrendingUp, Activity, Hash, Shield, Crown } from 'lucide-react';
+import { ArrowLeft, Users, Clock, Plus, Pencil, Trash2, TrendingUp, Activity, Hash, Shield, Crown, MoreVertical } from 'lucide-react';
 import { CreateRoomModal } from '../components/CreateRoomModal';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
@@ -272,14 +272,14 @@ export function CommunityManagePage() {
       />
 
       <div className="relative ml-16 lg:ml-20 min-h-screen">
-        {/* Professional Header */}
-        <div className="sticky top-0 z-20 border-b" style={{
+        {/* FIXED HEADER - Stays on scroll */}
+        <div className="sticky top-0 z-30 border-b" style={{
           background: 'linear-gradient(180deg, rgba(4, 55, 47, 0.98) 0%, rgba(4, 55, 47, 0.95) 100%)',
           backdropFilter: 'blur(24px)',
           borderColor: 'rgba(40, 245, 204, 0.12)',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
         }}>
-          <div className="max-w-[1400px] mx-auto px-8 py-5">
+          <div className="max-w-[1600px] mx-auto px-8 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-2.5 rounded-xl" style={{
@@ -325,13 +325,12 @@ export function CommunityManagePage() {
           </div>
         </div>
 
-        {/* Main Content Container */}
-        <div className="max-w-[1400px] mx-auto px-8 py-8">
-          {/* Stats Grid - Fixed Spacing */}
+        {/* SCROLLABLE CONTENT AREA */}
+        <div className="max-w-[1600px] mx-auto px-8 py-8">
+          {/* Stats Grid - Better Layout */}
           {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Total Members Card */}
-              <div className="relative rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
                 background: 'rgba(4, 55, 47, 0.5)',
                 backdropFilter: 'blur(16px)',
                 border: '1px solid rgba(40, 245, 204, 0.15)',
@@ -357,8 +356,7 @@ export function CommunityManagePage() {
                 </div>
               </div>
 
-              {/* Active Members Card */}
-              <div className="relative rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
+              <div className="rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
                 background: 'rgba(4, 55, 47, 0.5)',
                 backdropFilter: 'blur(16px)',
                 border: '1px solid rgba(4, 173, 123, 0.2)',
@@ -382,8 +380,7 @@ export function CommunityManagePage() {
                 </div>
               </div>
 
-              {/* Total Rooms Card */}
-              <div className="relative rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
+              <div className="rounded-xl p-6 transition-all duration-200 hover:translate-y-[-2px]" style={{
                 background: 'rgba(4, 55, 47, 0.5)',
                 backdropFilter: 'blur(16px)',
                 border: '1px solid rgba(40, 245, 204, 0.15)',
@@ -405,7 +402,7 @@ export function CommunityManagePage() {
             </div>
           )}
 
-          {/* Professional Tab Navigation */}
+          {/* Tab Navigation */}
           <div className="mb-8">
             <div className="inline-flex rounded-xl p-1" style={{
               background: 'rgba(4, 55, 47, 0.4)',
@@ -472,9 +469,10 @@ export function CommunityManagePage() {
                 </button>
               </div>
 
-              <div className="space-y-3">
+              {/* ROOMS GRID - Better Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {rooms.length === 0 ? (
-                  <div className="text-center py-20 rounded-xl" style={{
+                  <div className="col-span-full text-center py-20 rounded-xl" style={{
                     background: 'rgba(4, 55, 47, 0.3)',
                     border: '2px dashed rgba(40, 245, 204, 0.2)',
                   }}>
@@ -497,7 +495,7 @@ export function CommunityManagePage() {
                   rooms.map((room) => (
                     <div
                       key={room.id}
-                      className="group relative rounded-xl p-4 transition-all duration-200 hover:translate-y-[-1px]"
+                      className="group rounded-xl p-4 transition-all duration-200 hover:translate-y-[-2px]"
                       style={{
                         background: 'rgba(4, 55, 47, 0.5)',
                         backdropFilter: 'blur(16px)',
@@ -505,7 +503,7 @@ export function CommunityManagePage() {
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                       }}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-start gap-4">
                         <div className="p-2.5 rounded-lg shrink-0" style={{
                           background: 'rgba(40, 245, 204, 0.12)',
                           border: '1px solid rgba(40, 245, 204, 0.2)',
@@ -514,7 +512,7 @@ export function CommunityManagePage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-white text-base font-semibold mb-1">{room.name}</h3>
-                          <p className="text-[#747c88] text-sm line-clamp-1">{room.config || 'No description provided'}</p>
+                          <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <button 
@@ -555,9 +553,10 @@ export function CommunityManagePage() {
                 <p className="text-[#747c88] text-sm">Manage roles and permissions</p>
               </div>
 
-              <div className="space-y-3">
+              {/* MEMBERS GRID - Better Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {members.length === 0 ? (
-                  <div className="text-center py-20 rounded-xl" style={{
+                  <div className="col-span-full text-center py-20 rounded-xl" style={{
                     background: 'rgba(4, 55, 47, 0.3)',
                     border: '2px dashed rgba(40, 245, 204, 0.2)',
                   }}>
@@ -601,7 +600,7 @@ export function CommunityManagePage() {
                     return (
                       <div
                         key={member.id}
-                        className="group relative rounded-xl p-4 transition-all duration-200 hover:translate-y-[-1px]"
+                        className="group rounded-xl p-4 transition-all duration-200 hover:translate-y-[-2px]"
                         style={{
                           background: 'rgba(4, 55, 47, 0.5)',
                           backdropFilter: 'blur(16px)',
@@ -681,7 +680,7 @@ export function CommunityManagePage() {
         communityId={communityId}
       />
 
-      {/* Professional Delete Modal */}
+      {/* Delete Modal */}
       {deleteCommunityConfirm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
