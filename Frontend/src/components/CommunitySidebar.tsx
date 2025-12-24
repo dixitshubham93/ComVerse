@@ -13,8 +13,8 @@ interface CommunitySidebarProps {
     avatar: string;
   };
   onShowMembers: () => void;
-  onNavigate?: (page: string) => void;
-  onBack?: () => void; // Add onBack prop
+  onBack?: () => void;
+  onLeave?: () => void;
 }
 
 export function CommunitySidebar({
@@ -23,8 +23,8 @@ export function CommunitySidebar({
   userRole,
   currentUser,
   onShowMembers,
-  onNavigate,
-  onBack, // Destructure onBack prop
+  onBack,
+  onLeave,
 }: CommunitySidebarProps) {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
@@ -152,11 +152,11 @@ export function CommunitySidebar({
               </div>
             </div>
 
-            {/* Navigation Buttons - Expanded */}
+                {/* Navigation Buttons - Expanded */}
             <nav className="flex flex-col gap-2 px-3">
                 {/* Home */}
                 <button
-                  onClick={() => onNavigate ? onNavigate('home') : navigate('/')}
+                  onClick={() => navigate('/')}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
                 >
                   <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
@@ -165,7 +165,7 @@ export function CommunitySidebar({
 
                 {/* User Space */}
                 <button
-                  onClick={() => onNavigate ? onNavigate('userspace') : navigate('/userspace')}
+                  onClick={() => navigate('/userspace')}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
                 >
                   <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
@@ -230,34 +230,34 @@ export function CommunitySidebar({
           </>
         ) : (
           <>
-              {/* Collapsed View - Icons Only */}
-              <nav className="flex flex-col gap-2 px-2 mt-2">
-                {/* Home */}
-                <button
-                  onClick={() => onNavigate ? onNavigate('home') : navigate('/')}
-                  className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                  title="Home"
-                >
-                  <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-                </button>
+                {/* Collapsed View - Icons Only */}
+                <nav className="flex flex-col gap-2 px-2 mt-2">
+                  {/* Home */}
+                  <button
+                    onClick={() => navigate('/')}
+                    className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                    title="Home"
+                  >
+                    <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                  </button>
 
-                {/* User Space */}
-                <button
-                  onClick={() => onNavigate ? onNavigate('userspace') : navigate('/userspace')}
-                  className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                  title="User Space"
-                >
-                  <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-                </button>
+                  {/* User Space */}
+                  <button
+                    onClick={() => navigate('/userspace')}
+                    className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                    title="User Space"
+                  >
+                    <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                  </button>
 
-              {/* Members */}
-              <button
-                onClick={onShowMembers}
-                className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                title="Members"
-              >
-                <Users className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-              </button>
+                {/* Members */}
+                <button
+                  onClick={onShowMembers}
+                  className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                  title="Members"
+                >
+                  <Users className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                </button>
 
               {/* Manage Community - Only Owner + Admin */}
               {isOwnerOrAdmin && (
@@ -309,19 +309,19 @@ export function CommunitySidebar({
         )}
       </div>
 
-      {/* Leave Community Confirmation Modal */}
-      {isLeaveModalOpen && (
-        <LeaveCommunityModal
-          communityName={communityName}
-          onConfirm={async () => {
-            setIsLeaveModalOpen(false);
-            if (onNavigate) {
-              onNavigate('leave');
-            }
-          }}
-          onCancel={() => setIsLeaveModalOpen(false)}
-        />
-      )}
+        {/* Leave Community Confirmation Modal */}
+        {isLeaveModalOpen && (
+          <LeaveCommunityModal
+            communityName={communityName}
+            onConfirm={async () => {
+              setIsLeaveModalOpen(false);
+              if (onLeave) {
+                onLeave();
+              }
+            }}
+            onCancel={() => setIsLeaveModalOpen(false)}
+          />
+        )}
 
       {/* Overlay when expanded (mobile) */}
       {isExpanded && (

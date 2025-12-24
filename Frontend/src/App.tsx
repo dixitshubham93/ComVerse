@@ -19,7 +19,7 @@ export default function App() {
       <Route path="/profile" element={<UserProfile />} />
 
       {/* Community Detail Page */}
-      <Route path="/community/:id" element={<CommunityPage />} />
+      <Route path="/community/:id/*" element={<CommunityPage />} />
 
       {/* Community Manage Page */}
       <Route path="/community/:id/manage" element={<CommunityManagePage />} />
