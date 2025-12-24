@@ -209,6 +209,18 @@ export function CommunityPage() {
     navigate(`/community/${communityId}`);
   };
 
+  const handleBackToRoomStack = (roomIdStr: string) => {
+    const roomId = parseInt(roomIdStr, 10);
+    const room = rooms.find(r => r.id === roomId);
+    if (room) {
+      const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
+      const stackType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
+      navigate(`/community/${communityId}/3d/${stackType}`);
+    } else {
+      navigate(`/community/${communityId}`);
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -357,7 +369,7 @@ export function CommunityPage() {
               community={community}
               userRole={getRoleString()}
               currentUser={currentUser}
-              onBack={handleBackToMain}
+              onBack={handleBackToRoomStack}
               onOpenDM={handleOpenDM}
             />
           } 
@@ -370,7 +382,7 @@ export function CommunityPage() {
               community={community}
               userRole={getRoleString()}
               currentUser={currentUser}
-              onBack={handleBackToMain}
+              onBack={handleBackToRoomStack}
               onOpenDM={handleOpenDM}
             />
           } 
@@ -382,7 +394,7 @@ export function CommunityPage() {
             <VoiceCallRoomRouteWrapper 
               community={community}
               userRole={getRoleString()}
-              onBack={handleBackToMain}
+              onBack={handleBackToRoomStack}
             />
           } 
         />
@@ -393,7 +405,7 @@ export function CommunityPage() {
             <MemesPostsPageRouteWrapper 
               community={community}
               userRole={getRoleString()}
-              onBack={handleBackToMain}
+              onBack={handleBackToRoomStack}
             />
           } 
         />
@@ -416,7 +428,7 @@ export function CommunityPage() {
             <RoomPageRouteWrapper 
               community={community}
               rooms={rooms}
-              onBack={handleBackToMain}
+              onBack={handleBackToRoomStack}
             />
           } 
         />
@@ -586,7 +598,7 @@ function GeneralChatRouteWrapper({ community, userRole, currentUser, onBack, onO
       communityId={community.id}
       userRole={userRole}
       currentUser={currentUser}
-      onBack={onBack}
+      onBack={() => onBack(roomId || '')}
       onGoToHome={() => navigate('/')}
       onGoToUserSpace={() => navigate('/userspace')}
       onOpenDM={onOpenDM}
@@ -608,7 +620,7 @@ function AnnouncementChatRouteWrapper({ community, userRole, currentUser, onBack
       communityId={community.id}
       userRole={userRole}
       currentUser={currentUser}
-      onBack={onBack}
+      onBack={() => onBack(roomId || '')}
       onGoToHome={() => navigate('/')}
       onGoToUserSpace={() => navigate('/userspace')}
       onOpenDM={onOpenDM}
@@ -629,7 +641,7 @@ function VoiceCallRoomRouteWrapper({ community, userRole, onBack }: any) {
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
       userRole={userRole}
-      onBack={onBack}
+      onBack={() => onBack(roomId || '')}
       onGoToHome={() => navigate('/')}
       onGoToUserSpace={() => navigate('/userspace')}
     />
@@ -649,7 +661,7 @@ function MemesPostsPageRouteWrapper({ community, userRole, onBack }: any) {
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
       userRole={userRole}
-      onBack={onBack}
+      onBack={() => onBack(roomId || '')}
       onGoToHome={() => navigate('/')}
       onGoToUserSpace={() => navigate('/userspace')}
     />
@@ -698,7 +710,7 @@ function RoomPageRouteWrapper({ community, rooms, onBack }: any) {
         type: mapRoomTypeToFrontend(room.type),
       }}
       communityName={community.name}
-      onBack={onBack}
+      onBack={() => onBack(roomId || '')}
     />
   );
 }
