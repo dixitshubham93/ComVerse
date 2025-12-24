@@ -54,8 +54,8 @@ export function CommunitySidebar({
   return (
     <>
       {/* Sidebar */}
-      <div
-        className="fixed left-0 top-0 h-full z-40 transition-all duration-300 ease-out"
+        <div
+          className="fixed left-0 top-0 h-full z-[60] transition-all duration-300 ease-out"
         style={{
           width: isExpanded ? '280px' : '80px',
           background: 'rgba(4, 55, 47, 0.2)',
@@ -154,23 +154,23 @@ export function CommunitySidebar({
 
             {/* Navigation Buttons - Expanded */}
             <nav className="flex flex-col gap-2 px-3">
-              {/* Home */}
-              <button
-                onClick={() => navigate('/')}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-              >
-                <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
-                <span className="text-white text-sm">Home</span>
-              </button>
+                {/* Home */}
+                <button
+                  onClick={() => onNavigate ? onNavigate('home') : navigate('/')}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                >
+                  <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
+                  <span className="text-white text-sm">Home</span>
+                </button>
 
-              {/* User Space */}
-              <button
-                onClick={() => navigate('/userspace')}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-              >
-                <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
-                <span className="text-white text-sm">User Space</span>
-              </button>
+                {/* User Space */}
+                <button
+                  onClick={() => onNavigate ? onNavigate('userspace') : navigate('/userspace')}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                >
+                  <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
+                  <span className="text-white text-sm">User Space</span>
+                </button>
 
               {/* Members */}
               <button
@@ -230,25 +230,25 @@ export function CommunitySidebar({
           </>
         ) : (
           <>
-            {/* Collapsed View - Icons Only */}
-            <nav className="flex flex-col gap-2 px-2 mt-2">
-              {/* Home */}
-              <button
-                onClick={() => navigate('/')}
-                className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                title="Home"
-              >
-                <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-              </button>
+              {/* Collapsed View - Icons Only */}
+              <nav className="flex flex-col gap-2 px-2 mt-2">
+                {/* Home */}
+                <button
+                  onClick={() => onNavigate ? onNavigate('home') : navigate('/')}
+                  className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                  title="Home"
+                >
+                  <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                </button>
 
-              {/* User Space */}
-              <button
-                onClick={() => navigate('/userspace')}
-                className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                title="User Space"
-              >
-                <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-              </button>
+                {/* User Space */}
+                <button
+                  onClick={() => onNavigate ? onNavigate('userspace') : navigate('/userspace')}
+                  className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                  title="User Space"
+                >
+                  <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                </button>
 
               {/* Members */}
               <button
