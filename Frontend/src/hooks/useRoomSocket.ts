@@ -278,7 +278,7 @@ export function useRoomSocket(
       console.warn('[Socket Hook] ⚠️ Cannot send mute: Not connected');
       return;
     }
-    socket.current.emit('voice:mute', { roomId, isMuted });
+    socketRef.current.emit('voice:mute', { roomId, isMuted });
   }, [roomId]);
 
   const sendSpeaking = useCallback((isSpeaking: boolean) => {

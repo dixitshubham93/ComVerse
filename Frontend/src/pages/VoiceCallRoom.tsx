@@ -186,19 +186,18 @@ export function VoiceCallRoom({
           
           console.log('[VC] In-call users:', inCallUsers.length);
           
-          inCallUsers.forEach(u => {
-            const userId = Number(u.id);
-            const wasAlreadyInCall = previousInCallIds.has(userId);
-            
-            if (!peersRef.current.has(userId) && !wasAlreadyInCall) {
-              const shouldInitiate = currentUserId > userId;
-              console.log(`[VC] New user ${userId} joined. My ID: ${currentUserId}, I initiate: ${shouldInitiate}`);
+            inCallUsers.forEach(u => {
+              const userId = Number(u.id);
               
-              if (shouldInitiate) {
-                createPeer(userId, true, localStreamRef.current!);
+              if (!peersRef.current.has(userId)) {
+                const shouldInitiate = currentUserId > userId;
+                console.log(`[VC] New user ${userId} found in presence. My ID: ${currentUserId}, I initiate: ${shouldInitiate}`);
+                
+                if (shouldInitiate) {
+                  createPeer(userId, true, localStreamRef.current!);
+                }
               }
-            }
-          });
+            });
 
           const inCallIds = new Set(inCallUsers.map(u => Number(u.id)));
           peersRef.current.forEach((_, userId) => {
@@ -343,10 +342,23 @@ export function VoiceCallRoom({
       localStreamRef.current = stream;
       isInCallRef.current = true;
       
-      const success = joinVoice();
-      if (success) {
-        setIsInCall(true);
-      } else {
+        const success = joinVoice();
+        if (success) {
+          setIsInCall(true);
+          
+          // Proactively check for existing users to connect with
+          const currentUserId = Number(user?.id);
+          presenceRef.current.forEach(u => {
+            const userId = Number(u.id);
+            if (u.inCall && userId !== currentUserId && !peersRef.current.has(userId)) {
+              const shouldInitiate = currentUserId > userId;
+              if (shouldInitiate) {
+                console.log(`[VC] Proactively initiating peer with existing user ${userId}`);
+                createPeer(userId, true, stream);
+              }
+            }
+          });
+        } else {
         stream.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
         isInCallRef.current = false;
