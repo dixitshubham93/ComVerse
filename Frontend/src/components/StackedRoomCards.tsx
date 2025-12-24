@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/drei";
 import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
-import { Phone, Image, MessageCircle, Megaphone, X, Plus } from 'lucide-react';
+import { Phone, Image, MessageCircle, Megaphone, X, Plus, ArrowLeft } from 'lucide-react';
 
 export interface Room {
   id: string;
@@ -356,8 +356,16 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose }: { title: s
           </Suspense>
         </Canvas>
 
-        {/* header overlay - single title */}
-        <div style={{ position: "absolute", left: 16, top: 12, zIndex: 20, pointerEvents: "none" }}>
+        {/* header overlay - title and back button */}
+        <div style={{ position: "absolute", left: 16, top: 12, zIndex: 30, display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors pointer-events-auto"
+            >
+              <ArrowLeft className="w-6 h-6 text-[#28f5cc]" />
+            </button>
+          )}
           <h3 className="text-white font-semibold text-2xl">{title}</h3>
         </div>
       </div>

@@ -356,6 +356,7 @@ export function CommunityPage() {
                 stats={stats}
                 onJoinRoom={handleJoinRoom}
                 onDeleteRoom={handleDeleteRoom}
+                onBack={handleBackToRoomStack}
               />
             </>
           } 
@@ -564,7 +565,7 @@ function CommunityMainView({
   );
 }
 
-function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoom, onDeleteRoom }: any) {
+function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoom, onDeleteRoom, onBack }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const room = rooms.find((r: any) => r.id.toString() === roomId);
@@ -577,7 +578,7 @@ function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoo
       communityName={community.name}
       userRole={userRole}
       stats={stats}
-      onClose={() => navigate(`/community/${community.id}`)}
+      onClose={() => onBack ? onBack(roomId || '') : navigate(`/community/${community.id}`)}
       onJoin={() => onJoinRoom(room)}
       onDelete={() => onDeleteRoom(room.id)}
     />
