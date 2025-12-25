@@ -13,22 +13,6 @@ const REVERSE_ROOM_TYPE_MAP: Record<RoomType, string> = {
   [RoomType.VS_BATTLE]: 'VS Battle',
 };
 
-const ROOM_TYPE_MAP: Record<string, RoomType> = {
-  'Announcement': RoomType.ANNOUNCEMENT,
-  'General Chat': RoomType.GENERAL,
-  'Voice Call': RoomType.VOICE_CHAT,
-  'Meme & Post': RoomType.POSTS,
-  'VS Battle': RoomType.VS_BATTLE,
-};
-
-const ROOM_TYPES = [
-  'Announcement',
-  'General Chat',
-  'Voice Call',
-  'Meme & Post',
-  'VS Battle',
-];
-
 interface EditRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,7 +24,6 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [roomType, setRoomType] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +31,7 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
     if (room && isOpen) {
       setName(room.name || '');
       setDescription(room.config || '');
-      setRoomType(REVERSE_ROOM_TYPE_MAP[room.type] || '');
+      setRoomType(REVERSE_ROOM_TYPE_MAP[room.type] || 'General Chat');
       setError(null);
     }
   }, [room, isOpen]);
@@ -80,7 +63,7 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
     }
   };
 
-  const isFormValid = name.trim() && roomType;
+  const isFormValid = name.trim();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

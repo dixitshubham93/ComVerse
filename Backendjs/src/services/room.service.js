@@ -60,11 +60,10 @@ export const updateRoomService = async (roomId, data) => {
 
   if (!room) throw new AppError("Room not found", 404);
 
-  return prisma.room.update({
+    return prisma.room.update({
     where: { id: roomId },
     data: {
-      ...data,
-      updatedAt: new Date(),
+      ...data
     },
   });
 };
