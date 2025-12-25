@@ -524,10 +524,19 @@ export function CommunityManagePage() {
                         }}>
                           <Hash className="w-5 h-5 text-[#28f5cc]" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-white text-base font-semibold mb-1">{room.name}</h3>
-                          <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
-                        </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-white text-base font-semibold">{room.name}</h3>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" style={{
+                                background: 'rgba(40, 245, 204, 0.1)',
+                                color: '#28f5cc',
+                                border: '1px solid rgba(40, 245, 204, 0.2)',
+                              }}>
+                                {room.type.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
+                          </div>
                           <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button 
                               onClick={() => handleEditRoom(room)}

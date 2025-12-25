@@ -54,8 +54,8 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
   }, [room, isOpen]);
 
   const handleUpdate = async () => {
-    if (!name.trim() || !roomType) {
-      setError('Room name and type are required');
+    if (!name.trim()) {
+      setError('Room name is required');
       return;
     }
 
@@ -65,14 +65,8 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
     setError(null);
 
     try {
-      const backendType = ROOM_TYPE_MAP[roomType];
-      if (!backendType) {
-        throw new Error('Invalid room type');
-      }
-
       const updatedRoom = await updateRoom(room.id, {
         name: name.trim(),
-        type: backendType,
         config: description.trim() || null,
       });
 
@@ -120,106 +114,54 @@ export function EditRoomModal({ isOpen, onClose, onUpdateRoom, room }: EditRoomM
           </div>
         </div>
 
-        <div className="px-8 py-6 space-y-6 flex-1 overflow-y-auto">
-          {error && (
-            <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
-              {error}
-            </div>
-          )}
-          
-          <div>
-            <label className="block text-white mb-2 font-medium">Room Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter room name…"
-              className="w-full px-4 py-3 rounded-xl text-white placeholder-[#747c88] transition-all duration-200 outline-none"
-              style={{
-                background: 'rgba(42, 52, 68, 0.5)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(40, 245, 204, 0.2)',
-              }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-white mb-2 font-medium">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the purpose of this room…"
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl text-white placeholder-[#747c88] transition-all duration-200 outline-none resize-none"
-              style={{
-                background: 'rgba(42, 52, 68, 0.5)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(40, 245, 204, 0.2)',
-              }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-white mb-2 font-medium">Room Type</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full px-4 py-3 rounded-xl text-left text-white transition-all duration-200 flex items-center justify-between"
+          <div className="px-8 py-6 space-y-6 flex-1 overflow-y-auto">
+            {error && (
+              <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-white mb-2 font-medium">Room Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter room name…"
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-[#747c88] transition-all duration-200 outline-none"
                 style={{
                   background: 'rgba(42, 52, 68, 0.5)',
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(40, 245, 204, 0.2)',
                 }}
-              >
-                <span className={roomType ? 'text-white' : 'text-[#747c88]'}>
-                  {roomType || 'Select room type…'}
-                </span>
-                <svg
-                  className={`w-4 h-4 text-[#28f5cc] transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+              />
+            </div>
 
-              {isDropdownOpen && (
-                <div
-                  className="absolute z-50 w-full mt-2 rounded-xl overflow-hidden"
-                  style={{
-                    background: 'rgba(42, 52, 68, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(40, 245, 204, 0.3)',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.6)',
-                  }}
-                >
-                  <div className="max-h-60 overflow-y-auto">
-                    {ROOM_TYPES.map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => {
-                          setRoomType(type);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left text-white hover:bg-[#28f5cc]/10 transition-all duration-200"
-                        style={{
-                          background: roomType === type ? 'rgba(40, 245, 204, 0.1)' : 'transparent',
-                        }}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div>
+              <label className="block text-white mb-2 font-medium">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the purpose of this room…"
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-[#747c88] transition-all duration-200 outline-none resize-none"
+                style={{
+                  background: 'rgba(42, 52, 68, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(40, 245, 204, 0.2)',
+                }}
+              />
+            </div>
+
+            <div className="p-4 rounded-xl" style={{
+              background: 'rgba(40, 245, 204, 0.05)',
+              border: '1px dashed rgba(40, 245, 204, 0.2)',
+            }}>
+              <p className="text-[#747c88] text-xs uppercase font-bold tracking-wider mb-1">Room Type</p>
+              <p className="text-[#28f5cc] font-medium">{roomType || 'Unknown'}</p>
+              <p className="text-[#747c88] text-[10px] mt-2">Room type cannot be changed after creation.</p>
             </div>
           </div>
-        </div>
 
         <div
           className="px-8 py-6 border-t flex justify-end gap-4"
