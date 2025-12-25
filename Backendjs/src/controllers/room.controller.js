@@ -62,6 +62,7 @@ export const getByCommunity = async (req, res, next) => {
       ...r,
       id: Number(r.id),
       communityId: Number(r.communityId),
+      activeUsers: getUsersInRoom(String(r.id)).length,
     }));
     
     res.json({ success: true, data: serializedRooms });

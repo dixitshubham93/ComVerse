@@ -35,6 +35,7 @@ export interface RoomDto {
   type: RoomType;
   config: string | null;
   isDefaultRoom: boolean;
+  activeUsers?: number;
 }
 
 /**

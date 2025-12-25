@@ -314,7 +314,7 @@ export function VoiceCallRoom({
   }, [isInCall, isMuted, user?.id, sendSpeaking]);
 
   useEffect(() => {
-    const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8081';
+    const WS_URL = import.meta.env.VITE_WS_URL;
     fetch(`${WS_URL}/api/rooms/${currentRoomId}/voice-metadata`)
       .then(res => res.json())
       .catch(err => console.error('❌ Backend NOT reachable:', err));
