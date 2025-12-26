@@ -68,7 +68,7 @@ const CarouselCard = ({
       whileHover={{ scale: scale * 1.05 }}
     >
       <div
-        className={`relative w-[280px] md:w-[320px] rounded-2xl overflow-hidden transition-all duration-300 ${
+        className={`relative w-[300px] h-[520px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
           isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
         }`}
         style={{
@@ -84,86 +84,87 @@ const CarouselCard = ({
           background: 'radial-gradient(ellipse at 50% 0%, rgba(40, 245, 204, 0.3) 0%, transparent 60%)',
         }} />
 
-        {/* Image */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-black/40 flex items-center justify-center">
-          {/* Blurred background for "fully visible" effect without empty bars */}
+        {/* Header Area */}
+        <div className="px-4 py-3 flex items-center gap-2 z-30 border-b border-white/5 bg-black/20">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0"
+            style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+          >
+            {post.user?.username?.charAt(0).toUpperCase() || '?'}
+          </div>
+          <span className="text-white text-sm font-medium truncate">{post.user?.username}</span>
+          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
+        </div>
+
+        {/* Image Area (Takes available space) */}
+        <div className="relative flex-1 overflow-hidden bg-black/40 flex items-center justify-center group">
+          {/* Blurred background for "fully visible" effect */}
           <img
             src={post.mediaUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
+            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110"
           />
           <img
             src={post.mediaUrl}
             alt={post.caption || 'Post'}
-            className="relative z-10 w-full h-full object-contain transition-transform duration-500 hover:scale-105"
+            className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-20" />
-          
-          {/* User info overlay */}
-          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-30">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black"
-              style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-            >
-              {post.user?.username?.charAt(0).toUpperCase() || '?'}
-            </div>
-            <span className="text-white text-sm font-medium truncate">{post.user?.username}</span>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-20 pointer-events-none" />
         </div>
 
-        {/* Content Area (Fixed Height for uniform cards) */}
-        <div className="flex flex-col flex-1">
+        {/* Content Area */}
+        <div className="flex flex-col bg-black/20">
           {/* Caption slot with fixed height */}
-          <div className="px-4 py-3 h-[64px]">
+          <div className="px-4 py-3 h-[60px] flex items-center">
             {post.caption ? (
-              <p className="text-white/80 text-sm line-clamp-2">{post.caption}</p>
+              <p className="text-white/80 text-sm line-clamp-2 w-full leading-relaxed">{post.caption}</p>
             ) : (
               <p className="text-white/20 text-xs italic">No caption</p>
             )}
           </div>
   
           {/* Actions */}
-          <div className="px-4 pb-4 mt-auto flex items-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onLike(); }}
-            disabled={likeLoading}
-            className="flex items-center gap-1.5"
-          >
-            <Heart
-              className={`w-5 h-5 transition-all ${
-                isLiked
-                  ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                  : 'text-white/50 hover:text-red-400'
-              }`}
-            />
-            <span className={`text-xs font-medium ${isLiked ? 'text-red-400' : 'text-white/50'}`}>
-              {post.likeCount || 0}
-            </span>
-          </motion.button>
+          <div className="px-4 pb-4 flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => { e.stopPropagation(); onLike(); }}
+              disabled={likeLoading}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <Heart
+                className={`w-4 h-4 transition-all ${
+                  isLiked
+                    ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                    : 'text-white/50'
+                }`}
+              />
+              <span className={`text-xs font-bold ${isLiked ? 'text-red-400' : 'text-white/50'}`}>
+                {post.likeCount || 0}
+              </span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onComment(); }}
-            className="flex items-center gap-1.5"
-          >
-            <MessageCircle className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
-            <span className="text-xs font-medium text-white/50">{post.commentCount || 0}</span>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => { e.stopPropagation(); onComment(); }}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 text-white/50" />
+              <span className="text-xs font-bold text-white/50">{post.commentCount || 0}</span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => e.stopPropagation()}
-            className="ml-auto"
-          >
-            <Bookmark className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              className="ml-auto p-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <Bookmark className="w-4 h-4 text-white/50 hover:text-primary transition-colors" />
+            </motion.button>
+          </div>
         </div>
       </div>
-    </div>
   </motion.div>
 );
 };
