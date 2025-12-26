@@ -60,11 +60,26 @@ export const updateRoom = async (roomId, data) => {
 
   if (!room) throw new AppError("Room not found", 404);
 
+  // Filter only valid fields for update
+  const updateData = {};
+  const allowedFields = [
+    "name",
+    "type",
+    "config",
+    "isDefaultRoom",
+    "readOnly",
+    "adminOnly",
+    "locked",
+  ];
+
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) {
+      updateData[field] = data[field];
+    }
+  });
+
   return prisma.room.update({
     where: { id: roomId },
-    data: {
-      ...data,
-      updatedAt: new Date(),
-    },
+    data: updateData,
   });
 };
