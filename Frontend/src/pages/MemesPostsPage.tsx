@@ -713,7 +713,7 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden relative ml-16 lg:ml-20">
+    <div className="min-h-screen w-full overflow-hidden relative ml-20">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -725,7 +725,7 @@ export function MemesPostsPage({
           borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.button
