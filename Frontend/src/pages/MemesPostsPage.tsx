@@ -96,8 +96,8 @@ const CarouselCard = ({
           <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
         </div>
 
-        {/* Image Area (Takes available space) */}
-        <div className="relative flex-1 overflow-hidden bg-black/40 flex items-center justify-center group">
+        {/* Image Area (Fixed Aspect Ratio) */}
+        <div className="relative w-full aspect-[4/5] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
           {/* Blurred background for "fully visible" effect */}
           <img
             src={post.mediaUrl}
@@ -107,7 +107,7 @@ const CarouselCard = ({
           <img
             src={post.mediaUrl}
             alt={post.caption || 'Post'}
-            className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+            className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105 p-1"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-20 pointer-events-none" />
         </div>
