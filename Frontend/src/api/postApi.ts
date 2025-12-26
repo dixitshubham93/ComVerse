@@ -1,4 +1,8 @@
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080/api';
+let API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
+API_BASE_URL = API_BASE_URL.replace(/\/$/, '');
+if (API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -4);
+}
 
 export interface PostDto {
   id: number;
@@ -54,7 +58,7 @@ const getAuthHeaders = (): Record<string, string> => {
 
 export const getPostsByRoom = async (roomId: number): Promise<PostDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/${roomId}`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });
@@ -76,7 +80,7 @@ export const createPost = async (
   data: { mediaUrl: string; caption?: string; type?: 'IMAGE' | 'VIDEO' }
 ): Promise<PostDto | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/${roomId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/${roomId}`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -100,7 +104,7 @@ export const createPost = async (
 
 export const likePost = async (postId: number): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/like/${postId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/like/${postId}`, {
       method: 'POST',
       headers: getAuthHeaders(),
     });
@@ -114,7 +118,7 @@ export const likePost = async (postId: number): Promise<boolean> => {
 
 export const unlikePost = async (postId: number): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/like/${postId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/like/${postId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
@@ -128,7 +132,7 @@ export const unlikePost = async (postId: number): Promise<boolean> => {
 
 export const getComments = async (postId: number): Promise<CommentDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/comment/${postId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/comment/${postId}`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });
@@ -150,7 +154,7 @@ export const createComment = async (
   content: string
 ): Promise<CommentDto | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/posts/comment/${postId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/comment/${postId}`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ content }),
@@ -170,7 +174,7 @@ export const createComment = async (
 
 export const getUserPosts = async (userId: number): Promise<PostDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/posts`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/posts`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -189,7 +193,7 @@ export const getUserPosts = async (userId: number): Promise<PostDto[]> => {
 
 export const getUserRecentPosts = async (userId: number): Promise<PostDto[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/recent-posts`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userId}/recent-posts`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
