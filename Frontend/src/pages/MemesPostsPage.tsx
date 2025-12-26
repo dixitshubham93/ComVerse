@@ -68,7 +68,7 @@ const CarouselCard = ({
       whileHover={{ scale: scale * 1.05 }}
     >
       <div
-        className={`relative w-[280px] md:w-[320px] rounded-2xl overflow-hidden transition-all duration-300 ${
+        className={`relative w-[320px] md:w-[420px] h-[450px] md:h-[580px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
           isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
         }`}
         style={{
@@ -85,7 +85,7 @@ const CarouselCard = ({
         }} />
 
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative w-full aspect-square overflow-hidden flex-shrink-0">
           <img
             src={post.mediaUrl}
             alt={post.caption || 'Post'}
@@ -105,52 +105,57 @@ const CarouselCard = ({
           </div>
         </div>
 
-        {/* Caption */}
-        {post.caption && (
-          <div className="px-4 py-3">
-            <p className="text-white/80 text-sm line-clamp-2">{post.caption}</p>
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Caption */}
+          <div className="px-4 py-3 flex-1 min-h-[50px]">
+            {post.caption ? (
+              <p className="text-white/80 text-sm line-clamp-2">{post.caption}</p>
+            ) : (
+              <p className="text-white/20 text-xs italic">No caption</p>
+            )}
           </div>
-        )}
 
-        {/* Actions */}
-        <div className="px-4 pb-4 flex items-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onLike(); }}
-            disabled={likeLoading}
-            className="flex items-center gap-1.5"
-          >
-            <Heart
-              className={`w-5 h-5 transition-all ${
-                isLiked
-                  ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                  : 'text-white/50 hover:text-red-400'
-              }`}
-            />
-            <span className={`text-xs font-medium ${isLiked ? 'text-red-400' : 'text-white/50'}`}>
-              {post.likeCount || 0}
-            </span>
-          </motion.button>
+          {/* Actions */}
+          <div className="px-4 pb-4 flex items-center gap-4 flex-shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => { e.stopPropagation(); onLike(); }}
+              disabled={likeLoading}
+              className="flex items-center gap-1.5"
+            >
+              <Heart
+                className={`w-5 h-5 transition-all ${
+                  isLiked
+                    ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                    : 'text-white/50 hover:text-red-400'
+                }`}
+              />
+              <span className={`text-xs font-medium ${isLiked ? 'text-red-400' : 'text-white/50'}`}>
+                {post.likeCount || 0}
+              </span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); onComment(); }}
-            className="flex items-center gap-1.5"
-          >
-            <MessageCircle className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
-            <span className="text-xs font-medium text-white/50">{post.commentCount || 0}</span>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => { e.stopPropagation(); onComment(); }}
+              className="flex items-center gap-1.5"
+            >
+              <MessageCircle className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
+              <span className="text-xs font-medium text-white/50">{post.commentCount || 0}</span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => e.stopPropagation()}
-            className="ml-auto"
-          >
-            <Bookmark className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              className="ml-auto"
+            >
+              <Bookmark className="w-5 h-5 text-white/50 hover:text-primary transition-colors" />
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -179,75 +184,75 @@ const Carousel3D = ({
   const dragStartRotation = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const radius = 450;
-  const anglePerCard = 360 / posts.length;
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    dragStartX.current = e.clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStartX.current;
-    const sensitivity = 0.3;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  }, [isDragging]);
-
-  const handleMouseUp = useCallback(() => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    // Snap to nearest card
-    const snappedRotation = Math.round(rotation / anglePerCard) * anglePerCard;
-    setRotation(snappedRotation);
-  }, [isDragging, rotation, anglePerCard]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    dragStartX.current = e.touches[0].clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.touches[0].clientX - dragStartX.current;
-    const sensitivity = 0.3;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  }, [isDragging]);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleMouseUp);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleMouseUp);
+    const radius = 600;
+    const anglePerCard = 360 / posts.length;
+  
+    const handleMouseDown = (e: React.MouseEvent) => {
+      setIsDragging(true);
+      dragStartX.current = e.clientX;
+      dragStartRotation.current = rotation;
     };
-  }, [handleMouseMove, handleMouseUp, handleTouchMove]);
-
-  const navigateCarousel = (direction: 'prev' | 'next') => {
-    const newRotation = direction === 'next' 
-      ? rotation - anglePerCard 
-      : rotation + anglePerCard;
-    setRotation(newRotation);
-  };
-
-  const activeIndex = Math.round(-rotation / anglePerCard) % posts.length;
-  const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
-
-  return (
-    <div className="relative h-[500px] md:h-[600px] w-full flex items-center justify-center overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] rounded-full opacity-10" style={{
-          background: 'radial-gradient(circle, rgba(40, 245, 204, 0.5) 0%, transparent 60%)',
-        }} />
-      </div>
+  
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - dragStartX.current;
+      const sensitivity = 0.3;
+      setRotation(dragStartRotation.current + deltaX * sensitivity);
+    }, [isDragging]);
+  
+    const handleMouseUp = useCallback(() => {
+      if (!isDragging) return;
+      setIsDragging(false);
+      // Snap to nearest card
+      const snappedRotation = Math.round(rotation / anglePerCard) * anglePerCard;
+      setRotation(snappedRotation);
+    }, [isDragging, rotation, anglePerCard]);
+  
+    const handleTouchStart = (e: React.TouchEvent) => {
+      setIsDragging(true);
+      dragStartX.current = e.touches[0].clientX;
+      dragStartRotation.current = rotation;
+    };
+  
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.touches[0].clientX - dragStartX.current;
+      const sensitivity = 0.3;
+      setRotation(dragStartRotation.current + deltaX * sensitivity);
+    }, [isDragging]);
+  
+    useEffect(() => {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleMouseUp);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleMouseUp);
+      };
+    }, [handleMouseMove, handleMouseUp, handleTouchMove]);
+  
+    const navigateCarousel = (direction: 'prev' | 'next') => {
+      const newRotation = direction === 'next' 
+        ? rotation - anglePerCard 
+        : rotation + anglePerCard;
+      setRotation(newRotation);
+    };
+  
+    const activeIndex = Math.round(-rotation / anglePerCard) % posts.length;
+    const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
+  
+    return (
+      <div className="relative h-[600px] md:h-[750px] w-full flex items-center justify-center overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[800px] h-[800px] rounded-full opacity-10" style={{
+            background: 'radial-gradient(circle, rgba(40, 245, 204, 0.5) 0%, transparent 60%)',
+          }} />
+        </div>
 
       {/* 3D Container */}
       <div
