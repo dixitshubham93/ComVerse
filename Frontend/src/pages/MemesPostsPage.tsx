@@ -163,8 +163,9 @@ const CarouselCard = ({
           </motion.button>
         </div>
       </div>
-    </motion.div>
-  );
+    </div>
+  </motion.div>
+);
 };
 
 // 3D Carousel Component
