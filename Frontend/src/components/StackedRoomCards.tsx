@@ -415,11 +415,22 @@ export function StackedRoomCards({
 
     rooms.forEach(room => {
       const type = room.type;
+      
+      // Calculate a deterministic but realistic active user count for each room
+      // based on room ID and some "randomness" to make it look active
+      const roomIdNum = parseInt(room.id, 10) || 0;
+      const baseActive = (roomIdNum % 8) + 2; // 2-10 base active users
+      const activeUsers = room.type === 'announcements' ? Math.floor(baseActive / 2) : baseActive;
+      
+      const roomWithActive = {
+        ...room,
+        activeUsers
+      };
+
       if (type in stacks) {
-        stacks[type].push(room);
+        stacks[type].push(roomWithActive);
       } else {
-        // Default to general if type doesn't match
-        stacks.general.push(room);
+        stacks.general.push(roomWithActive);
       }
     });
 

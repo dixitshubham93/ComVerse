@@ -92,20 +92,19 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
             throw new Error('Room ID is required for editing');
           }
           
-          const roomId = Number(roomData.id);
-          
-          // Only call API if it's a valid number ID (not a mock string ID like '1')
-          // Assuming real IDs are positive integers and mock IDs might be small strings
-          if (!isNaN(roomId) && roomId > 100) { // Simple heuristic for real IDs in this project
-            await updateRoom(roomId, {
-              name: name.trim(),
-              config: description.trim(),
-            });
-          } else {
-            console.log('Mock edit - skipping API call for ID:', roomData.id);
-            // Simulate API delay for mock data
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+            const roomId = Number(roomData.id);
+            
+            // Call API for all valid numeric IDs
+            if (!isNaN(roomId)) {
+              await updateRoom(roomId, {
+                name: name.trim(),
+                config: description.trim(),
+              });
+            } else {
+              console.log('Mock edit - skipping API call for non-numeric ID:', roomData.id);
+              // Simulate API delay for mock data
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
 
           onCreateRoom({
             name: name.trim(),
