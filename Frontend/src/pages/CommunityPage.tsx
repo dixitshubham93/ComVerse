@@ -333,6 +333,7 @@ export function CommunityPage() {
                 onRoomSelect={handleRoomSelect}
                 onStackSelect={(stackType: string) => navigate(`/community/${communityId}/3d/${stackType}`)}
                 onCreateRoom={() => setIsCreateRoomModalOpen(true)}
+                onEditRoom={handleEditRoom}
                 is3DViewOpen={is3DViewOpen}
                 setIs3DViewOpen={setIs3DViewOpen}
               />
@@ -364,6 +365,7 @@ export function CommunityPage() {
                 userRole={userRole}
                 onRoomSelect={handleRoomSelect}
                 onCreateRoom={() => setIsCreateRoomModalOpen(true)}
+                onEditRoom={handleEditRoom}
                 is3DViewOpen={is3DViewOpen}
                 setIs3DViewOpen={setIs3DViewOpen}
               />
@@ -526,7 +528,7 @@ function Community3DView({ community, rooms, onRoomSelect, onBack }: any) {
 }
 
 function CommunityMainView({ 
-  community, stats, rooms, userRole, onRoomSelect, onStackSelect, onCreateRoom, is3DViewOpen, setIs3DViewOpen 
+  community, stats, rooms, userRole, onRoomSelect, onStackSelect, onCreateRoom, onEditRoom, is3DViewOpen, setIs3DViewOpen 
 }: any) {
   // Map rooms to frontend format for StackedRoomCards
   const mappedRooms = rooms.map((room: any) => {
@@ -592,13 +594,13 @@ function CommunityMainView({
       )}
 
       <div className="relative w-full" style={{ height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'calc(100vh - 8rem)' }}>
-        <StackedRoomCards 
-          onRoomSelect={onRoomSelect}
-          rooms={mappedRooms}
-          onStackSelect={onStackSelect}
-          onCreateRoom={onCreateRoom}
-          onEditRoom={handleEditRoom}
-          canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
+          <StackedRoomCards 
+            onRoomSelect={onRoomSelect}
+            rooms={mappedRooms}
+            onStackSelect={onStackSelect}
+            onCreateRoom={onCreateRoom}
+            onEditRoom={onEditRoom}
+            canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
           isOwner={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
           on3DViewToggle={setIs3DViewOpen}
         />
