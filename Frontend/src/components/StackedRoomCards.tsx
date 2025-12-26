@@ -20,6 +20,7 @@ export interface StackedRoomCardsProps {
   isMotionReduced?: boolean;
   rooms?: Room[];
   onCreateRoom?: () => void;
+  onEditRoom?: (room: any) => void;
   canCreateRoom?: boolean;
   onStackSelect?: (stackType: string) => void;
   selectedStack?: string | null;
@@ -55,7 +56,7 @@ function iconForType(type) {
 }
 
 /* FloatingRoomCard adapted to your room object */
-function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom }) {
+function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom, onEditRoom }) {
   const groupRef = useRef();
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -136,7 +137,17 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
                 </div>
 
                 <div style={{ opacity: 0.95 }}>
-                  {isOwner ? <Edit2 className="w-4 h-4 text-[#9aa0aa]" /> : null}
+                  {isOwner ? (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onEditRoom) onEditRoom(room);
+                      }}
+                      className="p-1 hover:bg-white/10 rounded transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4 text-[#9aa0aa] hover:text-[#28f5cc]" />
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -205,7 +216,7 @@ function calcPositions(count) {
 }
 
 /* Room modal (selected) */
-function RoomModal3D({ room, onClose, isOwner, onOpen }) {
+function RoomModal3D({ room, onClose, isOwner, onOpen, onEditRoom }) {
   if (!room) return null;
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -240,8 +251,15 @@ function RoomModal3D({ room, onClose, isOwner, onOpen }) {
             </div>
 
             <div className="flex flex-col items-end gap-3">
-              {isOwner && <button className="px-4 py-2 rounded-lg bg-[#28f5cc] text-black font-semibold">Edit Room</button>}
-              <button onClick={() => onOpen(room)} className="px-4 py-2 rounded-lg border border-[#28f5cc66] text-[#28f5cc]">Open Room</button>
+              {isOwner && (
+                <button 
+                  onClick={() => onEditRoom?.(room)} 
+                  className="px-4 py-2 rounded-lg bg-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform"
+                >
+                  Edit Room
+                </button>
+              )}
+              <button onClick={() => onOpen(room)} className="px-4 py-2 rounded-lg border border-[#28f5cc66] text-[#28f5cc] hover:bg-[#28f5cc11] transition-colors">Open Room</button>
             </div>
           </div>
         </div>
@@ -251,9 +269,9 @@ function RoomModal3D({ room, onClose, isOwner, onOpen }) {
 }
 
 /* ExpandedRoom3D component (use this where the grid was) */
-export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose }: { title: string, rooms: Room[], onRoomOpen: (room: Room, e: any) => void, onClose?: () => void }) {
+export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, isOwner: propsIsOwner }: { title: string, rooms: Room[], onRoomOpen: (room: Room, e: any) => void, onClose?: () => void, onEditRoom?: (room: any) => void, isOwner?: boolean }) {
   const [centeredRoom, setCenteredRoom] = useState<Room | null>(null);
-  const [isOwner] = useState(true); // wire to real auth
+  const isOwner = propsIsOwner ?? true;
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
   const handleOpenRoom = (room, e) => {
@@ -339,6 +357,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose }: { title: s
                 isCentered={centeredRoom?.id === r.id}
                 isOtherCentered={centeredRoom && centeredRoom.id !== r.id}
                 onOpenRoom={handleOpenRoom}
+                onEditRoom={onEditRoom}
               />
             ))}
 
@@ -378,10 +397,12 @@ export function StackedRoomCards({
   isMotionReduced = false, 
   rooms = [], 
   onCreateRoom,
+  onEditRoom,
   canCreateRoom = false,
   onStackSelect,
   selectedStack: propsSelectedStack,
-  on3DViewToggle
+  on3DViewToggle,
+  isOwner = false
 }: StackedRoomCardsProps) {
   // Organize rooms by type
   const roomStacks = useMemo(() => {
@@ -620,11 +641,13 @@ export function StackedRoomCards({
             <X className="w-5 h-5 text-[#28f5cc]" />
           </button>
 
-          <ExpandedRoom3D
-            title={stackConfig[selectedStack].title}
-            rooms={roomStacks[selectedStack] || []}
-            onRoomOpen={handleRoomClick}
-          />
+            <ExpandedRoom3D
+              title={stackConfig[selectedStack].title}
+              rooms={roomStacks[selectedStack] || []}
+              onRoomOpen={handleRoomClick}
+              onEditRoom={onEditRoom}
+              isOwner={isOwner}
+            />
         </div>
       )}
 

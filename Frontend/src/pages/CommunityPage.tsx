@@ -597,8 +597,9 @@ function CommunityMainView({
           rooms={mappedRooms}
           onStackSelect={onStackSelect}
           onCreateRoom={onCreateRoom}
+          onEditRoom={handleEditRoom}
           canCreateRoom={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
-          isOwner={userRole === MembershipRole.OWNER}
+          isOwner={userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN}
           on3DViewToggle={setIs3DViewOpen}
         />
       </div>
@@ -780,7 +781,7 @@ function ExpandedRoomView({
   onDelete,
   onEdit,
 }: ExpandedRoomViewProps) {
-  const isOwner = userRole === MembershipRole.OWNER;
+  const isOwnerOrAdmin = userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN;
   const roomType = mapRoomTypeToFrontend(room.type);
 
   return (
@@ -914,7 +915,7 @@ function ExpandedRoomView({
               Join Room
             </button>
 
-              {isOwner && (
+              {isOwnerOrAdmin && (
                 <>
                   <button
                     onClick={onEdit}
