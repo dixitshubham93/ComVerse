@@ -42,6 +42,7 @@ export function CommunityManagePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rooms' | 'members'>('rooms');
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
   const [deleteRoomId, setDeleteRoomId] = useState<number | null>(null);
   const [deleteCommunityConfirm, setDeleteCommunityConfirm] = useState(false);
   const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
@@ -93,6 +94,19 @@ export function CommunityManagePage() {
 
     fetchData();
   }, [communityId, user?.id, id, navigate]);
+
+  const handleEditRoom = (room: RoomDto) => {
+    setEditingRoom(room);
+    setIsCreateRoomModalOpen(true);
+  };
+
+  const REVERSE_ROOM_TYPE_MAP: Record<string, string> = {
+    'ANNOUNCEMENT': 'Announcement',
+    'GENERAL': 'General Chat',
+    'VOICE_CHAT': 'Voice Call',
+    'POSTS': 'Meme & Post',
+    'VS_BATTLE': 'VS Battle',
+  };
 
   const handleDeleteRoom = async (roomId: number) => {
     if (!window.confirm('Delete this room permanently?\nThis action cannot be undone.')) {
@@ -514,17 +528,19 @@ export function CommunityManagePage() {
                           <h3 className="text-white text-base font-semibold mb-1">{room.name}</h3>
                           <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <button 
-                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
-                            title="Edit Room"
-                            style={{
-                              background: 'rgba(40, 245, 204, 0.1)',
-                              border: '1px solid rgba(40, 245, 204, 0.25)',
-                            }}
-                          >
-                            <Pencil className="w-4 h-4 text-[#28f5cc]" />
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button 
+                              onClick={() => handleEditRoom(room)}
+                              className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
+                              title="Edit Room"
+                              style={{
+                                background: 'rgba(40, 245, 204, 0.1)',
+                                border: '1px solid rgba(40, 245, 204, 0.25)',
+                              }}
+                            >
+                              <Pencil className="w-4 h-4 text-[#28f5cc]" />
+                            </button>
+
                           {userRole === MembershipRole.OWNER && (
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
@@ -672,12 +688,23 @@ export function CommunityManagePage() {
 
       <CreateRoomModal
         isOpen={isCreateRoomModalOpen}
-        onClose={() => setIsCreateRoomModalOpen(false)}
+        onClose={() => {
+          setIsCreateRoomModalOpen(false);
+          setEditingRoom(null);
+        }}
         onCreateRoom={async () => {
           const roomsData = await getCommunityRooms(communityId);
           setRooms(roomsData);
+          setEditingRoom(null);
         }}
         communityId={communityId}
+        editMode={!!editingRoom}
+        roomData={editingRoom ? {
+          id: editingRoom.id.toString(),
+          name: editingRoom.name,
+          description: editingRoom.config || '',
+          roomType: REVERSE_ROOM_TYPE_MAP[editingRoom.type]
+        } : undefined}
       />
 
       {/* Delete Modal */}
