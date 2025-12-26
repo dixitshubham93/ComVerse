@@ -73,7 +73,7 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
       return;
     }
 
-    if (!communityId) {
+    if (!editMode && !communityId) {
       setError('Community ID is required');
       return;
     }
@@ -87,20 +87,40 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
         throw new Error('Invalid room type');
       }
 
-      const createdRoom = await createRoom(communityId, {
-        name: name.trim(),
-        type: backendType,
-        config: description.trim() || null,
-        isDefaultRoom: false,
-      });
+      if (editMode) {
+        if (!roomData?.id) {
+          throw new Error('Room ID is required for editing');
+        }
+        await updateRoom(Number(roomData.id), {
+          name: name.trim(),
+          config: description.trim(),
+          // type is not sent or backend should ignore it if we want to follow "type cannot be changed"
+          // but we'll send it anyway if needed, or omit it. 
+          // The user said "type can not be changed", so we'll only send name and config.
+        });
 
-      // Call the callback with the created room
-      onCreateRoom({
-        name: createdRoom.name,
-        description: description.trim(),
-        roomType: roomType,
-        isPrivate: isPrivate,
-      });
+        onCreateRoom({
+          name: name.trim(),
+          description: description.trim(),
+          roomType: roomType,
+          isPrivate: isPrivate,
+        });
+      } else {
+        const createdRoom = await createRoom(communityId!, {
+          name: name.trim(),
+          type: backendType,
+          config: description.trim() || null,
+          isDefaultRoom: false,
+        });
+
+        // Call the callback with the created room
+        onCreateRoom({
+          name: createdRoom.name,
+          description: description.trim(),
+          roomType: roomType,
+          isPrivate: isPrivate,
+        });
+      }
 
       // Reset form
       if (!editMode) {
@@ -111,8 +131,8 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
       }
       onClose();
     } catch (err) {
-      console.error('Failed to create room:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create room. Please try again.');
+      console.error(editMode ? 'Failed to update room:' : 'Failed to create room:', err);
+      setError(err instanceof Error ? err.message : `Failed to ${editMode ? 'update' : 'create'} room. Please try again.`);
     } finally {
       setIsSaving(false);
     }
@@ -214,42 +234,47 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
             />
           </div>
 
-          {/* Room Type Dropdown */}
-          <div>
-            <label className="block text-white mb-2">Room Type</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full px-4 py-3 rounded-xl text-left text-white transition-all duration-200 flex items-center justify-between"
-                style={{
-                  background: 'rgba(42, 52, 68, 0.5)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(40, 245, 204, 0.2)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isDropdownOpen) {
-                    e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.2)';
-                  }
-                }}
-              >
-                <span className={roomType ? 'text-white' : 'text-[#747c88]'}>
-                  {roomType || 'Select room type…'}
-                </span>
-                <svg
-                  className={`w-4 h-4 text-[#28f5cc] transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {/* Room Type Dropdown */}
+            <div>
+              <label className="block text-white mb-2">Room Type</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => !editMode && setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={editMode}
+                  className={`w-full px-4 py-3 rounded-xl text-left text-white transition-all duration-200 flex items-center justify-between ${editMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  style={{
+                    background: 'rgba(42, 52, 68, 0.5)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(40, 245, 204, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!editMode) {
+                      e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDropdownOpen && !editMode) {
+                      e.currentTarget.style.borderColor = 'rgba(40, 245, 204, 0.2)';
+                    }
+                  }}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+                  <span className={roomType ? 'text-white' : 'text-[#747c88]'}>
+                    {roomType || 'Select room type…'}
+                  </span>
+                  {!editMode && (
+                    <svg
+                      className={`w-4 h-4 text-[#28f5cc] transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
+                </button>
 
               {isDropdownOpen && (
                 <div

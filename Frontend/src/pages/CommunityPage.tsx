@@ -90,11 +90,13 @@ export function CommunityPage() {
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [dmTarget, setDmTarget] = useState<{ id?: string; name: string; avatar: string; role: 'Owner' | 'Admin' | 'Member' } | null>(null);
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
-  const [showMembersPanel, setShowMembersPanel] = useState(false);
-  const [expandedRoom, setExpandedRoom] = useState<RoomDto | null>(null);
-  const [is3DViewOpen, setIs3DViewOpen] = useState(false); // Track 3D view status
+    const [showMembersPanel, setShowMembersPanel] = useState(false);
+    const [expandedRoom, setExpandedRoom] = useState<RoomDto | null>(null);
+    const [is3DViewOpen, setIs3DViewOpen] = useState(false); // Track 3D view status
+    const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
+    const [roomToEdit, setRoomToEdit] = useState<RoomDto | null>(null);
 
-  // State for fetched data
+    // State for fetched data
   const [community, setCommunity] = useState<{
     id: number;
     name: string;
@@ -172,6 +174,22 @@ export function CommunityPage() {
     } catch (err) {
       console.error('Failed to delete room:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete room');
+    }
+  };
+
+  const handleEditRoom = (room: RoomDto) => {
+    setRoomToEdit(room);
+    setIsEditRoomModalOpen(true);
+  };
+
+  const handleRoomUpdated = async () => {
+    try {
+      const roomsData = await getCommunityRooms(communityId);
+      setRooms(roomsData);
+      setIsEditRoomModalOpen(false);
+      setRoomToEdit(null);
+    } catch (err) {
+      console.error('Failed to refresh rooms after update:', err);
     }
   };
 
@@ -349,15 +367,16 @@ export function CommunityPage() {
                 is3DViewOpen={is3DViewOpen}
                 setIs3DViewOpen={setIs3DViewOpen}
               />
-              <ExpandedRoomRouteWrapper 
-                rooms={rooms}
-                community={community}
-                userRole={userRole}
-                stats={stats}
-                onJoinRoom={handleJoinRoom}
-                onDeleteRoom={handleDeleteRoom}
-                onBack={handleBackToRoomStack}
-              />
+        <ExpandedRoomRouteWrapper 
+          rooms={rooms}
+          community={community}
+          userRole={userRole}
+          stats={stats}
+          onJoinRoom={handleJoinRoom}
+          onDeleteRoom={handleDeleteRoom}
+          onEditRoom={handleEditRoom}
+          onBack={handleBackToRoomStack}
+        />
             </>
           } 
         />
@@ -442,6 +461,28 @@ export function CommunityPage() {
         onCreateRoom={handleCreateRoomModalCreate}
         communityId={communityId}
       />
+
+      {/* Edit Room Modal */}
+      {roomToEdit && (
+        <CreateRoomModal
+          isOpen={isEditRoomModalOpen}
+          onClose={() => setIsEditRoomModalOpen(false)}
+          onCreateRoom={handleRoomUpdated}
+          editMode={true}
+          roomData={{
+            id: roomToEdit.id.toString(),
+            name: roomToEdit.name,
+            description: roomToEdit.config || '',
+            roomType: roomToEdit.name.toLowerCase() === 'announcements' ? 'Announcement' : (
+              roomToEdit.type === RoomType.GENERAL ? 'General Chat' :
+              roomToEdit.type === RoomType.VOICE_CHAT ? 'Voice Call' :
+              roomToEdit.type === RoomType.POSTS ? 'Meme & Post' :
+              roomToEdit.type === RoomType.VS_BATTLE ? 'VS Battle' : 'General Chat'
+            ),
+          }}
+          communityId={communityId}
+        />
+      )}
     </div>
   );
 }
@@ -565,7 +606,7 @@ function CommunityMainView({
   );
 }
 
-function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoom, onDeleteRoom, onBack }: any) {
+function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoom, onDeleteRoom, onEditRoom, onBack }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const room = rooms.find((r: any) => r.id.toString() === roomId);
@@ -581,6 +622,7 @@ function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoo
       onClose={() => onBack ? onBack(roomId || '') : navigate(`/community/${community.id}`)}
       onJoin={() => onJoinRoom(room)}
       onDelete={() => onDeleteRoom(room.id)}
+      onEdit={() => onEditRoom(room)}
     />
   );
 }
@@ -725,6 +767,7 @@ interface ExpandedRoomViewProps {
   onClose: () => void;
   onJoin: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 function ExpandedRoomView({
@@ -735,6 +778,7 @@ function ExpandedRoomView({
   onClose,
   onJoin,
   onDelete,
+  onEdit,
 }: ExpandedRoomViewProps) {
   const isOwner = userRole === MembershipRole.OWNER;
   const roomType = mapRoomTypeToFrontend(room.type);
@@ -870,21 +914,22 @@ function ExpandedRoomView({
               Join Room
             </button>
 
-            {isOwner && (
-              <>
-                <button
-                  className="
-                    flex items-center gap-2
-                    px-6 py-3 rounded-lg
-                    border border-[#28f5cc]
-                    text-[#28f5cc]
-                    hover:bg-[rgba(40,245,204,0.1)]
-                    transition-colors
-                  "
-                >
-                  <Edit2 className="w-5 h-5" />
-                  Edit Room
-                </button>
+              {isOwner && (
+                <>
+                  <button
+                    onClick={onEdit}
+                    className="
+                      flex items-center gap-2
+                      px-6 py-3 rounded-lg
+                      border border-[#28f5cc]
+                      text-[#28f5cc]
+                      hover:bg-[rgba(40,245,204,0.1)]
+                      transition-colors
+                    "
+                  >
+                    <Edit2 className="w-5 h-5" />
+                    Edit Room
+                  </button>
 
                 <button
                   onClick={onDelete}

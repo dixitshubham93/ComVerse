@@ -204,7 +204,7 @@ const currentUser = {
 };
 
 export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace }: CommunityDetailProps) {
-  const [rooms] = useState<Room[]>(mockRooms);
+  const [rooms, setRooms] = useState<Room[]>(mockRooms);
   const [members] = useState<Member[]>(mockMembers);
   const [activeTab, setActiveTab] = useState<'rooms' | 'members'>('rooms');
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -243,7 +243,16 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
   }) => {
     // Handle room creation logic here
     console.log('Creating room:', data);
-    // You can add the room to your state or make an API call
+    const newRoom: Room = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: data.name,
+      description: data.description,
+      totalMembers: 0,
+      activeMembers: 0,
+      tags: [data.roomType],
+      lastActivity: 'Just now',
+    };
+    setRooms(prev => [...prev, newRoom]);
   };
 
   const handleUpdateCommunity = (data: {
@@ -265,7 +274,13 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
   }) => {
     // Handle room update logic here
     console.log('Updating room:', selectedRoomForEdit?.id, data);
-    // Show success toast
+    if (selectedRoomForEdit) {
+      setRooms(prev => prev.map(r => 
+        r.id === selectedRoomForEdit.id 
+          ? { ...r, name: data.name, description: data.description, tags: [data.roomType] } 
+          : r
+      ));
+    }
     setSelectedRoomForEdit(null);
   };
 
