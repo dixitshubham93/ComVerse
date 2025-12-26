@@ -149,10 +149,12 @@ export interface UpdateRoomRequest {
 
 export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promise<RoomDto> => {
   try {
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
       body: JSON.stringify(data),
     });
@@ -162,8 +164,11 @@ export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promi
       throw new Error(`Failed to update room: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const roomData: RoomDto = await response.json();
-    return roomData;
+    const result = await response.json();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    throw new Error('Invalid response from server');
   } catch (error) {
     console.error('Error updating room:', error);
     throw error;
