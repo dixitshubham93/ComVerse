@@ -713,19 +713,19 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden relative ml-20">
+    <div className="min-h-screen w-full overflow-hidden relative ml-16 lg:ml-20">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-30"
+        className="sticky top-0 z-50"
         style={{
           background: 'rgba(5, 20, 20, 0.85)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(40, 245, 204, 0.08)',
+          borderBottom: '1px solid rgba(40, 245, 204, 0.1)',
         }}
       >
-        <div className="px-4 py-4">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.button
