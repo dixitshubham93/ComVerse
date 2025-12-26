@@ -4,7 +4,7 @@
  */
 
 // Base API URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
