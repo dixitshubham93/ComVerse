@@ -14,7 +14,7 @@ import { VoiceCallRoom } from './VoiceCallRoom.tsx';
 import { MemesPostsPage } from './MemesPostsPage';
 import { CreateRoomModal } from '../components/CreateRoomModal';
 import { getCommunityById, getCommunityStats, CommunityType, CommunityStatsDto } from '../api/communityApi';
-import { getCommunityRooms, RoomDto, RoomType, deleteRoom } from '../api/roomApi';
+import { getCommunityRooms, RoomDto, RoomType, deleteRoom, getRoomMetadata } from '../api/roomApi';
 import { ArrowLeft, Users, Trash2, Edit2, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserRole } from '../api/membershipApi';
@@ -799,6 +799,23 @@ function ExpandedRoomView({
 }: ExpandedRoomViewProps) {
   const isOwnerOrAdmin = userRole === MembershipRole.OWNER || userRole === MembershipRole.ADMIN;
   const roomType = mapRoomTypeToFrontend(room.type);
+  const [activeUserCount, setActiveUserCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const metadata = await getRoomMetadata(room.id);
+        setActiveUserCount(metadata.activeUsers);
+      } catch (error) {
+        console.error('Error fetching room metadata:', error);
+      }
+    };
+    fetchMetadata();
+    
+    // Optional: Refresh periodically
+    const interval = setInterval(fetchMetadata, 30000);
+    return () => clearInterval(interval);
+  }, [room.id]);
 
   return (
     <div
@@ -866,19 +883,13 @@ function ExpandedRoomView({
             {room.config || 'No description available.'}
           </p>
 
-            {/* Stats */}
-            <div className="flex justify-center mb-6">
-              <div
-                className="glassmorphism rounded-xl p-4 w-full"
-                style={{ border: '1px solid rgba(40, 245, 204, 0.2)', maxWidth: '240px' }}
-              >
-                <p className="text-[#747c88] text-sm mb-1 text-center">Active Users</p>
-                <p className="text-white text-3xl font-bold text-center">
-                  {/* Deterministic active count for the room */}
-                  {((room.id % 8) + 2)}
-                </p>
-              </div>
+            {/* Active Status */}
+            <div className="flex items-center gap-2 mb-6 bg-[rgba(40,245,204,0.1)] py-2 px-4 rounded-lg w-fit">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#28f5cc] animate-pulse shadow-[0_0_8px_rgba(40,245,204,0.6)]" />
+              <span className="text-[#28f5cc] font-semibold text-sm uppercase tracking-wider">Active</span>
+              <span className="text-white font-bold ml-1">{activeUserCount}</span>
             </div>
+
 
           {/* Room Type */}
           <div className="mb-6">

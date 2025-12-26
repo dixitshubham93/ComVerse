@@ -175,3 +175,32 @@ export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promi
   }
 };
 
+/**
+ * Fetches metadata for a specific room (active users, etc.)
+ * @param roomId - The ID of the room
+ * @returns Promise resolving to metadata object
+ */
+export const getRoomMetadata = async (roomId: number): Promise<{ activeUsers: number; users: any[] }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/voice-metadata`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch room metadata: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return { activeUsers: 0, users: [] };
+  } catch (error) {
+    console.error('Error fetching room metadata:', error);
+    return { activeUsers: 0, users: [] };
+  }
+};
+
