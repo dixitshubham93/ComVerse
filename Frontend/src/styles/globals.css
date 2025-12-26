@@ -149,3 +149,142 @@ button {
   50% { transform: scale(1.2); opacity: 0.8; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* Cyberpunk 3D Theme - Neon Cyan Design System */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Dark cyberpunk background */
+    --background: 180 40% 4%;
+    --foreground: 165 80% 95%;
+
+    /* Card surfaces with depth */
+    --card: 180 35% 6%;
+    --card-foreground: 165 80% 95%;
+
+    /* Popover/dropdown */
+    --popover: 180 35% 5%;
+    --popover-foreground: 165 80% 95%;
+
+    /* Neon cyan primary */
+    --primary: 165 90% 55%;
+    --primary-foreground: 180 40% 4%;
+
+    /* Darker teal secondary */
+    --secondary: 170 50% 12%;
+    --secondary-foreground: 165 80% 90%;
+
+    /* Muted surfaces */
+    --muted: 180 30% 10%;
+    --muted-foreground: 165 30% 55%;
+
+    /* Accent highlights */
+    --accent: 165 85% 45%;
+    --accent-foreground: 180 40% 4%;
+
+    /* Destructive red with neon glow */
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders with subtle glow */
+    --border: 165 40% 15%;
+    --input: 180 30% 12%;
+    --ring: 165 90% 55%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar - darker variant */
+    --sidebar-background: 180 45% 3%;
+    --sidebar-foreground: 165 60% 80%;
+    --sidebar-primary: 165 90% 55%;
+    --sidebar-primary-foreground: 180 40% 4%;
+    --sidebar-accent: 170 50% 12%;
+    --sidebar-accent-foreground: 165 80% 90%;
+    --sidebar-border: 165 40% 12%;
+    --sidebar-ring: 165 90% 55%;
+
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(170 65% 35%) 0%, hsl(165 90% 55%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(180 35% 8%) 0%, hsl(180 40% 4%) 100%);
+    --gradient-glow: radial-gradient(circle, hsl(165 90% 55% / 0.3) 0%, transparent 70%);
+    
+    /* Shadows with glow effect */
+    --shadow-glow: 0 0 30px hsl(165 90% 55% / 0.2);
+    --shadow-card: 0 10px 40px hsl(0 0% 0% / 0.4), 0 0 20px hsl(165 90% 55% / 0.05);
+    --shadow-hover: 0 20px 60px hsl(0 0% 0% / 0.5), 0 0 40px hsl(165 90% 55% / 0.15);
+  }
+
+  .dark {
+    --background: 180 40% 4%;
+    --foreground: 165 80% 95%;
+    --card: 180 35% 6%;
+    --card-foreground: 165 80% 95%;
+    --popover: 180 35% 5%;
+    --popover-foreground: 165 80% 95%;
+    --primary: 165 90% 55%;
+    --primary-foreground: 180 40% 4%;
+    --secondary: 170 50% 12%;
+    --secondary-foreground: 165 80% 90%;
+    --muted: 180 30% 10%;
+    --muted-foreground: 165 30% 55%;
+    --accent: 165 85% 45%;
+    --accent-foreground: 180 40% 4%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 165 40% 15%;
+    --input: 180 30% 12%;
+    --ring: 165 90% 55%;
+    --sidebar-background: 180 45% 3%;
+    --sidebar-foreground: 165 60% 80%;
+    --sidebar-primary: 165 90% 55%;
+    --sidebar-primary-foreground: 180 40% 4%;
+    --sidebar-accent: 170 50% 12%;
+    --sidebar-accent-foreground: 165 80% 90%;
+    --sidebar-border: 165 40% 12%;
+    --sidebar-ring: 165 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+  }
+}
+
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(165 90% 55% / 0.3), 0 0 40px hsl(165 90% 55% / 0.15);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 10px hsl(165 90% 55% / 0.5), 0 0 20px hsl(165 90% 55% / 0.3);
+  }
+
+  .glass-panel {
+    background: linear-gradient(145deg, hsl(180 35% 8% / 0.9) 0%, hsl(180 40% 4% / 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(165 40% 15% / 0.5);
+  }
+
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(165 90% 55% / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(165 90% 55% / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .neon-border {
+    border: 1px solid hsl(165 90% 55% / 0.3);
+    box-shadow: inset 0 0 20px hsl(165 90% 55% / 0.1);
+  }
+}
