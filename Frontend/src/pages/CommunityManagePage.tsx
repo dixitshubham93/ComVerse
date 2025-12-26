@@ -42,8 +42,6 @@ export function CommunityManagePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rooms' | 'members'>('rooms');
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
-  const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
-  const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
   const [deleteRoomId, setDeleteRoomId] = useState<number | null>(null);
   const [deleteCommunityConfirm, setDeleteCommunityConfirm] = useState(false);
   const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
@@ -516,22 +514,17 @@ export function CommunityManagePage() {
                           <h3 className="text-white text-base font-semibold mb-1">{room.name}</h3>
                           <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
                         </div>
-                          <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <button 
-                              onClick={() => {
-                                setEditingRoom(room);
-                                setIsEditRoomModalOpen(true);
-                              }}
-                              className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
-                              title="Edit Room"
-                              style={{
-                                background: 'rgba(40, 245, 204, 0.1)',
-                                border: '1px solid rgba(40, 245, 204, 0.25)',
-                              }}
-                            >
-                              <Pencil className="w-4 h-4 text-[#28f5cc]" />
-                            </button>
-
+                        <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <button 
+                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
+                            title="Edit Room"
+                            style={{
+                              background: 'rgba(40, 245, 204, 0.1)',
+                              border: '1px solid rgba(40, 245, 204, 0.25)',
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 text-[#28f5cc]" />
+                          </button>
                           {userRole === MembershipRole.OWNER && (
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
@@ -684,21 +677,6 @@ export function CommunityManagePage() {
           const roomsData = await getCommunityRooms(communityId);
           setRooms(roomsData);
         }}
-        communityId={communityId}
-      />
-
-      <CreateRoomModal
-        isOpen={isEditRoomModalOpen}
-        onClose={() => {
-          setIsEditRoomModalOpen(false);
-          setEditingRoom(null);
-        }}
-        onCreateRoom={async () => {
-          const roomsData = await getCommunityRooms(communityId);
-          setRooms(roomsData);
-        }}
-        editMode={true}
-        roomData={editingRoom || undefined}
         communityId={communityId}
       />
 
