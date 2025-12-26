@@ -866,29 +866,19 @@ function ExpandedRoomView({
             {room.config || 'No description available.'}
           </p>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div
-              className="glassmorphism rounded-xl p-4"
-              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
-            >
-              <p className="text-[#747c88] text-sm mb-1">Active Now</p>
-              <p className="text-white text-2xl font-bold">
-                {/* Deterministic active count for the room */}
-                {((room.id % 8) + 2)}
-              </p>
+            {/* Stats */}
+            <div className="flex justify-center mb-6">
+              <div
+                className="glassmorphism rounded-xl p-4 w-full"
+                style={{ border: '1px solid rgba(40, 245, 204, 0.2)', maxWidth: '240px' }}
+              >
+                <p className="text-[#747c88] text-sm mb-1 text-center">Active Users</p>
+                <p className="text-white text-3xl font-bold text-center">
+                  {/* Deterministic active count for the room */}
+                  {((room.id % 8) + 2)}
+                </p>
+              </div>
             </div>
-
-            <div
-              className="glassmorphism rounded-xl p-4"
-              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
-            >
-              <p className="text-[#747c88] text-sm mb-1">Community Online</p>
-              <p className="text-white text-2xl font-bold">
-                {stats?.activeMembers || 0}
-              </p>
-            </div>
-          </div>
 
           {/* Room Type */}
           <div className="mb-6">
