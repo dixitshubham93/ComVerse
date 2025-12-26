@@ -175,7 +175,7 @@ export function CreateCommunityModal({ isOpen, onClose, onCreateCommunity, editM
   const isFormValid = name.trim() && description.trim() && communityType;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-2xl p-0 border-0 overflow-hidden max-h-[90vh] flex flex-col"
         style={{

@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { X, Hash, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { createRoom, RoomType } from '../api/roomApi';
+import { createRoom, updateRoom, RoomType } from '../api/roomApi';
 
 
 // Map frontend display names to backend RoomType enum
@@ -141,7 +141,7 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
   const isFormValid = name.trim() && description.trim() && roomType;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-2xl p-0 border-0 overflow-hidden max-h-[90vh] flex flex-col"
         style={{
