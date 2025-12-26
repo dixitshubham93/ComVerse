@@ -85,16 +85,22 @@ const CarouselCard = ({
         }} />
 
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-[4/5] overflow-hidden bg-black/40 flex items-center justify-center">
+          {/* Blurred background for "fully visible" effect without empty bars */}
+          <img
+            src={post.mediaUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
+          />
           <img
             src={post.mediaUrl}
             alt={post.caption || 'Post'}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+            className="relative z-10 w-full h-full object-contain transition-transform duration-500 hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-20" />
           
           {/* User info overlay */}
-          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
+          <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-30">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black"
               style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
@@ -105,15 +111,19 @@ const CarouselCard = ({
           </div>
         </div>
 
-        {/* Caption */}
-        {post.caption && (
-          <div className="px-4 py-3">
-            <p className="text-white/80 text-sm line-clamp-2">{post.caption}</p>
+        {/* Content Area (Fixed Height for uniform cards) */}
+        <div className="flex flex-col flex-1">
+          {/* Caption slot with fixed height */}
+          <div className="px-4 py-3 h-[64px]">
+            {post.caption ? (
+              <p className="text-white/80 text-sm line-clamp-2">{post.caption}</p>
+            ) : (
+              <p className="text-white/20 text-xs italic">No caption</p>
+            )}
           </div>
-        )}
-
-        {/* Actions */}
-        <div className="px-4 pb-4 flex items-center gap-4">
+  
+          {/* Actions */}
+          <div className="px-4 pb-4 mt-auto flex items-center gap-4">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
