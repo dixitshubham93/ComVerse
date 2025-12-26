@@ -713,16 +713,17 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden relative ml-16 lg:ml-20">
+    <div className="min-h-screen overflow-hidden relative ml-16 lg:ml-20">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="sticky top-0 z-50"
         style={{
-          background: 'rgba(5, 20, 20, 0.85)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          background: 'rgba(42, 52, 68, 0.8)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(40, 245, 204, 0.1)',
+          borderBottom: '1px solid rgba(4, 55, 47, 0.5)',
         }}
       >
         <div className="px-6 py-4">
