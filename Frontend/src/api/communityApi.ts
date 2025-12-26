@@ -3,15 +3,8 @@
  * Handles all community-related API calls
  */
 
-// Base API URL utility
-const getBaseUrl = () => {
-  let url = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
-  url = url.replace(/\/$/, '');
-  // If the URL already ends with /api, return it, otherwise append it
-  return url.endsWith('/api') ? url : `${url}/api`;
-};
-
-const API_BASE_URL = getBaseUrl();
+// Base API URL from environment variable
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
 
 /**
  * Community Type Enum

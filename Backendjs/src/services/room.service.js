@@ -52,18 +52,3 @@ export const deleteRoom = async (roomId) => {
 
   return { message: "Room deleted successfully" };
 };
-
-export const updateRoomService = async (roomId, data) => {
-  const room = await prisma.room.findUnique({
-    where: { id: roomId },
-  });
-
-  if (!room) throw new AppError("Room not found", 404);
-
-    return prisma.room.update({
-    where: { id: roomId },
-    data: {
-      ...data
-    },
-  });
-};

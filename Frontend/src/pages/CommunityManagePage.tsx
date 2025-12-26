@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Plus, Pencil, Trash2, TrendingUp, Activity, Hash, Shield, Crown, MoreVertical } from 'lucide-react';
 import { CreateRoomModal } from '../components/CreateRoomModal';
-import { EditRoomModal } from '../components/EditRoomModal';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CommunitySidebar } from '../components/CommunitySidebar';
 import { getCommunityById, getCommunityStats, CommunityType, CommunityStatsDto, deleteCommunity } from '../api/communityApi';
@@ -43,8 +42,6 @@ export function CommunityManagePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'rooms' | 'members'>('rooms');
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
-  const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
-  const [editingRoom, setEditingRoom] = useState<RoomDto | null>(null);
   const [deleteRoomId, setDeleteRoomId] = useState<number | null>(null);
   const [deleteCommunityConfirm, setDeleteCommunityConfirm] = useState(false);
   const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
@@ -96,17 +93,6 @@ export function CommunityManagePage() {
 
     fetchData();
   }, [communityId, user?.id, id, navigate]);
-
-  const handleEditRoom = (room: RoomDto) => {
-    setEditingRoom(room);
-    setIsEditRoomModalOpen(true);
-  };
-
-  const handleRoomUpdate = (updatedRoom: RoomDto) => {
-    setRooms(prevRooms => 
-      prevRooms.map(r => r.id === updatedRoom.id ? updatedRoom : r)
-    );
-  };
 
   const handleDeleteRoom = async (roomId: number) => {
     if (!window.confirm('Delete this room permanently?\nThis action cannot be undone.')) {
@@ -524,32 +510,21 @@ export function CommunityManagePage() {
                         }}>
                           <Hash className="w-5 h-5 text-[#28f5cc]" />
                         </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-white text-base font-semibold">{room.name}</h3>
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" style={{
-                                  background: 'rgba(40, 245, 204, 0.1)',
-                                  color: '#28f5cc',
-                                  border: '1px solid rgba(40, 245, 204, 0.2)',
-                                }}>
-                                  {room.type ? room.type.replace('_', ' ') : 'GENERAL'}
-                                </span>
-                            </div>
-                            <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <button 
-                              onClick={() => handleEditRoom(room)}
-                              className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
-                              title="Edit Room"
-                              style={{
-                                background: 'rgba(40, 245, 204, 0.1)',
-                                border: '1px solid rgba(40, 245, 204, 0.25)',
-                              }}
-                            >
-                              <Pencil className="w-4 h-4 text-[#28f5cc]" />
-                            </button>
-
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white text-base font-semibold mb-1">{room.name}</h3>
+                          <p className="text-[#747c88] text-sm line-clamp-2">{room.config || 'No description provided'}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <button 
+                            className="p-2 rounded-lg transition-all duration-200 hover:scale-110" 
+                            title="Edit Room"
+                            style={{
+                              background: 'rgba(40, 245, 204, 0.1)',
+                              border: '1px solid rgba(40, 245, 204, 0.25)',
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 text-[#28f5cc]" />
+                          </button>
                           {userRole === MembershipRole.OWNER && (
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
@@ -703,13 +678,6 @@ export function CommunityManagePage() {
           setRooms(roomsData);
         }}
         communityId={communityId}
-      />
-
-      <EditRoomModal
-        isOpen={isEditRoomModalOpen}
-        onClose={() => setIsEditRoomModalOpen(false)}
-        onUpdateRoom={handleRoomUpdate}
-        room={editingRoom}
       />
 
       {/* Delete Modal */}

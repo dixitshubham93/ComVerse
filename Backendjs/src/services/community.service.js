@@ -95,9 +95,8 @@ export const getCommunityStats = async (id) => {
     if (!community) throw new AppError("Community not found", 404);
 
     const totalMembers = community.memberships.length;
-    // For now, return a more realistic active count (between 20% and 40% of total)
-    // In a production app, this would be tracked via a presence service/Redis.
-    const activeMembers = Math.max(1, Math.floor(totalMembers * (0.2 + Math.random() * 0.2)));
+    // For now, consider all members as active. In a real app, you'd track activity.
+    const activeMembers = totalMembers;
 
     return {
       totalMembers,

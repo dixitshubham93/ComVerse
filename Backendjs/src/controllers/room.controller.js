@@ -2,8 +2,7 @@
 import { 
   createRoom, 
   getRoomsByCommunity, 
-  deleteRoom as deleteRoomService,
-  updateRoomService 
+  deleteRoom as deleteRoomService 
 } from "../services/room.service.js";
 import { getUsersInRoom } from "../services/presence.service.js";
 
@@ -62,7 +61,6 @@ export const getByCommunity = async (req, res, next) => {
       ...r,
       id: Number(r.id),
       communityId: Number(r.communityId),
-      activeUsers: getUsersInRoom(String(r.id)).length,
     }));
     
     res.json({ success: true, data: serializedRooms });
@@ -75,25 +73,6 @@ export const deleteRoom = async (req, res, next) => {
   try {
     const result = await deleteRoomService(BigInt(req.params.id));
     res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const update = async (req, res, next) => {
-  try {
-    const room = await updateRoomService(
-      BigInt(req.params.id),
-      req.body
-    );
-
-    const serializedRoom = {
-      ...room,
-      id: Number(room.id),
-      communityId: Number(room.communityId),
-    };
-
-    res.json({ success: true, data: serializedRoom });
   } catch (err) {
     next(err);
   }

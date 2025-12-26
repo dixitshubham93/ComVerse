@@ -453,18 +453,18 @@ function Community3DView({ community, rooms, onRoomSelect, onBack }: any) {
   const navigate = useNavigate();
 
   // Map rooms for the 3D view
-    const mappedRooms = rooms.map((room: any) => {
-      const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
-      const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
-      
-      return {
-        id: room.id.toString(),
-        name: room.name,
-        description: room.config || '',
-        activeUsers: room.activeUsers || 0, 
-        type: frontendType,
-      };
-    }).filter((room: any) => room.type === stackType);
+  const mappedRooms = rooms.map((room: any) => {
+    const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
+    const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
+    
+    return {
+      id: room.id.toString(),
+      name: room.name,
+      description: room.config || '',
+      activeUsers: 0, 
+      type: frontendType,
+    };
+  }).filter((room: any) => room.type === stackType);
 
   if (!stackType || !(stackType in stackConfig)) {
     return null;
@@ -488,22 +488,22 @@ function CommunityMainView({
   community, stats, rooms, userRole, onRoomSelect, onStackSelect, onCreateRoom, is3DViewOpen, setIs3DViewOpen 
 }: any) {
   // Map rooms to frontend format for StackedRoomCards
-    const mappedRooms = rooms.map((room: any) => {
-      const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
-      const defaultDescription = isAnnouncementRoom 
-        ? 'Announcements and important updates for this community.'
-        : '';
-      const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
-      
-      return {
-        id: room.id.toString(),
-        name: room.name,
-        description: room.config || defaultDescription,
-        activeUsers: room.activeUsers || 0, 
-        type: frontendType,
-        frontendType: frontendType,
-      };
-    });
+  const mappedRooms = rooms.map((room: any) => {
+    const isAnnouncementRoom = room.name.toLowerCase() === 'announcements';
+    const defaultDescription = isAnnouncementRoom 
+      ? 'Announcements and important updates for this community.'
+      : '';
+    const frontendType = isAnnouncementRoom ? 'announcements' : mapRoomTypeToFrontend(room.type);
+    
+    return {
+      id: room.id.toString(),
+      name: room.name,
+      description: room.config || defaultDescription,
+      activeUsers: 0, 
+      type: frontendType,
+      frontendType: frontendType,
+    };
+  });
 
   return (
     <div className="relative ml-16 lg:ml-20 min-h-screen">
@@ -805,28 +805,28 @@ function ExpandedRoomView({
             {room.config || 'No description available.'}
           </p>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div
-                className="glassmorphism rounded-xl p-4"
-                style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
-              >
-                <p className="text-[#747c88] text-sm mb-1">Active in Room</p>
-                <p className="text-[#28f5cc] text-2xl font-bold">
-                  {room.activeUsers || 0}
-                </p>
-              </div>
-
-              <div
-                className="glassmorphism rounded-xl p-4"
-                style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
-              >
-                <p className="text-[#747c88] text-sm mb-1">Community Members</p>
-                <p className="text-white text-2xl font-bold">
-                  {stats?.totalMembers || 0}
-                </p>
-              </div>
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div
+              className="glassmorphism rounded-xl p-4"
+              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
+            >
+              <p className="text-[#747c88] text-sm mb-1">Active Members</p>
+              <p className="text-white text-2xl font-bold">
+                {stats?.activeMembers || 0}
+              </p>
             </div>
+
+            <div
+              className="glassmorphism rounded-xl p-4"
+              style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
+            >
+              <p className="text-[#747c88] text-sm mb-1">Total Members</p>
+              <p className="text-white text-2xl font-bold">
+                {stats?.totalMembers || 0}
+              </p>
+            </div>
+          </div>
 
           {/* Room Type */}
           <div className="mb-6">

@@ -3,15 +3,8 @@
  * Handles all room-related API calls
  */
 
-// Base API URL utility
-const getBaseUrl = () => {
-  let url = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
-  url = url.replace(/\/$/, '');
-  // If the URL already ends with /api, return it, otherwise append it
-  return url.endsWith('/api') ? url : `${url}/api`;
-};
-
-const API_BASE_URL = getBaseUrl();
+// Base API URL from environment variable
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
 
 
 /**
@@ -35,7 +28,6 @@ export interface RoomDto {
   type: RoomType;
   config: string | null;
   isDefaultRoom: boolean;
-  activeUsers?: number;
 }
 
 /**
@@ -157,12 +149,10 @@ export interface UpdateRoomRequest {
 
 export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promise<RoomDto> => {
   try {
-    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
       body: JSON.stringify(data),
     });
@@ -172,11 +162,8 @@ export const updateRoom = async (roomId: number, data: UpdateRoomRequest): Promi
       throw new Error(`Failed to update room: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    const result = await response.json();
-    if (result.success && result.data) {
-      return result.data;
-    }
-    throw new Error('Invalid response from server');
+    const roomData: RoomDto = await response.json();
+    return roomData;
   } catch (error) {
     console.error('Error updating room:', error);
     throw error;
