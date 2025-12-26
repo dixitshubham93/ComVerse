@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { X, Hash, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { createRoom, RoomType } from '../api/roomApi';
+import { createRoom, updateRoom, RoomType } from '../api/roomApi';
 
 
 // Map frontend display names to backend RoomType enum
@@ -12,6 +12,15 @@ const ROOM_TYPE_MAP: Record<string, RoomType> = {
   'Voice Call': RoomType.VOICE_CHAT,
   'Meme & Post': RoomType.POSTS,
   'VS Battle': RoomType.VS_BATTLE,
+};
+
+// Reverse map for display
+const REVERSE_ROOM_TYPE_MAP: Record<RoomType, string> = {
+  [RoomType.ANNOUNCEMENT]: 'Announcement',
+  [RoomType.GENERAL]: 'General Chat',
+  [RoomType.VOICE_CHAT]: 'Voice Call',
+  [RoomType.POSTS]: 'Meme & Post',
+  [RoomType.VS_BATTLE]: 'VS Battle',
 };
 
 const ROOM_TYPES = [
@@ -25,19 +34,13 @@ const ROOM_TYPES = [
 interface CreateRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateRoom: (data: {
-    name: string;
-    description: string;
-    roomType: string;
-    isPrivate: boolean;
-  }) => void;
+  onCreateRoom: (data?: any) => void;
   editMode?: boolean;
   roomData?: {
-    id?: string;
+    id: number;
     name: string;
-    description: string;
-    roomType?: string;
-    isPrivate?: boolean;
+    type: RoomType;
+    config: string | null;
   };
   communityId?: number; // Add communityId prop
 }
@@ -55,9 +58,8 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
   useEffect(() => {
     if (editMode && roomData) {
       setName(roomData.name || '');
-      setDescription(roomData.description || '');
-      setRoomType(roomData.roomType || '');
-      setIsPrivate(roomData.isPrivate || false);
+      setDescription(roomData.config || '');
+      setRoomType(REVERSE_ROOM_TYPE_MAP[roomData.type] || '');
     } else if (!isOpen) {
       // Reset form when modal closes
       setName('');
@@ -73,11 +75,6 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
       return;
     }
 
-    if (!communityId) {
-      setError('Community ID is required');
-      return;
-    }
-
     setIsSaving(true);
     setError(null);
 
@@ -87,20 +84,26 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
         throw new Error('Invalid room type');
       }
 
-      const createdRoom = await createRoom(communityId, {
-        name: name.trim(),
-        type: backendType,
-        config: description.trim() || null,
-        isDefaultRoom: false,
-      });
+      if (editMode && roomData) {
+        await updateRoom(roomData.id, {
+          name: name.trim(),
+          type: backendType,
+          config: description.trim(),
+        });
+      } else {
+        if (!communityId) {
+          throw new Error('Community ID is required');
+        }
+        await createRoom(communityId, {
+          name: name.trim(),
+          type: backendType,
+          config: description.trim() || null,
+          isDefaultRoom: false,
+        });
+      }
 
-      // Call the callback with the created room
-      onCreateRoom({
-        name: createdRoom.name,
-        description: description.trim(),
-        roomType: roomType,
-        isPrivate: isPrivate,
-      });
+      // Call the callback
+      onCreateRoom();
 
       // Reset form
       if (!editMode) {
@@ -111,8 +114,8 @@ export function CreateRoomModal({ isOpen, onClose, onCreateRoom, editMode = fals
       }
       onClose();
     } catch (err) {
-      console.error('Failed to create room:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create room. Please try again.');
+      console.error(editMode ? 'Failed to update room:' : 'Failed to create room:', err);
+      setError(err instanceof Error ? err.message : `Failed to ${editMode ? 'update' : 'create'} room. Please try again.`);
     } finally {
       setIsSaving(false);
     }

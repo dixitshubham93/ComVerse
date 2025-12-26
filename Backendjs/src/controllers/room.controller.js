@@ -2,9 +2,26 @@
 import { 
   createRoom, 
   getRoomsByCommunity, 
-  deleteRoom as deleteRoomService 
+  deleteRoom as deleteRoomService,
+  updateRoom as updateRoomService
 } from "../services/room.service.js";
 import { getUsersInRoom } from "../services/presence.service.js";
+
+export const update = async (req, res, next) => {
+  try {
+    const room = await updateRoomService(BigInt(req.params.id), req.body);
+
+    const serializedRoom = {
+      ...room,
+      id: Number(room.id),
+      communityId: Number(room.communityId),
+    };
+
+    res.json({ success: true, data: serializedRoom });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const getVoiceMetadata = async (req, res, next) => {
   try {
