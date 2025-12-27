@@ -20,6 +20,24 @@ body {
 html {
   scroll-behavior: smooth;
 }
+/* Premium thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(40, 245, 204, 0.35);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(40, 245, 204, 0.55);
+}
+
 
 h1 {
   font-size: 3.5rem;

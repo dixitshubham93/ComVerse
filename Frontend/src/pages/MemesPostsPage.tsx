@@ -67,41 +67,41 @@ const CarouselCard = ({
       onClick={onSelect}
       whileHover={{ scale: scale * 1.05 }}
     >
-      <div
-        className={`relative w-[300px] h-[520px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
-          isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
-        }`}
-        style={{
-          background: 'linear-gradient(145deg, rgba(10, 35, 35, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
-          border: '1px solid rgba(40, 245, 204, 0.15)',
-          boxShadow: isActive 
-            ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(40, 245, 204, 0.2), inset 0 1px 0 rgba(40, 245, 204, 0.1)'
-            : '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(40, 245, 204, 0.05)',
-        }}
-      >
-        {/* Glow effect */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(40, 245, 204, 0.3) 0%, transparent 60%)',
-        }} />
+        <div
+          className={`relative w-[360px] h-[600px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
+            isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
+          }`}
+          style={{
+            background: 'linear-gradient(145deg, rgba(10, 35, 35, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
+            border: '1px solid rgba(40, 245, 204, 0.15)',
+            boxShadow: isActive 
+              ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(40, 245, 204, 0.2), inset 0 1px 0 rgba(40, 245, 204, 0.1)'
+              : '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(40, 245, 204, 0.05)',
+          }}
+        >
+          {/* Glow effect */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(40, 245, 204, 0.3) 0%, transparent 60%)',
+          }} />
 
-        {/* Header Area */}
-        <div className="px-4 py-3 flex items-center gap-2 z-30 border-b border-white/5 bg-black/20">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0 overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-          >
-            {post.user?.avatarUrl ? (
-              <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              post.user?.username?.charAt(0).toUpperCase() || '?'
-            )}
+          {/* Header Area */}
+          <div className="px-4 py-3 flex items-center gap-2 z-30 border-b border-white/5 bg-black/20">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0 overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+            >
+              {post.user?.avatarUrl ? (
+                <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                post.user?.username?.charAt(0).toUpperCase() || '?'
+              )}
+            </div>
+            <span className="text-white text-sm font-medium truncate">{post.user?.username}</span>
+            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
           </div>
-          <span className="text-white text-sm font-medium truncate">{post.user?.username}</span>
-          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
-        </div>
 
-        {/* Image Area (Fixed Height) */}
-        <div className="relative w-full h-[340px] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
+          {/* Image Area (Fixed Height) */}
+          <div className="relative w-full h-[400px] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
           {/* Blurred background for aesthetic effect */}
           <img
             src={post.mediaUrl}
@@ -195,75 +195,75 @@ const Carousel3D = ({
   const dragStartRotation = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const radius = 450;
-  const anglePerCard = 360 / posts.length;
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    dragStartX.current = e.clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStartX.current;
-    const sensitivity = 0.3;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  }, [isDragging]);
-
-  const handleMouseUp = useCallback(() => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    // Snap to nearest card
-    const snappedRotation = Math.round(rotation / anglePerCard) * anglePerCard;
-    setRotation(snappedRotation);
-  }, [isDragging, rotation, anglePerCard]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    dragStartX.current = e.touches[0].clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.touches[0].clientX - dragStartX.current;
-    const sensitivity = 0.3;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  }, [isDragging]);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleMouseUp);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleMouseUp);
+    const radius = 500;
+    const anglePerCard = 360 / posts.length;
+  
+    const handleMouseDown = (e: React.MouseEvent) => {
+      setIsDragging(true);
+      dragStartX.current = e.clientX;
+      dragStartRotation.current = rotation;
     };
-  }, [handleMouseMove, handleMouseUp, handleTouchMove]);
-
-  const navigateCarousel = (direction: 'prev' | 'next') => {
-    const newRotation = direction === 'next' 
-      ? rotation - anglePerCard 
-      : rotation + anglePerCard;
-    setRotation(newRotation);
-  };
-
-  const activeIndex = Math.round(-rotation / anglePerCard) % posts.length;
-  const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
-
-  return (
-    <div className="relative h-[500px] md:h-[600px] w-full flex items-center justify-center overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] rounded-full opacity-10" style={{
-          background: 'radial-gradient(circle, rgba(40, 245, 204, 0.5) 0%, transparent 60%)',
-        }} />
-      </div>
+  
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - dragStartX.current;
+      const sensitivity = 0.3;
+      setRotation(dragStartRotation.current + deltaX * sensitivity);
+    }, [isDragging]);
+  
+    const handleMouseUp = useCallback(() => {
+      if (!isDragging) return;
+      setIsDragging(false);
+      // Snap to nearest card
+      const snappedRotation = Math.round(rotation / anglePerCard) * anglePerCard;
+      setRotation(snappedRotation);
+    }, [isDragging, rotation, anglePerCard]);
+  
+    const handleTouchStart = (e: React.TouchEvent) => {
+      setIsDragging(true);
+      dragStartX.current = e.touches[0].clientX;
+      dragStartRotation.current = rotation;
+    };
+  
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.touches[0].clientX - dragStartX.current;
+      const sensitivity = 0.3;
+      setRotation(dragStartRotation.current + deltaX * sensitivity);
+    }, [isDragging]);
+  
+    useEffect(() => {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleMouseUp);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleMouseUp);
+      };
+    }, [handleMouseMove, handleMouseUp, handleTouchMove]);
+  
+    const navigateCarousel = (direction: 'prev' | 'next') => {
+      const newRotation = direction === 'next' 
+        ? rotation - anglePerCard 
+        : rotation + anglePerCard;
+      setRotation(newRotation);
+    };
+  
+    const activeIndex = Math.round(-rotation / anglePerCard) % posts.length;
+    const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
+  
+    return (
+      <div className="relative h-[600px] md:h-[700px] w-full flex items-center justify-center overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[800px] h-[800px] rounded-full opacity-10" style={{
+            background: 'radial-gradient(circle, rgba(40, 245, 204, 0.5) 0%, transparent 60%)',
+          }} />
+        </div>
 
       {/* 3D Container */}
       <div
@@ -1009,39 +1009,74 @@ export function MemesPostsPage({
                           autoFocus
                         />
                             {uploadPreview && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="relative mt-3 mx-auto rounded-lg overflow-hidden bg-black/40 w-[180px] aspect-[4/5] flex items-center justify-center group shadow-2xl"
-                                style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="
+                                relative mt-3 mx-auto
+                                w-full max-w-[220px]
+                                max-h-[260px]
+                                aspect-[4/5]
+                                rounded-xl overflow-hidden
+                                bg-black/50
+                                flex items-center justify-center
+                                shadow-2xl
+                              "
+                              style={{ border: '1px solid rgba(40, 245, 204, 0.18)' }}
+                            >
+                              {/* Soft blurred backdrop */}
+                              <img
+                                src={uploadPreview}
+                                alt=""
+                                className="
+                                  absolute inset-0
+                                  w-full h-full
+                                  object-cover
+                                  blur-lg
+                                  opacity-25
+                                "
+                              />
+
+                              {/* Actual preview image */}
+                              <img
+                                src={uploadPreview}
+                                alt="Preview"
+                                className="
+                                  relative z-10
+                                  max-w-full
+                                  max-h-full
+                                  object-contain
+                                  rounded-lg
+                                "
+                              />
+
+                              {/* Remove button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => {
+                                  setUploadFile(null);
+                                  setUploadPreview(null);
+                                  setUploadStep('select');
+                                }}
+                                className="
+                                  absolute top-2 right-2
+                                  w-7 h-7
+                                  rounded-lg
+                                  flex items-center justify-center
+                                  bg-black/70
+                                  backdrop-blur
+                                  z-20
+                                "
                               >
-                                {/* Blurred background for aesthetic effect */}
-                                <img
-                                  src={uploadPreview}
-                                  alt=""
-                                  className="absolute inset-0 w-full h-full object-cover blur-xl opacity-20 scale-110"
-                                />
-                                <img
-                                  src={uploadPreview}
-                                  alt="Preview"
-                                  className="relative z-10 w-full h-full object-contain block mx-auto transition-transform duration-700"
-                                />
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => {
-                                    setUploadFile(null);
-                                    setUploadPreview(null);
-                                    setUploadStep('select');
-                                  }}
-                                  className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors z-30"
-                                  style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
-                                >
-                                  <X className="w-3.5 h-3.5 text-white" />
-                                </motion.button>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-20 pointer-events-none" />
-                              </motion.div>
+                                <X className="w-3.5 h-3.5 text-white" />
+                              </motion.button>
+
+                              {/* Bottom gradient for depth */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10" />
+                            </motion.div>
                             )}
+
                       </div>
                     </div>
                   </div>
