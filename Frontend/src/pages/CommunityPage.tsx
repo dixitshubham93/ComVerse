@@ -403,6 +403,7 @@ export function CommunityPage() {
           element={
             <GeneralChatRouteWrapper 
               community={community}
+              rooms={rooms}
               userRole={getRoleString()}
               currentUser={currentUser}
               onBack={handleBackToRoomStack}
@@ -416,6 +417,7 @@ export function CommunityPage() {
           element={
             <AnnouncementChatRouteWrapper 
               community={community}
+              rooms={rooms}
               userRole={getRoleString()}
               currentUser={currentUser}
               onBack={handleBackToRoomStack}
