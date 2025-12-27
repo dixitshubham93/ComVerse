@@ -25,7 +25,6 @@ export interface RoomDto {
   id: number;
   communityId: number;
   name: string;
-  description: string | null;
   type: RoomType;
   config: string | null;
   isDefaultRoom: boolean;
@@ -36,7 +35,6 @@ export interface RoomDto {
  */
 export interface CreateRoomRequest {
   name: string;
-  description?: string | null;
   type: RoomType;
   config?: string | null;
   isDefaultRoom?: boolean;

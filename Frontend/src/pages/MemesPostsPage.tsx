@@ -1008,40 +1008,40 @@ export function MemesPostsPage({
                           className="w-full bg-transparent text-white text-base placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
                           autoFocus
                         />
-                          {uploadPreview && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="relative mt-4 mx-auto rounded-xl overflow-hidden bg-black/40 aspect-[4/5] w-[260px] flex items-center justify-center group"
-                              style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
-                            >
-                              {/* Blurred background for aesthetic effect */}
-                              <img
-                                src={uploadPreview}
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110"
-                              />
-                              <img
-                                src={uploadPreview}
-                                alt="Preview"
-                                className="relative z-10 w-full h-full object-contain block mx-auto transition-transform duration-700"
-                              />
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => {
-                                  setUploadFile(null);
-                                  setUploadPreview(null);
-                                  setUploadStep('select');
-                                }}
-                                className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors z-30"
-                                style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+                            {uploadPreview && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative mt-3 mx-auto rounded-lg overflow-hidden bg-black/40 w-[180px] aspect-[4/5] flex items-center justify-center group shadow-2xl"
+                                style={{ border: '1px solid rgba(40, 245, 204, 0.2)' }}
                               >
-                                <X className="w-4 h-4 text-white" />
-                              </motion.button>
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-20 pointer-events-none" />
-                            </motion.div>
-                          )}
+                                {/* Blurred background for aesthetic effect */}
+                                <img
+                                  src={uploadPreview}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover blur-xl opacity-20 scale-110"
+                                />
+                                <img
+                                  src={uploadPreview}
+                                  alt="Preview"
+                                  className="relative z-10 w-full h-full object-contain block mx-auto transition-transform duration-700"
+                                />
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => {
+                                    setUploadFile(null);
+                                    setUploadPreview(null);
+                                    setUploadStep('select');
+                                  }}
+                                  className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors z-30"
+                                  style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+                                >
+                                  <X className="w-3.5 h-3.5 text-white" />
+                                </motion.button>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-20 pointer-events-none" />
+                              </motion.div>
+                            )}
                       </div>
                     </div>
                   </div>

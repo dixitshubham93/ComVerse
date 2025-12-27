@@ -20,30 +20,28 @@ export const createCommunity = async ({ name, description, bannerUrl, type, user
             joinedAt: new Date(),
           },
         },
-          rooms: {
-            create: [
-              {
-                name: "Announcement",
-                description: "The official broadcast channel for this community. Get updates, events, and important announcements straight from the team.",
-                type: "ANNOUNCEMENT",
-                isDefaultRoom: true,
-                readOnly: true,
-                adminOnly: false,
-                locked: false,
-                createdAt: new Date(),
-              },
-              {
-                name: "General",
-                description: "Chat freely, share ideas, ask questions, and connect with other members in real time.",
-                type: "GENERAL",
-                isDefaultRoom: true,
-                readOnly: false,
-                adminOnly: false,
-                locked: false,
-                createdAt: new Date(),
-              },
-            ],
-          },
+        rooms: {
+          create: [
+            {
+              name: "Announcement",
+              type: "ANNOUNCEMENT",
+              isDefaultRoom: true,
+              readOnly: true,
+              adminOnly: false,
+              locked: false,
+              createdAt: new Date(),
+            },
+            {
+              name: "General",
+              type: "GENERAL",
+              isDefaultRoom: true,
+              readOnly: false,
+              adminOnly: false,
+              locked: false,
+              createdAt: new Date(),
+            },
+          ],
+        },
       },
     });
 

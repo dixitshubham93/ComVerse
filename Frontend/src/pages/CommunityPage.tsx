@@ -403,7 +403,6 @@ export function CommunityPage() {
           element={
             <GeneralChatRouteWrapper 
               community={community}
-              rooms={rooms}
               userRole={getRoleString()}
               currentUser={currentUser}
               onBack={handleBackToRoomStack}
@@ -417,7 +416,6 @@ export function CommunityPage() {
           element={
             <AnnouncementChatRouteWrapper 
               community={community}
-              rooms={rooms}
               userRole={getRoleString()}
               currentUser={currentUser}
               onBack={handleBackToRoomStack}
@@ -646,18 +644,16 @@ function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoo
   );
 }
 
-function GeneralChatRouteWrapper({ community, rooms, userRole, currentUser, onBack, onOpenDM }: any) {
+function GeneralChatRouteWrapper({ community, userRole, currentUser, onBack, onOpenDM }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const id = parseInt(roomId || '0', 10);
   const navigate = useNavigate();
-  const room = rooms.find((r: any) => r.id === id);
 
   return (
     <GeneralChat
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
-      roomName={room?.name || "General Chat"} 
-      roomDescription={room?.description}
+      roomName="General Chat" 
       roomId={id}
       communityId={community.id}
       userRole={userRole}
@@ -670,18 +666,16 @@ function GeneralChatRouteWrapper({ community, rooms, userRole, currentUser, onBa
   );
 }
 
-function AnnouncementChatRouteWrapper({ community, rooms, userRole, currentUser, onBack, onOpenDM }: any) {
+function AnnouncementChatRouteWrapper({ community, userRole, currentUser, onBack, onOpenDM }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const id = parseInt(roomId || '0', 10);
   const navigate = useNavigate();
-  const room = rooms.find((r: any) => r.id === id);
 
   return (
     <AnnouncementChat
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
-      roomName={room?.name || "Announcements"}
-      roomDescription={room?.description}
+      roomName="Announcements"
       roomId={id}
       communityId={community.id}
       userRole={userRole}
