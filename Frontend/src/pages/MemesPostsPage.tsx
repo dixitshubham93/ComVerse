@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp } from 'lucide-react';
+import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment } from '../api/postApi';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
+import { EmojiPicker } from '../components/EmojiPicker';
 
 interface MemesPostsPageProps {
   communityId?: number;
@@ -724,32 +725,36 @@ const CommentPanel = ({
                     currentUsername.charAt(0).toUpperCase()
                   )}
                 </div>
-                <div className="flex-1 flex gap-2">
-                  <input
-                    type="text"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
-                    placeholder="Write a comment..."
-                    className="flex-1 bg-white/5 border border-primary/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 outline-none focus:border-primary/30 transition-colors"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onSubmit}
-                    disabled={!newComment.trim() || submitting}
-                    className="p-2.5 rounded-xl disabled:opacity-30 transition-all"
-                    style={{
-                      background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                    }}
-                  >
-                    {submitting ? (
-                      <Loader2 className="w-4 h-4 text-black animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4 text-black" />
-                    )}
-                  </motion.button>
-                </div>
+                  <div className="flex-1 flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+                      placeholder="Write a comment..."
+                      className="flex-1 bg-white/5 border border-primary/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 outline-none focus:border-primary/30 transition-colors"
+                    />
+                    <EmojiPicker onSelectEmoji={(emoji) => setNewComment(prev => prev + emoji)} />
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onSubmit}
+                      disabled={!newComment.trim() || submitting}
+                      className="p-2.5 rounded-full disabled:opacity-30 transition-all flex items-center justify-center shrink-0"
+                      style={{
+                        background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
+                        width: '42px',
+                        height: '42px'
+                      }}
+                    >
+                      {submitting ? (
+                        <Loader2 className="w-4 h-4 text-black animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 text-black" />
+                      )}
+                    </motion.button>
+                  </div>
+
               </div>
             </div>
           </motion.div>
