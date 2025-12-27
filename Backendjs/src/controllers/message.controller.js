@@ -14,16 +14,23 @@ export const getByRoom = async (req, res, next) => {
     );
 
     // Convert BigInt to Number for JSON serialization
-    const serializedMessages = messages.map(m => ({
-      ...m,
-      id: Number(m.id),
-      roomId: Number(m.roomId),
-      userId: Number(m.userId),
-      user: m.user ? {
-        ...m.user,
-        id: Number(m.user.id),
-      } : null,
-    }));
+    const serializedMessages = messages.map(m => {
+      const membership = m.user?.memberships?.[0];
+      const role = membership ? membership.role : "MEMBER";
+      
+      return {
+        ...m,
+        id: Number(m.id),
+        roomId: Number(m.roomId),
+        userId: Number(m.userId),
+        role: role, // Include the role at the message level for easy access
+        user: m.user ? {
+          ...m.user,
+          id: Number(m.user.id),
+          memberships: undefined, // Remove memberships from response to keep it clean
+        } : null,
+      };
+    });
 
     res.json({ success: true, data: serializedMessages });
   } catch (err) {
@@ -79,15 +86,20 @@ export const createMessage = async (req, res, next) => {
     });
 
     // Serialize BigInt
+    const membershipForRole = message.user?.memberships?.[0];
+    const role = membershipForRole ? membershipForRole.role : "MEMBER";
+
     const serializedMessage = {
       ...message,
       id: Number(message.id),
       roomId: Number(message.roomId),
       userId: Number(message.userId),
+      role: role,
       user: message.user
         ? {
             ...message.user,
             id: Number(message.user.id),
+            memberships: undefined,
           }
         : null,
     };

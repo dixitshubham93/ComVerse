@@ -16,6 +16,7 @@ export interface MessageDto {
   content: string;
   imageUrl?: string | null;
   createdAt: string;
+  role?: 'OWNER' | 'ADMIN' | 'MEMBER';
   user?: {
     id: number;
     username: string;

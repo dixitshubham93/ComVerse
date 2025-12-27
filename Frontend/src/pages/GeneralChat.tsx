@@ -123,36 +123,45 @@ export function GeneralChat({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isLoadingMoreRef = useRef(false);
 
-  // Convert MessageDto to Message format
-  const convertMessageDto = (dto: APIMessageDto): Message => {
-    const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
-    const isCurrentUser = dto.userId === currentUserId;
-    
-    // Extract username from user object or fallback
-    const username = dto.user?.username || `User${dto.userId}`;
-    const userAvatar = dto.user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
-    
-    // Parse content - extract image URL if present
-    let messageText = dto.content || '';
-    let image: string | undefined = undefined;
-    const imageMatch = messageText.match(/\[IMAGE:(.+?)\]/);
-    if (imageMatch && imageMatch[1]) {
-      image = imageMatch[1];
-      messageText = messageText.replace(/\[IMAGE:.+?\]/, '').trim();
-    }
-    
-    return {
-      id: dto.id.toString(),
-      avatar: isCurrentUser ? currentUser.avatar : userAvatar,
-      username: username,
-      role: userRole, // TODO: Fetch actual role from membership API if needed
-      timestamp: new Date(dto.createdAt).toLocaleString(),
-      message: messageText,
-      image: image || undefined,
-      reactions: [],
-      userId: dto.userId.toString(),
+    // Convert MessageDto to Message format
+    const convertMessageDto = (dto: APIMessageDto): Message => {
+      const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
+      const isCurrentUser = dto.userId === currentUserId;
+      
+      // Extract username from user object or fallback
+      const username = dto.user?.username || `User${dto.userId}`;
+      const userAvatar = dto.user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+      
+      // Map backend roles to frontend roles
+      const roleMap: Record<string, 'Owner' | 'Admin' | 'Member'> = {
+        'OWNER': 'Owner',
+        'ADMIN': 'Admin',
+        'MEMBER': 'Member'
+      };
+      
+      const role = dto.role ? roleMap[dto.role] || 'Member' : 'Member';
+      
+      // Parse content - extract image URL if present
+      let messageText = dto.content || '';
+      let image: string | undefined = undefined;
+      const imageMatch = messageText.match(/\[IMAGE:(.+?)\]/);
+      if (imageMatch && imageMatch[1]) {
+        image = imageMatch[1];
+        messageText = messageText.replace(/\[IMAGE:.+?\]/, '').trim();
+      }
+      
+      return {
+        id: dto.id.toString(),
+        avatar: isCurrentUser ? currentUser.avatar : userAvatar,
+        username: username,
+        role: role,
+        timestamp: new Date(dto.createdAt).toLocaleString(),
+        message: messageText,
+        image: image || undefined,
+        reactions: [],
+        userId: dto.userId.toString(),
+      };
     };
-  };
 
   // Load initial messages
   useEffect(() => {

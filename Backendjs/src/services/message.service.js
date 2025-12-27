@@ -22,18 +22,38 @@ export const getMessagesByRoom = async (
   limit = 50,
   offset = 0
 ) => {
+  // First get the room to know its communityId
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: { communityId: true }
+  });
+
+  if (!room) return [];
+
   return prisma.message.findMany({
     where: { roomId },
     orderBy: { createdAt: "desc" },
     take: limit,
     skip: offset,
     include: {
-      user: true,
+      user: {
+        include: {
+          memberships: {
+            where: { communityId: room.communityId }
+          }
+        }
+      },
     },
   });
 };
 
 export const createNewMessage = async ({ roomId, userId, content, contentType }) => {
+  // First get the room to know its communityId
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: { communityId: true }
+  });
+
   return prisma.message.create({
     data: {
       roomId,
@@ -43,7 +63,13 @@ export const createNewMessage = async ({ roomId, userId, content, contentType })
       createdAt: new Date(),
     },
     include: {
-      user: true,
+      user: {
+        include: {
+          memberships: {
+            where: { communityId: room ? room.communityId : BigInt(0) }
+          }
+        }
+      },
     },
   });
 };
