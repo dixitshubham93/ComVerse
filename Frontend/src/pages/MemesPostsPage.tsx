@@ -710,21 +710,11 @@ const CommentPanel = ({
             </div>
 
             {/* Input */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-primary/10" style={{
+            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 border-t border-primary/10" style={{
               background: 'linear-gradient(180deg, rgba(5, 20, 20, 0.95) 0%, rgba(5, 20, 20, 0.99) 100%)',
               backdropFilter: 'blur(10px)',
             }}>
               <div className="flex gap-3">
-                <div
-                  className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-black"
-                  style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-                >
-                  {currentUserAvatar ? (
-                    <img src={currentUserAvatar} alt="" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    currentUsername.charAt(0).toUpperCase()
-                  )}
-                </div>
                   <div className="flex-1 flex gap-2 items-center">
                     <input
                       type="text"
