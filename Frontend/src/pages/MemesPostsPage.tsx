@@ -67,18 +67,18 @@ const CarouselCard = ({
       onClick={onSelect}
       whileHover={{ scale: scale * 1.05 }}
     >
-        <div
-          className={`relative w-[360px] h-[600px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
-            isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
-          }`}
-          style={{
-            background: 'linear-gradient(145deg, rgba(10, 35, 35, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
-            border: '1px solid rgba(40, 245, 204, 0.15)',
-            boxShadow: isActive 
-              ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(40, 245, 204, 0.2), inset 0 1px 0 rgba(40, 245, 204, 0.1)'
-              : '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(40, 245, 204, 0.05)',
-          }}
-        >
+      <div
+        className={`relative w-[300px] h-[520px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
+          isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
+        }`}
+        style={{
+          background: 'linear-gradient(145deg, rgba(10, 35, 35, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
+          border: '1px solid rgba(40, 245, 204, 0.15)',
+          boxShadow: isActive 
+            ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(40, 245, 204, 0.2), inset 0 1px 0 rgba(40, 245, 204, 0.1)'
+            : '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(40, 245, 204, 0.05)',
+        }}
+      >
         {/* Glow effect */}
         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
           background: 'radial-gradient(ellipse at 50% 0%, rgba(40, 245, 204, 0.3) 0%, transparent 60%)',
@@ -100,8 +100,8 @@ const CarouselCard = ({
           <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
         </div>
 
-          {/* Image Area (Fixed Height) */}
-          <div className="relative w-full h-[400px] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
+        {/* Image Area (Fixed Height) */}
+        <div className="relative w-full h-[340px] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
           {/* Blurred background for aesthetic effect */}
           <img
             src={post.mediaUrl}
@@ -118,12 +118,12 @@ const CarouselCard = ({
 
         {/* Content Area */}
         <div className="flex flex-col bg-black/20">
-            {/* Caption slot with fixed height */}
+          {/* Caption slot with fixed height */}
               <div className="px-4 py-3 h-[60px] flex items-center">
                 {post.caption ? (
-                  <p className="text-white/80 text-sm font-primary line-clamp-2 w-full leading-relaxed">{post.caption}</p>
+                  <p className="text-white/80 text-sm font-heading line-clamp-2 w-full leading-relaxed">{post.caption}</p>
                 ) : (
-                  <p className="text-white/20 text-xs italic font-primary">No caption</p>
+                  <p className="text-white/20 text-xs italic font-heading">No caption</p>
                 )}
               </div>
   
@@ -195,8 +195,8 @@ const Carousel3D = ({
   const dragStartRotation = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   
-    const radius = 500;
-    const anglePerCard = 360 / posts.length;
+  const radius = 450;
+  const anglePerCard = 360 / posts.length;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -257,10 +257,10 @@ const Carousel3D = ({
   const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
 
   return (
-    <div className="relative h-[600px] md:h-[700px] w-full flex items-center justify-center overflow-hidden">
+    <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[800px] h-[800px] rounded-full opacity-10" style={{
+        <div className="w-[600px] h-[600px] rounded-full opacity-10" style={{
           background: 'radial-gradient(circle, rgba(40, 245, 204, 0.5) 0%, transparent 60%)',
         }} />
       </div>
@@ -417,7 +417,7 @@ const CommentPanel = ({
               boxShadow: '-20px 0 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
             }}
           >
-            {/* Header */}
+              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-primary/10">
                 <div className="flex items-center gap-3">
                   <div
@@ -431,10 +431,10 @@ const CommentPanel = ({
                     )}
                   </div>
                   <div>
-                  <p className="text-white font-semibold">{post.user?.username}</p>
-                  <p className="text-white/40 text-xs">{formatTime(post.createdAt)}</p>
+                    <p className="text-white font-semibold">{post.user?.username}</p>
+                    <p className="text-white/40 text-xs">{formatTime(post.createdAt)}</p>
+                  </div>
                 </div>
-              </div>
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
@@ -450,9 +450,9 @@ const CommentPanel = ({
               <div className="rounded-xl overflow-hidden mb-3">
                 <img src={post.mediaUrl} alt="" className="w-full h-40 object-cover" />
               </div>
-                {post.caption && (
-                  <p className="text-white/80 text-sm font-roboto">{post.caption}</p>
-                )}
+                  {post.caption && (
+                    <p className="text-white/80 text-sm font-heading">{post.caption}</p>
+                  )}
             </div>
 
             {/* Comments */}
@@ -737,12 +737,12 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="min-h-screen overflow-hidden relative ml-16 lg:ml-20">
+    <div className="h-screen overflow-hidden relative ml-16 lg:ml-20 flex flex-col">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50"
+        className="flex-shrink-0"
         style={{
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
           background: 'rgba(42, 52, 68, 0.8)',
@@ -797,7 +797,7 @@ export function MemesPostsPage({
       </motion.header>
 
       {/* Main content */}
-      <div className="relative z-10 py-8">
+      <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0 overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="relative">
@@ -855,7 +855,7 @@ export function MemesPostsPage({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 px-6 py-3 rounded-2xl"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 px-6 py-3 rounded-2xl"
           style={{
             background: 'rgba(10, 35, 35, 0.9)',
             border: '1px solid rgba(40, 245, 204, 0.2)',
@@ -1008,24 +1008,49 @@ export function MemesPostsPage({
                           className="w-full bg-transparent text-white text-base placeholder-white/30 outline-none resize-none min-h-[80px] leading-relaxed"
                           autoFocus
                         />
-                          {uploadPreview && (
+                            {uploadPreview && (
                             <motion.div
-                              initial={{ opacity: 0, y: 10 }}
+                              initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="relative mt-4 mx-auto rounded-xl overflow-hidden bg-black/40 aspect-[4/5] w-[260px] flex items-center justify-center group"
-                              style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
+                              className="
+                                relative mt-3 mx-auto
+                                w-full max-w-[220px]
+                                max-h-[260px]
+                                aspect-[4/5]
+                                rounded-xl overflow-hidden
+                                bg-black/50
+                                flex items-center justify-center
+                                shadow-2xl
+                              "
+                              style={{ border: '1px solid rgba(40, 245, 204, 0.18)' }}
                             >
-                              {/* Blurred background for aesthetic effect */}
+                              {/* Soft blurred backdrop */}
                               <img
                                 src={uploadPreview}
                                 alt=""
-                                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110"
+                                className="
+                                  absolute inset-0
+                                  w-full h-full
+                                  object-cover
+                                  blur-lg
+                                  opacity-25
+                                "
                               />
+
+                              {/* Actual preview image */}
                               <img
                                 src={uploadPreview}
                                 alt="Preview"
-                                className="relative z-10 w-full h-full object-contain block mx-auto transition-transform duration-700"
+                                className="
+                                  relative z-10
+                                  max-w-full
+                                  max-h-full
+                                  object-contain
+                                  rounded-lg
+                                "
                               />
+
+                              {/* Remove button */}
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
@@ -1034,14 +1059,24 @@ export function MemesPostsPage({
                                   setUploadPreview(null);
                                   setUploadStep('select');
                                 }}
-                                className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors z-30"
-                                style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+                                className="
+                                  absolute top-2 right-2
+                                  w-7 h-7
+                                  rounded-lg
+                                  flex items-center justify-center
+                                  bg-black/70
+                                  backdrop-blur
+                                  z-20
+                                "
                               >
-                                <X className="w-4 h-4 text-white" />
+                                <X className="w-3.5 h-3.5 text-white" />
                               </motion.button>
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-20 pointer-events-none" />
+
+                              {/* Bottom gradient for depth */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10" />
                             </motion.div>
-                          )}
+                            )}
+
                       </div>
                     </div>
                   </div>
