@@ -114,14 +114,14 @@ const CarouselCard = ({
 
         {/* Content Area */}
         <div className="flex flex-col bg-black/20">
-          {/* Caption slot with fixed height */}
-            <div className="px-4 py-3 h-[60px] flex items-center">
-              {post.caption ? (
-                <p className="text-white/80 text-sm font-roboto line-clamp-2 w-full leading-relaxed">{post.caption}</p>
-              ) : (
-                <p className="text-white/20 text-xs italic font-roboto">No caption</p>
-              )}
-            </div>
+            {/* Caption slot with fixed height */}
+              <div className="px-4 py-3 h-[60px] flex items-center">
+                {post.caption ? (
+                  <p className="text-white/80 text-sm font-primary line-clamp-2 w-full leading-relaxed">{post.caption}</p>
+                ) : (
+                  <p className="text-white/20 text-xs italic font-primary">No caption</p>
+                )}
+              </div>
   
           {/* Actions */}
           <div className="px-4 pb-4 flex items-center gap-4">
@@ -422,10 +422,10 @@ const CommentPanel = ({
                 >
                   {post.user?.username?.charAt(0).toUpperCase() || '?'}
                 </div>
-                <div>
-                  <p className="text-white font-semibold">{post.user?.username}</p>
-                  <p className="text-white/40 text-xs">{formatTime(post.createdAt)}</p>
-                </div>
+                  <div>
+                    <p className="text-white font-semibold">{post.user?.username}</p>
+                    <p className="text-white/20 text-[10px] font-light font-primary tracking-tight">{formatTime(post.createdAt)}</p>
+                  </div>
               </div>
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
@@ -442,9 +442,9 @@ const CommentPanel = ({
               <div className="rounded-xl overflow-hidden mb-3">
                 <img src={post.mediaUrl} alt="" className="w-full h-40 object-cover" />
               </div>
-                {post.caption && (
-                  <p className="text-white/80 text-sm font-roboto">{post.caption}</p>
-                )}
+                  {post.caption && (
+                    <p className="text-white/80 text-sm font-primary leading-relaxed">{post.caption}</p>
+                  )}
             </div>
 
             {/* Comments */}
@@ -479,12 +479,12 @@ const CommentPanel = ({
                       {comment.user?.username?.charAt(0).toUpperCase() || '?'}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-white font-medium text-sm">{comment.user?.username}</span>
-                        <span className="text-white/30 text-xs">{formatTime(comment.createdAt)}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-white font-medium text-sm">{comment.user?.username}</span>
+                          <span className="text-white/20 text-[10px] font-light font-primary tracking-tight">{formatTime(comment.createdAt)}</span>
+                        </div>
+                        <p className="text-white/70 text-sm font-primary">{comment.content}</p>
                       </div>
-                      <p className="text-white/70 text-sm">{comment.content}</p>
-                    </div>
                   </motion.div>
                 ))
               )}
