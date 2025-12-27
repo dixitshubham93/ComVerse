@@ -119,13 +119,13 @@ const CarouselCard = ({
         {/* Content Area */}
         <div className="flex flex-col bg-black/20">
           {/* Caption slot with fixed height */}
-            <div className="px-4 py-3 h-[60px] flex items-center">
-              {post.caption ? (
-                <p className="text-white/80 text-sm font-roboto line-clamp-2 w-full leading-relaxed">{post.caption}</p>
-              ) : (
-                <p className="text-white/20 text-xs italic font-roboto">No caption</p>
-              )}
-            </div>
+              <div className="px-4 py-3 h-[60px] flex items-center">
+                {post.caption ? (
+                  <p className="text-white/80 text-sm font-heading line-clamp-2 w-full leading-relaxed">{post.caption}</p>
+                ) : (
+                  <p className="text-white/20 text-xs italic font-heading">No caption</p>
+                )}
+              </div>
   
           {/* Actions */}
           <div className="px-4 pb-4 flex items-center gap-4">
@@ -450,9 +450,9 @@ const CommentPanel = ({
               <div className="rounded-xl overflow-hidden mb-3">
                 <img src={post.mediaUrl} alt="" className="w-full h-40 object-cover" />
               </div>
-                {post.caption && (
-                  <p className="text-white/80 text-sm font-roboto">{post.caption}</p>
-                )}
+                  {post.caption && (
+                    <p className="text-white/80 text-sm font-heading">{post.caption}</p>
+                  )}
             </div>
 
             {/* Comments */}
