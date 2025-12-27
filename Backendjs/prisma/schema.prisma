@@ -145,6 +145,7 @@ model Membership {
 model Room {
   id            BigInt    @id @default(autoincrement())
   name          String
+  description   String?
   type          RoomType
   config        String?
   isDefaultRoom Boolean   @default(false)

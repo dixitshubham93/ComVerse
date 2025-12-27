@@ -644,16 +644,18 @@ function ExpandedRoomRouteWrapper({ rooms, community, userRole, stats, onJoinRoo
   );
 }
 
-function GeneralChatRouteWrapper({ community, userRole, currentUser, onBack, onOpenDM }: any) {
+function GeneralChatRouteWrapper({ community, rooms, userRole, currentUser, onBack, onOpenDM }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const id = parseInt(roomId || '0', 10);
   const navigate = useNavigate();
+  const room = rooms.find((r: any) => r.id === id);
 
   return (
     <GeneralChat
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
-      roomName="General Chat" 
+      roomName={room?.name || "General Chat"} 
+      roomDescription={room?.description}
       roomId={id}
       communityId={community.id}
       userRole={userRole}
@@ -666,16 +668,18 @@ function GeneralChatRouteWrapper({ community, userRole, currentUser, onBack, onO
   );
 }
 
-function AnnouncementChatRouteWrapper({ community, userRole, currentUser, onBack, onOpenDM }: any) {
+function AnnouncementChatRouteWrapper({ community, rooms, userRole, currentUser, onBack, onOpenDM }: any) {
   const { roomId } = useParams<{ roomId: string }>();
   const id = parseInt(roomId || '0', 10);
   const navigate = useNavigate();
+  const room = rooms.find((r: any) => r.id === id);
 
   return (
     <AnnouncementChat
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
-      roomName="Announcements"
+      roomName={room?.name || "Announcements"}
+      roomDescription={room?.description}
       roomId={id}
       communityId={community.id}
       userRole={userRole}

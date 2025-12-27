@@ -12,257 +12,31 @@ interface AnnouncementChatProps {
   communityName: string;
   communityAvatar: string;
   roomName: string;
+  roomDescription?: string | null;
   roomId: number;
-  communityId: number;
-  userRole: 'Owner' | 'Admin' | 'Member';
-  currentUser: {
-    name: string;
-    avatar: string;
-  };
-  onBack: () => void;
-  onGoToHome?: () => void;
-  onGoToUserSpace?: () => void;
-  onOpenDM?: (username: string, avatar: string, userId?: string) => void;
-}
-
-interface Message {
-  id: string;
-  avatar: string;
-  username: string;
-  role: 'Owner' | 'Admin' | 'Member';
-  timestamp: string;
-  message: string;
-  image?: string;
-  reactions: { emoji: string; count: number; users: string[] }[];
-  userId: string;
-}
-
-const MOCK_ANNOUNCEMENTS: Message[] = [
-  {
-    id: '1',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    username: 'Marcus Chen',
-    role: 'Owner',
-    timestamp: 'Dec 1 at 10:00 AM',
-    message: '🎉 Welcome to our community! We are excited to have you here. Please read the guidelines and enjoy your stay!',
-    reactions: [
-      { emoji: '🎉', count: 45, users: ['user1', 'user2'] },
-      { emoji: '👋', count: 32, users: ['user3'] },
-    ],
-    userId: 'user-owner',
-  },
-  {
-    id: '2',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-    username: 'Sarah Mitchell',
-    role: 'Admin',
-    timestamp: 'Dec 2 at 3:30 PM',
-    message: '📢 Important: We will be having scheduled maintenance this weekend. The platform may be unavailable for a few hours on Saturday.',
-    reactions: [
-      { emoji: '👍', count: 28, users: ['user4'] },
-      { emoji: '✅', count: 15, users: ['user5'] },
-    ],
-    userId: 'user-admin',
-  },
-  {
-    id: '3',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    username: 'Marcus Chen',
-    role: 'Owner',
-    timestamp: 'Dec 3 at 9:15 AM',
-    message: '🚀 Exciting news! We just launched new features including better search, custom themes, and enhanced notifications. Check them out!',
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop',
-    reactions: [
-      { emoji: '🔥', count: 67, users: ['user6'] },
-      { emoji: '💯', count: 41, users: ['user7'] },
-      { emoji: '🚀', count: 53, users: ['user8'] },
-    ],
-    userId: 'user-owner',
-  },
-];
-
-export function AnnouncementChat({
-  communityName,
-  communityAvatar,
-  roomName,
-  roomId,
-  communityId,
-  userRole,
-  currentUser,
-  onBack,
-  onGoToHome,
-  onGoToUserSpace,
-  onOpenDM,
-}: AnnouncementChatProps) {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [socketError, setSocketError] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+...
   const canPost = userRole === 'Owner' || userRole === 'Admin';
 
+  const displayDescription = roomDescription || "Only admins can post announcements";
+
   // Convert MessageDto to Message format
-  const convertMessageDto = (dto: MessageDto): Message => {
-    const currentUserId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id || 0;
-    const isCurrentUser = dto.userId === currentUserId;
-    
-    // Generate avatar from username if not available
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${dto.username}`;
-    
-    return {
-      id: dto.id.toString(),
-      avatar: isCurrentUser ? currentUser.avatar : avatarUrl,
-      username: dto.username,
-      role: userRole, // TODO: Fetch actual role from membership API if needed
-      timestamp: new Date(dto.createdAt).toLocaleString(),
-      message: dto.content,
-      reactions: [],
-      userId: dto.userId.toString(),
-    };
-  };
-
-  // WebSocket connection
-  const { isConnected, error: wsError, sendMessage, joinChat } = useRoomSocket(roomId, communityId, {
-    onMessage: (message: MessageDto) => {
-      setMessages((prev) => [...prev, convertMessageDto(message)]);
-    },
-    onMessageUpdated: (message: MessageDto) => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
-      );
-    },
-    onMessageDeleted: (messageId: number) => {
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId.toString()));
-    },
-    onError: (error: string) => {
-      setSocketError(error);
-    },
-  });
-
-  useEffect(() => {
-    if (isConnected) {
-      joinChat();
-    }
-  }, [isConnected, joinChat]);
-
-  useEffect(() => {
-    if (wsError) {
-      setSocketError(wsError);
-    }
-  }, [wsError]);
-
-  useEffect(() => {
-    // Auto-scroll to bottom on new messages
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSendMessage = async () => {
-    if (!canPost || (!inputValue.trim() && !imagePreview)) return;
-    if (!isConnected) {
-      setSocketError('Not connected to server. Please wait...');
-      return;
-    }
-
-    try {
-      setSocketError(null);
-      const contentType = imagePreview ? 'IMAGE' : 'TEXT';
-      const content = imagePreview ? `${inputValue}\n[IMAGE:${imagePreview}]` : inputValue;
-      
-      sendMessage(content, contentType);
-      setInputValue('');
-      setImagePreview(null);
-    } catch (error: any) {
-      if (error.message?.includes('403') || error.message?.includes('permission')) {
-        setSocketError('You do not have permission to send messages in this room.');
-      } else {
-        setSocketError(error.message || 'Failed to send message. Please try again.');
-      }
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && canPost) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canPost) return;
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleReact = (messageId: string, emoji: string) => {
-    setMessages((prev) =>
-      prev.map((msg) => {
-        if (msg.id === messageId) {
-          const existingReaction = msg.reactions.find((r) => r.emoji === emoji);
-          if (existingReaction) {
-            return {
-              ...msg,
-              reactions: msg.reactions.map((r) =>
-                r.emoji === emoji ? { ...r, count: r.count + 1, users: [...r.users, 'current-user'] } : r
-              ),
-            };
-          } else {
-            return {
-              ...msg,
-              reactions: [...msg.reactions, { emoji, count: 1, users: ['current-user'] }],
-            };
-          }
-        }
-        return msg;
-      })
-    );
-  };
-
-  const handleDelete = (messageId: string) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-  };
-
-  const handleNavigate = (page: string) => {
-    if (page === 'home' && onGoToHome) {
-      onGoToHome();
-    }
-    // Add other navigation logic
-  };
-
-  return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background with nebula effect */}
-      <div className="fixed inset-0 z-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, #2a3444 0%, #000000 100%)',
-          }}
-        />
-        {/* Subtle nebula mist in corners */}
-        <div
-          className="absolute top-0 left-0 w-1/3 h-1/3 rounded-full blur-3xl opacity-10"
-          style={{
-            background: 'radial-gradient(circle, #28f5cc 0%, transparent 70%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 right-0 w-1/3 h-1/3 rounded-full blur-3xl opacity-10"
-          style={{
-            background: 'radial-gradient(circle, #04ad7b 0%, transparent 70%)',
-          }}
-        />
-      </div>
+...
+            <div className="flex items-center gap-3">
+              <div
+                className="p-2 rounded-lg glassmorphism"
+                style={{ boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)' }}
+              >
+                <Megaphone className="w-5 h-5 text-yellow-400" />
+              </div>
+              <h2 className="text-white text-xl">{roomName}</h2>
+              <div className="h-1 w-1 rounded-full bg-[#747c88]" />
+              <p className="text-[#747c88] text-sm flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5" />
+                {displayDescription}
+                {!isConnected && <span className="text-yellow-400"> • Connecting...</span>}
+              </p>
+            </div>
+          </div>
 
       {/* Sidebar */}
       <CommunitySidebar
