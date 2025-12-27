@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment } from '../api/postApi';
 
@@ -14,6 +14,134 @@ interface MemesPostsPageProps {
   onGoToHome?: () => void;
   onGoToUserSpace?: () => void;
 }
+
+// 3D Carousel Card Component
+// Floating particles background
+const FloatingParticles = () => (
+  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    {[...Array(20)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-1 h-1 rounded-full"
+        style={{
+          background: `radial-gradient(circle, rgba(40, 245, 204, ${0.3 + Math.random() * 0.4}) 0%, transparent 70%)`,
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+        }}
+        animate={{
+          y: [0, -30, 0],
+          x: [0, Math.random() * 20 - 10, 0],
+          opacity: [0.3, 0.7, 0.3],
+          scale: [1, 1.5, 1],
+        }}
+        transition={{
+          duration: 4 + Math.random() * 4,
+          repeat: Infinity,
+          delay: Math.random() * 2,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+  </div>
+);
+
+// Premium Avatar Component
+const PremiumAvatar = ({ 
+  src, 
+  fallback, 
+  size = 'md',
+  showRing = true,
+  showGlow = false 
+}: { 
+  src?: string; 
+  fallback: string; 
+  size?: 'sm' | 'md' | 'lg';
+  showRing?: boolean;
+  showGlow?: boolean;
+}) => {
+  const sizeClasses = {
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-10 h-10 text-sm',
+    lg: 'w-12 h-12 text-base'
+  };
+
+  return (
+    <div className={`relative ${showGlow ? 'animate-pulse' : ''}`}>
+      {showGlow && (
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 blur-md opacity-40" />
+      )}
+      <div
+        className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold overflow-hidden relative ${
+          showRing ? 'ring-2 ring-emerald-400/30 ring-offset-1 ring-offset-slate-900' : ''
+        }`}
+        style={{ 
+          background: 'linear-gradient(135deg, #059669 0%, #14b8a6 50%, #22d3ee 100%)',
+        }}
+      >
+        {src ? (
+          <img src={src} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-slate-900 font-semibold">{fallback}</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Premium Button Component
+const PremiumButton = ({ 
+  children, 
+  onClick, 
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  loading = false,
+  icon,
+  className = ''
+}: { 
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  loading?: boolean;
+  icon?: React.ReactNode;
+  className?: string;
+}) => {
+  const baseStyles = "relative font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden";
+  
+  const variants = {
+    primary: "text-slate-900",
+    secondary: "bg-white/5 text-white border border-emerald-500/20 hover:bg-white/10 hover:border-emerald-400/40",
+    ghost: "text-white/70 hover:text-white hover:bg-white/5"
+  };
+  
+  const sizes = {
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-5 py-2.5 text-sm',
+    lg: 'px-8 py-3.5 text-base'
+  };
+
+  return (
+    <motion.button
+      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileTap={{ scale: disabled ? 1 : 0.98 }}
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      style={variant === 'primary' ? {
+        background: 'linear-gradient(135deg, #059669 0%, #14b8a6 50%, #22d3ee 100%)',
+        boxShadow: '0 4px 20px rgba(20, 184, 166, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+      } : undefined}
+    >
+      {variant === 'primary' && (
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+      )}
+      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+      <span className="relative z-10">{children}</span>
+    </motion.button>
+  );
+};
 
 // 3D Carousel Card Component
 const CarouselCard = ({
@@ -49,7 +177,21 @@ const CarouselCard = ({
   const scale = 0.6 + normalizedZ * 0.4;
   const opacity = 0.4 + normalizedZ * 0.6;
   const isActive = z > radius * 0.8;
+  const formatTime = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
 
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
   return (
     <motion.div
       className="absolute cursor-pointer"
@@ -68,82 +210,164 @@ const CarouselCard = ({
       whileHover={{ scale: scale * 1.05 }}
     >
       <div
-        className={`relative w-[300px] h-[520px] rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
-          isActive ? 'ring-2 ring-primary/50 shadow-[0_0_40px_rgba(40,245,204,0.3)]' : ''
+        className={`relative w-[350px] h-[520px] rounded-3xl overflow-hidden transition-all duration-500 flex flex-col group ${
+          isActive ? 'shadow-2xl' : ''
         }`}
         style={{
-          background: 'linear-gradient(145deg, rgba(10, 35, 35, 0.95) 0%, rgba(5, 20, 20, 0.98) 100%)',
-          border: '1px solid rgba(40, 245, 204, 0.15)',
+          background: 'linear-gradient(165deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 15, 25, 0.98) 100%)',
+          height:"400px",
+          width:"270px",
+          border: isActive 
+            ? '1px solid rgba(20, 184, 166, 0.4)' 
+            : '1px solid rgba(148, 163, 184, 0.1)',
           boxShadow: isActive 
-            ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 60px rgba(40, 245, 204, 0.2), inset 0 1px 0 rgba(40, 245, 204, 0.1)'
-            : '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(40, 245, 204, 0.05)',
+            ? '0 25px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(20, 184, 166, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+            : '0 15px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
         }}
       >
-        {/* Glow effect */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(40, 245, 204, 0.3) 0%, transparent 60%)',
+        {/* Premium top glow */}
+        <div className="absolute inset-x-0 top-0 h-32 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(20, 184, 166, 0.2) 0%, transparent 70%)',
         }} />
 
-        {/* Header Area */}
-        <div className="px-4 py-3 flex items-center gap-2 z-30 border-b border-white/5 bg-black/20">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0 overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
-          >
-            {post.user?.avatarUrl ? (
-              <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              post.user?.username?.charAt(0).toUpperCase() || '?'
-            )}
+        {/* Animated border glow for active card */}
+        {isActive && (
+          <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/0 via-teal-400/40 to-cyan-500/0 animate-pulse" 
+              style={{ filter: 'blur(8px)' }} 
+            />
           </div>
-          <span className="text-white text-sm font-medium truncate">{post.user?.username}</span>
-          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
+        )}
+
+        {/* Header Area */}
+        <div className="px-4 py-3.5 flex items-center gap-3 z-30 backdrop-blur-sm" 
+          style={{ 
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
+            borderBottom: '1px solid rgba(148, 163, 184, 0.08)'
+          }}
+        >
+          <PremiumAvatar 
+            src={post.user?.avatarUrl} 
+            fallback={post.user?.username?.charAt(0).toUpperCase() || '?'}
+            size="sm"
+            showRing={isActive}
+          />
+          <div className="flex-1 min-w-0">
+            <span className="text-white/90 text-sm font-medium truncate block">{post.user?.username}</span>
+            <span className="text-slate-400 text-xs">{formatTime(post.createdAt)}</span>
+          </div>
+          {isActive && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20"
+            >
+              <Flame className="w-3 h-3 text-orange-400 " />
+  
+            </motion.div>
+          )}
         </div>
 
-        {/* Image Area (Fixed Height) */}
-        <div className="relative w-full h-[340px] overflow-hidden bg-black/40 flex items-center justify-center group shrink-0">
-          {/* Blurred background for aesthetic effect */}
+        {/* Image Area */}
+        <div className="relative w-full h-[500px] overflow-hidden bg-slate-900/50 flex items-center justify-center group shrink-0">
+          {/* Aesthetic blur background */}
           <img
             src={post.mediaUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110"
+            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-125"
           />
           <img
             src={post.mediaUrl}
             alt={post.caption || 'Post'}
             className="relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-20 pointer-events-none" />
+          {/* Premium gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20 z-20 pointer-events-none" />
+          
+          {/* Trending indicator */}
+          {post.likeCount > 5 && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md"
+              style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(251, 191, 36, 0.3)' }}
+            >
+              <TrendingUp className="w-3 h-3 text-amber-400" />
+              <span className="text-xs text-amber-200 font-medium">Trending</span>
+            </motion.div>
+          )}
         </div>
 
         {/* Content Area */}
-        <div className="flex flex-col bg-black/20">
-          {/* Caption slot with fixed height */}
+                <div
+          className="flex flex-col flex-1"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%)',
+          }}
+        >
+           {/* Caption */}
               <div className="px-4 py-3 h-[60px] flex items-center">
                 {post.caption ? (
-                  <p className="text-white/80 text-sm font-heading line-clamp-2 w-full leading-relaxed">{post.caption}</p>
+                  <p
+                    className="
+                      w-full
+                      text-[13px]
+                      font-light
+                      leading-relaxed
+                      tracking-[0.02em]
+                      text-white/70
+                      line-clamp-2
+                    "
+                    style={{
+                      fontFamily:
+                        '"Inter", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif',
+                    }}
+                  >
+                    {post.caption}
+                  </p>
                 ) : (
-                  <p className="text-white/20 text-xs italic font-heading">No caption</p>
+                  <p
+                    className="
+                      text-[12px]
+                      font-light
+                      tracking-[0.04em]
+                      text-white/35
+                    "
+                  >
+                    No caption
+                  </p>
                 )}
               </div>
-  
+
+
+
           {/* Actions */}
-          <div className="px-4 pb-4 flex items-center gap-4">
+          <div className="px-4 pb-4 flex items-center gap-3 mt-auto">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={(e) => { e.stopPropagation(); onLike(); }}
               disabled={likeLoading}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300"
+              style={{
+                background: isLiked 
+                  ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.1) 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                border: isLiked 
+                  ? '1px solid rgba(239, 68, 68, 0.3)'
+                  : '1px solid rgba(148, 163, 184, 0.1)',
+              }}
             >
               <Heart
-                className={`w-4 h-4 transition-all ${
+                className={`w-4 h-4 transition-all duration-300 ${
                   isLiked
-                    ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                    : 'text-white/50'
+                    ? 'text-red-400 fill-red-400'
+                    : 'text-slate-400'
                 }`}
+                style={isLiked ? { filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.5))' } : {}}
               />
-              <span className={`text-xs font-bold ${isLiked ? 'text-red-400' : 'text-white/50'}`}>
+              <span className={`text-xs font-semibold ${isLiked ? 'text-red-300' : 'text-slate-400'}`}>
                 {post.likeCount || 0}
               </span>
             </motion.button>
@@ -152,26 +376,37 @@ const CarouselCard = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={(e) => { e.stopPropagation(); onComment(); }}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(148, 163, 184, 0.1)',
+              }}
             >
-              <MessageCircle className="w-4 h-4 text-white/50" />
-              <span className="text-xs font-bold text-white/50">{post.commentCount || 0}</span>
+              <MessageCircle className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">{post.commentCount || 0}</span>
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.1, backgroundColor: 'rgba(20, 184, 166, 0.1)' }}
               whileTap={{ scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
-              className="ml-auto p-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+              className="ml-auto p-2 rounded-xl transition-all duration-300"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(148, 163, 184, 0.1)',
+              }}
             >
-              <Bookmark className="w-4 h-4 text-white/50 hover:text-primary transition-colors" />
+              <Bookmark className="w-4 h-4 text-slate-400 hover:text-teal-400 transition-colors" />
             </motion.button>
           </div>
+
         </div>
+        
       </div>
-  </motion.div>
-);
+    </motion.div>
+  );
 };
+
 
 // 3D Carousel Component
 const Carousel3D = ({
@@ -203,7 +438,7 @@ const Carousel3D = ({
     dragStartX.current = e.clientX;
     dragStartRotation.current = rotation;
   };
-
+  
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return;
     const deltaX = e.clientX - dragStartX.current;
@@ -851,29 +1086,7 @@ export function MemesPostsPage({
       </div>
 
       {/* Active post info */}
-      {posts.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 px-6 py-3 rounded-2xl"
-          style={{
-            background: 'rgba(10, 35, 35, 0.9)',
-            border: '1px solid rgba(40, 245, 204, 0.2)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <span className="text-white/60 text-sm">Drag to explore</span>
-            <div className="w-px h-4 bg-white/20" />
-            <span className="text-primary text-sm font-medium">
-              {posts.length} posts
-            </span>
-            <div className="w-px h-4 bg-white/20" />
-            <span className="text-white/60 text-sm">Click for details</span>
-          </div>
-        </motion.div>
-      )}
+     
 
       {/* Comment Panel */}
       <CommentPanel
