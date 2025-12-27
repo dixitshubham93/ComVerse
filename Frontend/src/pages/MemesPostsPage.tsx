@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment } from '../api/postApi';
+import { UserSpaceBackground } from '../components/UserSpaceBackground';
 
 interface MemesPostsPageProps {
   communityId?: number;
@@ -14,36 +15,6 @@ interface MemesPostsPageProps {
   onGoToHome?: () => void;
   onGoToUserSpace?: () => void;
 }
-
-// 3D Carousel Card Component
-// Floating particles background
-const FloatingParticles = () => (
-  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-    {[...Array(20)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute w-1 h-1 rounded-full"
-        style={{
-          background: `radial-gradient(circle, rgba(40, 245, 204, ${0.3 + Math.random() * 0.4}) 0%, transparent 70%)`,
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-        }}
-        animate={{
-          y: [0, -30, 0],
-          x: [0, Math.random() * 20 - 10, 0],
-          opacity: [0.3, 0.7, 0.3],
-          scale: [1, 1.5, 1],
-        }}
-        transition={{
-          duration: 4 + Math.random() * 4,
-          repeat: Infinity,
-          delay: Math.random() * 2,
-          ease: "easeInOut",
-        }}
-      />
-    ))}
-  </div>
-);
 
 // Premium Avatar Component
 const PremiumAvatar = ({ 
@@ -972,17 +943,20 @@ export function MemesPostsPage({
   };
 
   return (
-    <div className="h-screen overflow-hidden relative ml-16 lg:ml-20 flex flex-col">
+    <div className="h-screen overflow-hidden relative ml-16 lg:ml-20 flex flex-col bg-black">
+      {/* Aurora Background */}
+      <UserSpaceBackground />
+
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex-shrink-0"
+        className="flex-shrink-0 relative z-20"
         style={{
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          background: 'rgba(42, 52, 68, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(4, 55, 47, 0.5)',
+          boxShadow: '0 4px 25px rgba(0, 0, 0, 0.4)',
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(40, 245, 204, 0.2)',
         }}
       >
         <div className="px-6 py-4">
