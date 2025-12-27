@@ -731,19 +731,67 @@ function MemesPostsPageRouteWrapper({ community, userRole, onBack }: any) {
 function DMChatRouteWrapper({ community, userRole, currentUser, onBack }: any) {
   const { targetId } = useParams<{ targetId: string }>();
   const navigate = useNavigate();
-  
-  const dmTarget = {
-    id: targetId,
-    name: 'User', 
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + targetId,
-    role: 'Member' as const,
-  };
+  const [targetUser, setTargetUser] = useState<{ id?: string; name: string; avatar: string; role: 'Owner' | 'Admin' | 'Member'; isOnline?: boolean } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTargetUser = async () => {
+      if (!targetId) return;
+      try {
+        setIsLoading(true);
+        const { getUser } = await import('../api/userApi');
+        const userData = await getUser(parseInt(targetId, 10));
+        
+        // Also get their role in this community if possible
+        const { getUserRole } = await import('../api/membershipApi');
+        let role: 'Owner' | 'Admin' | 'Member' = 'Member';
+        try {
+          const membershipRole = await getUserRole(parseInt(targetId, 10), community.id);
+          if (membershipRole === 'OWNER') role = 'Owner';
+          else if (membershipRole === 'ADMIN') role = 'Admin';
+        } catch (e) {
+          console.error('Error fetching target user role:', e);
+        }
+
+        setTargetUser({
+          id: targetId,
+          name: userData.username,
+          avatar: userData.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
+          role: role,
+          isOnline: true, // Placeholder
+        });
+      } catch (error) {
+        console.error('Error fetching DM target user:', error);
+        // Fallback to minimal info if fetch fails
+        setTargetUser({
+          id: targetId,
+          name: 'User',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetId}`,
+          role: 'Member',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTargetUser();
+  }, [targetId, community.id]);
+
+  if (isLoading) {
+    return (
+      <div className="relative ml-16 lg:ml-20 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#28f5cc]"></div>
+      </div>
+    );
+  }
+
+  if (!targetUser) return null;
 
   return (
     <DMChat
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
-      targetUser={dmTarget}
+      targetUser={targetUser}
       userRole={userRole}
       currentUser={currentUser}
       onBack={onBack}

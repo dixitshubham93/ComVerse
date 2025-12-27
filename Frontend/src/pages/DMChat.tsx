@@ -73,29 +73,41 @@ export function DMChat({
   // Get other user ID for API calls
   const otherUserId = targetUser.id ? targetUser.id.toString() : '0';
 
-  // Setup WebSocket connection for real-time DMs
-  const { isConnected, sendDM: sendDMSocket } = useDMSocket(otherUserId, {
-    onMessageReceived: (dm) => {
-      // Only show messages from the other user (not from ourselves)
-      const currentUserId = currentUser.id ? currentUser.id.toString() : '';
-      if (dm.senderId.toString() === currentUserId) {
-        return; // Skip messages we sent
-      }
-      
-      // Add received message to UI
-      const newMessage: Message = {
-        id: dm.id.toString(),
-        avatar: targetUser.avatar,
-        username: targetUser.name,
-        role: targetUser.role,
-        timestamp: new Date(dm.createdAt).toLocaleString(),
-        message: dm.content,
-        reactions: [],
-        userId: dm.senderId.toString(),
-        isSent: false,
-      };
-      setMessages(prev => [...prev, newMessage]);
-    },
+    // Setup WebSocket connection for real-time DMs
+    const { isConnected, sendDM: sendDMSocket } = useDMSocket(otherUserId, {
+      onMessageReceived: (dm) => {
+        // Only show messages that belong to this specific DM conversation
+        const currentUserId = currentUser.id ? currentUser.id.toString() : '';
+        
+        // If we are the sender, we already added it optimistically
+        if (dm.senderId.toString() === currentUserId) {
+          return;
+        }
+
+        // Only show messages from the person we are currently chatting with
+        if (dm.senderId.toString() !== otherUserId) {
+          return;
+        }
+        
+        // Add received message to UI
+        const newMessage: Message = {
+          id: dm.id.toString(),
+          avatar: targetUser.avatar,
+          username: targetUser.name,
+          role: targetUser.role,
+          timestamp: new Date(dm.createdAt).toLocaleString(),
+          message: dm.content,
+          reactions: [],
+          userId: dm.senderId.toString(),
+          isSent: false,
+        };
+        setMessages(prev => {
+          // Prevent duplicates if already added somehow
+          if (prev.some(m => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
+      },
+
     onMessageSent: (dm) => {
       // Message was confirmed sent, could update UI if needed
       console.log('DM confirmed sent:', dm);

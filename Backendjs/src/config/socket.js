@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { socketAuth } from "../middlewares/socketAuth.middleware.js";
 import { registerVoiceHandlers } from "../sockets/voice.handlers.js";
 import { registerMessageSocket } from "../sockets/message.socket.js";
+import { registerDMSocket } from "../sockets/dm.socket.js";
 
 export const initSocket = (server) => {
   const io = new Server(server, {
@@ -24,6 +25,7 @@ export const initSocket = (server) => {
       // Register all socket handlers
       registerVoiceHandlers(io, socket);
       registerMessageSocket(io, socket);
+      registerDMSocket(io, socket);
 
       socket.on('error', (error) => {
       console.error(`[Socket] Error for ${socket.id}:`, error);
