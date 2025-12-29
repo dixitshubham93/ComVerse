@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightning } from '../components/Lightning';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
@@ -101,12 +100,11 @@ export function HomePageWithUniverse() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   
-    const [selectedPlanet, setSelectedPlanet] = useState<number | null>(null);
-    const [isAnimating, setIsAnimating] = useState(false);
-    const canvasRef = useRef<UniverseCanvasRef>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-  
-    // Communities state
+  const [selectedPlanet, setSelectedPlanet] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const canvasRef = useRef<UniverseCanvasRef>(null);
+
+  // Communities state
   const [communities, setCommunities] = useState<CommunityWithVisuals[]>([]);
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(true);
   const [communitiesError, setCommunitiesError] = useState<string | null>(null);
@@ -243,38 +241,40 @@ export function HomePageWithUniverse() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-    const handleSlowScroll = () => {
-      const target = document.getElementById('space-section');
-      const container = containerRef.current;
-      if (!target || !container) return;
-  
-      const start = container.scrollTop;
-      const targetPosition = target.offsetTop;
-      const distance = targetPosition - start;
-      const duration = 1500; // Slow smooth scroll duration
-      let startTime: number | null = null;
-  
-      const easeInOutCubic = (t: number): number => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      };
-  
-      const animation = (currentTime: number) => {
-        if (startTime === null) startTime = currentTime;
-        const timeElapsed = currentTime - startTime;
-        const progress = Math.min(timeElapsed / duration, 1);
-        
-        container.scrollTop = start + distance * easeInOutCubic(progress);
-  
-        if (timeElapsed < duration) {
-          requestAnimationFrame(animation);
-        }
-      };
-  
-      requestAnimationFrame(animation);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleSlowScroll = () => {
+    const container = containerRef.current;
+    const target = document.getElementById('space-section');
+    if (!container || !target) return;
+
+    const start = container.scrollTop;
+    const targetPosition = target.offsetTop;
+    const distance = targetPosition - start;
+    const duration = 1500; // Slow smooth scroll duration
+    let startTime: number | null = null;
+
+    const easeInOutCubic = (t: number): number => {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
-  
-    return (
-      <div ref={containerRef} className="h-screen overflow-y-auto snap-y snap-mandatory relative">
+
+    const animation = (currentTime: number) => {
+      if (startTime === null) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      
+      container.scrollTo(0, start + distance * easeInOutCubic(progress));
+
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      }
+    };
+
+    requestAnimationFrame(animation);
+  };
+
+  return (
+    <div ref={containerRef} className="relative h-screen overflow-y-auto" style={{ scrollSnapType: 'y mandatory' }}>
       {/* Aurora Background */}
       <UserSpaceBackground />
 
@@ -283,19 +283,14 @@ export function HomePageWithUniverse() {
         onOpenAuth={handleOpenAuth}
         onNavigateToUserSpace={() => navigate('/userspace')}
         onNavigateToProfile={() => navigate('/profile')}
+        onNavigateToSettings={() => {
+          // Navigate to settings - placeholder for future implementation
+          console.log('Navigate to Settings');
+        }}
       />
 
-      {/* Hero Section */}
-      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4 snap-start">
-        {/* Lightning Background for Hero only */}
-        <div className="absolute inset-0 -z-10 opacity-40 pointer-events-none">
-          <Lightning 
-            hue={170} 
-            intensity={0.4} 
-            speed={0.5} 
-            size={0.8}
-          />
-        </div>
+      {/* Hero Section - Full screen snap */}
+      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="glow-text mb-4">
             Explore Your Universe
@@ -330,8 +325,8 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      {/* 3D Space Section */}
-      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4 snap-start">
+      {/* 3D Space Section - Full screen snap */}
+      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -441,7 +436,7 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      
+     
       {/* Auth Modal */}
       <AuthCard 
         isOpen={isAuthModalOpen} 
