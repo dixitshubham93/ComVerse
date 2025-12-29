@@ -248,10 +248,14 @@ export function HomePageWithUniverse() {
     const target = document.getElementById('space-section');
     if (!container || !target) return;
 
+    // Temporarily disable scroll-snap to allow smooth custom animation
+    const originalSnap = container.style.scrollSnapType;
+    container.style.scrollSnapType = 'none';
+
     const start = container.scrollTop;
     const targetPosition = target.offsetTop;
     const distance = targetPosition - start;
-    const duration = 1500; // Slow smooth scroll duration
+    const duration = 2000; // Slower, more cinematic scroll
     let startTime: number | null = null;
 
     const easeInOutCubic = (t: number): number => {
@@ -267,6 +271,9 @@ export function HomePageWithUniverse() {
 
       if (timeElapsed < duration) {
         requestAnimationFrame(animation);
+      } else {
+        // Re-enable scroll-snap after animation is complete
+        container.style.scrollSnapType = originalSnap;
       }
     };
 
