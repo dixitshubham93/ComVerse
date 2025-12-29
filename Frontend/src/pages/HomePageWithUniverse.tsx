@@ -241,38 +241,37 @@ export function HomePageWithUniverse() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handleSlowScroll = () => {
-    const container = document.querySelector('.overflow-y-scroll') as HTMLElement || document.documentElement;
-    const target = document.getElementById('space-section');
-    if (!container || !target) return;
-
-    const start = container.scrollTop;
-    const targetPosition = target.offsetTop;
-    const distance = targetPosition - start;
-    const duration = 1500; // Slow smooth scroll duration
-    let startTime: number | null = null;
-
-    const easeInOutCubic = (t: number): number => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const handleSlowScroll = () => {
+      const target = document.getElementById('space-section');
+      if (!target) return;
+  
+      const start = window.pageYOffset || document.documentElement.scrollTop;
+      const targetPosition = target.getBoundingClientRect().top + start;
+      const distance = targetPosition - start;
+      const duration = 1500; // Slow smooth scroll duration
+      let startTime: number | null = null;
+  
+      const easeInOutCubic = (t: number): number => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      };
+  
+      const animation = (currentTime: number) => {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        
+        window.scrollTo(0, start + distance * easeInOutCubic(progress));
+  
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animation);
+        }
+      };
+  
+      requestAnimationFrame(animation);
     };
-
-    const animation = (currentTime: number) => {
-      if (startTime === null) startTime = currentTime;
-      const timeElapsed = currentTime - startTime;
-      const progress = Math.min(timeElapsed / duration, 1);
-      
-      container.scrollTo(0, start + distance * easeInOutCubic(progress));
-
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animation);
-      }
-    };
-
-    requestAnimationFrame(animation);
-  };
-
-  return (
-    <div className="min-h-screen relative overflow-hidden overflow-y-scroll" style={{ scrollSnapType: 'y mandatory', height: '100vh' }}>
+  
+    return (
+      <div className="min-h-screen relative">
       {/* Aurora Background */}
       <UserSpaceBackground />
 
@@ -287,8 +286,8 @@ export function HomePageWithUniverse() {
         }}
       />
 
-      {/* Hero Section - Full screen snap */}
-      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+      {/* Hero Section */}
+      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="glow-text mb-4">
             Explore Your Universe
@@ -323,8 +322,8 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      {/* 3D Space Section - Full screen snap */}
-      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+      {/* 3D Space Section */}
+      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4">
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -434,8 +433,8 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      {/* Additional Info Section - Full screen snap */}
-      <section className="relative z-10 min-h-screen flex flex-col justify-center px-4 py-20" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+      {/* Additional Info Section */}
+      <section className="relative z-10 min-h-screen flex flex-col justify-center px-4 py-20">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="glassmorphism rounded-2xl p-8 text-center hover:border-[#28f5cc] transition-all duration-300">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.3)' }}>
