@@ -625,42 +625,196 @@ const CommentPanel = ({
             }}
           >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-primary/10">
-                <div className="flex items-center gap-3">
+              {/* Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 16px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 100%)',
+                backdropFilter: 'blur(6px)',
+              }}
+            >
+              {/* User info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {/* Avatar */}
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    background: 'linear-gradient(135deg, #04ad7b, #28f5cc)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#000',
+                  }}
+                >
+                  {post.user?.avatarUrl ? (
+                    <img
+                      src={post.user.avatarUrl}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    post.user?.username?.charAt(0).toUpperCase() || '?'
+                  )}
+                </div>
+
+                {/* Name + time */}
+                <div style={{ lineHeight: 1.2 }}>
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-black overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #04ad7b, #28f5cc)' }}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: '#ffffff',
+                      letterSpacing: '0.01em',
+                      fontFamily:
+                        '"Inter","SF Pro Text","Helvetica Neue",system-ui,sans-serif',
+                    }}
                   >
-                    {post.user?.avatarUrl ? (
-                      <img src={post.user.avatarUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      post.user?.username?.charAt(0).toUpperCase() || '?'
-                    )}
+                    {post.user?.username}
                   </div>
-                  <div>
-                    <p className="text-white font-semibold">{post.user?.username}</p>
-                    <p className="text-white/40 text-xs">{formatTime(post.createdAt)}</p>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      marginTop: 2,
+                      color: 'rgba(255,255,255,0.45)',
+                      fontWeight: 400,
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {formatTime(post.createdAt)}
                   </div>
                 </div>
+              </div>
+
+              {/* Close button */}
               <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.08, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="p-2 rounded-xl hover:bg-white/5 transition-colors"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.04)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
               >
-                <X className="w-5 h-5 text-white/60" />
+                <X size={18} color="rgba(255,255,255,0.7)" />
               </motion.button>
             </div>
 
-            {/* Post preview */}
-            <div className="p-4 border-b border-primary/10">
-              <div className="rounded-xl overflow-hidden mb-3">
-                <img src={post.mediaUrl} alt="" className="w-full h-40 object-cover" />
+
+          
+            {/* Post Preview */}
+              <div
+                style={{
+                  padding: 16,
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                {/* Image Preview */}
+                <div
+                  style={{
+                    position: 'relative',
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    marginBottom: 12,
+                    height: 180,
+                    background: '#000',
+                  }}
+                >
+                  {/* Blurred backdrop */}
+                  <img
+                    src={post.mediaUrl}
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: 'blur(18px)',
+                      opacity: 0.35,
+                      transform: 'scale(1.1)',
+                    }}
+                  />
+
+                  {/* Main image */}
+                  <img
+                    src={post.mediaUrl}
+                    alt=""
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+
+                  {/* Likes badge */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 10,
+                      right: 10,
+                      zIndex: 3,
+                      padding: '6px 10px',
+                      borderRadius: 999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'rgba(0,0,0,0.6)',
+                      backdropFilter: 'blur(6px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                    }}
+                  >
+                    <span style={{ color: '#f87171', fontSize: 12 }}>♥</span>
+                    <span
+                      style={{
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {post.likeCount || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Caption */}
+                {post.caption && (
+                  <p
+                    style={{
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      color: 'rgba(255,255,255,0.78)',
+                      fontWeight: 300,
+                      letterSpacing: '0.015em',
+                      fontFamily:
+                        '"Inter","SF Pro Text","Helvetica Neue",system-ui,sans-serif',
+                      margin: 0,
+                    }}
+                  >
+                    {post.caption}
+                  </p>
+                )}
               </div>
-                  {post.caption && (
-                    <p className="text-white/80 text-sm font-heading">{post.caption}</p>
-                  )}
-            </div>
+
 
             {/* Comments */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(100vh - 340px)' }}>
@@ -709,44 +863,117 @@ const CommentPanel = ({
               )}
             </div>
 
+          
             {/* Input */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 border-t border-primary/10" style={{
-              background: 'linear-gradient(180deg, rgba(5, 20, 20, 0.95) 0%, rgba(5, 20, 20, 0.99) 100%)',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <div className="flex gap-3">
-                  <div className="flex-1 flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
-                      placeholder="Write a comment..."
-                      className="flex-1 bg-white/5 border border-primary/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 outline-none focus:border-primary/30 transition-colors"
-                    />
-                    <EmojiPicker onSelectEmoji={(emoji) => setNewComment(prev => prev + emoji)} />
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={onSubmit}
-                      disabled={!newComment.trim() || submitting}
-                      className="p-2.5 rounded-full disabled:opacity-30 transition-all flex items-center justify-center shrink-0"
+            <div
+              style={{
+                position: 'sticky',
+                bottom: 0,
+                padding: '16px 16px 20px', // extra bottom padding
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                background:
+                  'linear-gradient(180deg, rgba(5,20,20,0.85) 0%, rgba(5,20,20,0.98) 100%)',
+                backdropFilter: 'blur(14px)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginBottom: 3, // 👈 lifts input slightly above bottom
+                }}
+              >
+                {/* User Avatar */}
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg,#04ad7b,#28f5cc)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: '#000',
+                    flexShrink: 0,
+                  }}
+                >
+                  {currentUserAvatar ? (
+                    <img
+                      src={currentUserAvatar}
+                      alt=""
                       style={{
-                        background: 'linear-gradient(135deg, #04ad7b 0%, #28f5cc 100%)',
-                        width: '42px',
-                        height: '42px'
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%',
                       }}
-                    >
-                      {submitting ? (
-                        <Loader2 className="w-4 h-4 text-black animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4 text-black" />
-                      )}
-                    </motion.button>
-                  </div>
+                    />
+                  ) : (
+                    currentUsername.charAt(0).toUpperCase()
+                  )}
+                </div>
 
+                {/* Input + Emoji */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 14,
+                    padding: '6px 10px',
+                  }}
+                >
+                  <input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+                    placeholder="Write a comment…"
+                    style={{
+                      flex: 1,
+                      border: 'none',
+                      background: 'transparent',
+                      outline: 'none',
+                      color: '#fff',
+                      fontSize: 13,
+                      padding: '6px 4px',
+                    }}
+                  />
+
+                  {/* Emoji Picker (RESTORED ✅) */}
+                  <EmojiPicker
+                    onSelectEmoji={(emoji) =>
+                      setNewComment((prev) => (prev + emoji))
+                    }
+                  />
+                </div>
+
+                {/* Send Button */}
+                <button
+                  onClick={onSubmit}
+                  disabled={!newComment.trim() || submitting}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'linear-gradient(135deg,#04ad7b,#28f5cc)',
+                    color: '#000',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    opacity: submitting ? 0.6 : 1,
+                    flexShrink: 0,
+                  }}
+                >
+                  {submitting ? '…' : '➤'}
+                </button>
               </div>
             </div>
+
           </motion.div>
         </>
       )}
