@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Lightning } from '../components/Lightning';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
@@ -282,14 +283,19 @@ export function HomePageWithUniverse() {
         onOpenAuth={handleOpenAuth}
         onNavigateToUserSpace={() => navigate('/userspace')}
         onNavigateToProfile={() => navigate('/profile')}
-        onNavigateToSettings={() => {
-          // Navigate to settings - placeholder for future implementation
-          console.log('Navigate to Settings');
-        }}
       />
 
       {/* Hero Section */}
       <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4 snap-start">
+        {/* Lightning Background for Hero only */}
+        <div className="absolute inset-0 -z-10 opacity-40 pointer-events-none">
+          <Lightning 
+            hue={170} 
+            intensity={0.4} 
+            speed={0.5} 
+            size={0.8}
+          />
+        </div>
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="glow-text mb-4">
             Explore Your Universe
@@ -435,48 +441,7 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      {/* Additional Info Section */}
-      <section className="relative z-10 min-h-screen flex flex-col justify-center px-4 py-20 snap-start">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="glassmorphism rounded-2xl p-8 text-center hover:border-[#28f5cc] transition-all duration-300">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.3)' }}>
-              <span className="text-3xl">🌌</span>
-            </div>
-            <h3 className="text-white mb-3">Infinite Communities</h3>
-            <p className="text-[#747c88]">
-              Explore thousands of communities across every interest and passion imaginable.
-            </p>
-          </div>
-
-          <div className="glassmorphism rounded-2xl p-8 text-center hover:border-[#28f5cc] transition-all duration-300">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.3)' }}>
-              <span className="text-3xl">✨</span>
-            </div>
-            <h3 className="text-white mb-3">Real-Time Connection</h3>
-            <p className="text-[#747c88]">
-              Connect instantly with like-minded individuals from around the world.
-            </p>
-          </div>
-
-          <div className="glassmorphism rounded-2xl p-8 text-center hover:border-[#28f5cc] transition-all duration-300">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.3)' }}>
-              <span className="text-3xl">🚀</span>
-            </div>
-            <h3 className="text-white mb-3">Your Space, Your Rules</h3>
-            <p className="text-[#747c88]">
-              Create and customize your own communities with powerful moderation tools.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <footer className="text-center py-12 px-4 border-t border-[#2a3444] mt-20">
-          <p className="text-[#747c88]">
-            © 2025 COSMOS. Explore the universe of communities.
-          </p>
-        </footer>
-      </section>
-
+      
       {/* Auth Modal */}
       <AuthCard 
         isOpen={isAuthModalOpen} 
