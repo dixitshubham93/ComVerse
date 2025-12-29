@@ -100,11 +100,12 @@ export function HomePageWithUniverse() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   
-  const [selectedPlanet, setSelectedPlanet] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const canvasRef = useRef<UniverseCanvasRef>(null);
-
-  // Communities state
+    const [selectedPlanet, setSelectedPlanet] = useState<number | null>(null);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const canvasRef = useRef<UniverseCanvasRef>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+  
+    // Communities state
   const [communities, setCommunities] = useState<CommunityWithVisuals[]>([]);
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(true);
   const [communitiesError, setCommunitiesError] = useState<string | null>(null);
@@ -243,10 +244,11 @@ export function HomePageWithUniverse() {
 
     const handleSlowScroll = () => {
       const target = document.getElementById('space-section');
-      if (!target) return;
+      const container = containerRef.current;
+      if (!target || !container) return;
   
-      const start = window.pageYOffset || document.documentElement.scrollTop;
-      const targetPosition = target.getBoundingClientRect().top + start;
+      const start = container.scrollTop;
+      const targetPosition = target.offsetTop;
       const distance = targetPosition - start;
       const duration = 1500; // Slow smooth scroll duration
       let startTime: number | null = null;
@@ -260,7 +262,7 @@ export function HomePageWithUniverse() {
         const timeElapsed = currentTime - startTime;
         const progress = Math.min(timeElapsed / duration, 1);
         
-        window.scrollTo(0, start + distance * easeInOutCubic(progress));
+        container.scrollTop = start + distance * easeInOutCubic(progress);
   
         if (timeElapsed < duration) {
           requestAnimationFrame(animation);
@@ -271,7 +273,7 @@ export function HomePageWithUniverse() {
     };
   
     return (
-      <div className="min-h-screen relative">
+      <div ref={containerRef} className="h-screen overflow-y-auto snap-y snap-mandatory relative">
       {/* Aurora Background */}
       <UserSpaceBackground />
 
@@ -287,7 +289,7 @@ export function HomePageWithUniverse() {
       />
 
       {/* Hero Section */}
-      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4">
+      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4 snap-start">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="glow-text mb-4">
             Explore Your Universe
@@ -323,7 +325,7 @@ export function HomePageWithUniverse() {
       </section>
 
       {/* 3D Space Section */}
-      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4">
+      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4 snap-start">
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -434,7 +436,7 @@ export function HomePageWithUniverse() {
       </section>
 
       {/* Additional Info Section */}
-      <section className="relative z-10 min-h-screen flex flex-col justify-center px-4 py-20">
+      <section className="relative z-10 min-h-screen flex flex-col justify-center px-4 py-20 snap-start">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="glassmorphism rounded-2xl p-8 text-center hover:border-[#28f5cc] transition-all duration-300">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 0 10px rgba(40, 245, 204, 0.3)' }}>
