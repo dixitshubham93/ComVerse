@@ -241,8 +241,38 @@ export function HomePageWithUniverse() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
+  const handleSlowScroll = () => {
+    const container = document.querySelector('.overflow-y-scroll') as HTMLElement || document.documentElement;
+    const target = document.getElementById('space-section');
+    if (!container || !target) return;
+
+    const start = container.scrollTop;
+    const targetPosition = target.offsetTop;
+    const distance = targetPosition - start;
+    const duration = 1500; // Slow smooth scroll duration
+    let startTime: number | null = null;
+
+    const easeInOutCubic = (t: number): number => {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const animation = (currentTime: number) => {
+      if (startTime === null) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      
+      container.scrollTo(0, start + distance * easeInOutCubic(progress));
+
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      }
+    };
+
+    requestAnimationFrame(animation);
+  };
+
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ scrollSnapType: 'y mandatory', height: '100vh', overflowY: 'scroll' }}>
+    <div className="min-h-screen relative overflow-hidden overflow-y-scroll" style={{ scrollSnapType: 'y mandatory', height: '100vh' }}>
       {/* Aurora Background */}
       <UserSpaceBackground />
 
@@ -281,20 +311,20 @@ export function HomePageWithUniverse() {
         {isAuthenticated && (
           <div className="mt-8">
             <button
-              onClick={() => navigate('/userspace')}
+              onClick={handleSlowScroll}
               className="glassmorphism px-8 py-4 rounded-full hover:border-[#28f5cc] transition-all duration-300 hover:scale-105"
               style={{
                 boxShadow: '0 0 15px rgba(40, 245, 204, 0.2)',
               }}
             >
-              <span className="text-white font-medium">Take Me To My Space</span>
+              <span className="text-white font-medium">Take Me To Universe</span>
             </button>
           </div>
         )}
       </section>
 
       {/* 3D Space Section - Full screen snap */}
-      <section className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
