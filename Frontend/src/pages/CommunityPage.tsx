@@ -53,6 +53,7 @@ const mapRoomTypeToFrontend = (type: RoomType): 'voice' | 'memes' | 'general' | 
 
 export function CommunityPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   
@@ -299,7 +300,7 @@ export function CommunityPage() {
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=guest',
   };
 
-  const location = useLocation();
+
 
   // Render main layout
   return (

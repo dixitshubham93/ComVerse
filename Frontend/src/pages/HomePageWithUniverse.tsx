@@ -9,7 +9,7 @@ import { OpenCommunityButton } from '../components/OpenCommunityButton';
 import { JoinCommunityButton } from '../components/JoinCommunityButton';
 import { AuthCard } from '../components/AuthCard';
 import { useAuth } from '../contexts/AuthContext';
-import { getAllCommunities, CommunityDto, CommunityType } from '../api/communityApi';
+import { getAllCommunities, CommunityDto, CommunityType ,parseCommunityType} from '../api/communityApi';
 import { checkMembership, joinCommunity } from '../api/membershipApi';
 
 // Extended community interface for frontend rendering
@@ -73,7 +73,7 @@ const generateVisualProperties = (dto: CommunityDto, index: number): Omit<Commun
   };
   
   return {
-    category: mapTypeToCategory(dto.type),
+    category: mapTypeToCategory(parseCommunityType(dto.type)),
     members: 1000 + (index % 50) * 1000, // Placeholder member count
     color,
     size,

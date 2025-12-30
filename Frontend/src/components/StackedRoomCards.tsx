@@ -5,6 +5,8 @@ import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/dr
 import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
 import { Phone, Image, MessageCircle, Megaphone, X, Plus, ArrowLeft } from 'lucide-react';
 
+
+
 export interface Room {
   id: string;
   name: string;
@@ -14,32 +16,62 @@ export interface Room {
   lastActivity?: string;
   type: 'voice' | 'memes' | 'general' | 'announcements';
 }
+interface RoomModal3DProps {
+  room: Room;
+  isOwner: boolean;
+  onClose: () => void;
+  onOpen: (room: Room) => void;
+  onEditRoom: (room: Room) => void;
+}
+
+
+interface FloatingRoomCard3DProps {
+  room: Room; // <-- your room type
+  pos: { x: number; y: number; z: number };
+  onSelect: (room: Room) => void;
+  isOwner: boolean;
+  isCentered: boolean;
+  isOtherCentered: boolean;
+  onOpenRoom: (room: Room) => void;
+  onEditRoom: (room: Room) => void;
+}
+
 
 export interface StackedRoomCardsProps {
   onRoomSelect: (room: Room) => void;
   isMotionReduced?: boolean;
   rooms?: Room[];
   onCreateRoom?: () => void;
-  onEditRoom?: (room: any) => void;
+  onEditRoom?: (room: Room) => void;
   canCreateRoom?: boolean;
-  onStackSelect?: (stackType: string) => void;
-  selectedStack?: string | null;
+
+  onStackSelect?: (stackType: StackType | null) => void;
+  selectedStack?: StackType | null;
+
   on3DViewToggle?: (isOpen: boolean) => void;
   isOwner?: boolean;
+  onClose?: () => void;
 }
+
 
 export const stackConfig = {
   voice: { title: 'Voice Call', icon: Phone, color: '#28f5cc', floatDelay: 0 },
   memes: { title: 'Memes & Posts', icon: Image, color: '#04ad7b', floatDelay: 1.2 },
   general: { title: 'General Chat', icon: MessageCircle, color: '#28f5cc', floatDelay: 2.4 },
   announcements: { title: 'Announcements', icon: Megaphone, color: '#04ad7b', floatDelay: 3.6 },
-};
-/* ---------- ExpandedRoom3D - drop-in for expanded grid ---------- */
-/* Requires: react, three, @react-three/fiber, @react-three/drei, lucide-react */
+}as const;
+export type StackType = keyof typeof stackConfig;
 
+
+const roomStacks: Record<StackType, Room[]> = {
+  voice: [],
+  memes: [],
+  general: [],
+  announcements: [],
+};
 
 /** Small helper to pick icon */
-function iconForType(type) {
+function iconForType( type:any) {
   switch (type) {
     case "voice":
       return <Speaker className="w-4 h-4" />;
@@ -56,8 +88,8 @@ function iconForType(type) {
 }
 
 /* FloatingRoomCard adapted to your room object */
-function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom, onEditRoom }) {
-  const groupRef = useRef();
+function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom, onEditRoom }: FloatingRoomCard3DProps) {
+  const groupRef = useRef<THREE.Group | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [hovered, setHovered] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -74,17 +106,17 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
     }
   });
 
-  const handleCardAction = (e) => {
+  const handleCardAction = (e:React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     // If already focused, open the room right away; otherwise focus it first
     if (isCentered) {
-      onOpenRoom(room, e);
+      onOpenRoom(room);
     } else {
-      onSelect(room, e);
+      onSelect(room);
     }
   };
 
-  const handlePointerMove = (e) => {
+  const handlePointerMove = (e:React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -96,14 +128,14 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
     setTilt({ x: 0, y: 0 });
   };
 
-  const cardScale = isCentered ? 1.18 : (hovered ? 1.14 : 1);
+    const cardScale = isCentered ? 1.18 : (hovered ? 1.14 : 1);
   // Only blur if another card is centered (not this one)
   const cardOpacity = isOtherCentered ? 0.4 : 1;
   const cardBlur = isCentered ? "none" : (isOtherCentered ? "blur(3px)" : "none");
 
   return (
     <group ref={groupRef} position={[pos.x, pos.y, pos.z]}>
-      <Plane args={[4.5, 6]} onClick={(e) => { e.stopPropagation(); onSelect(room, e); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
+      <Plane args={[4.5, 6]} onClick={(e) => { e.stopPropagation(); onSelect(room); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
         <meshBasicMaterial transparent opacity={0} />
       </Plane>
 
@@ -178,7 +210,7 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenRoom(room, e);
+                onOpenRoom(room);
               }}
               className="absolute top-4 right-4 px-3.5 py-2 rounded-lg transition-all duration-200 hover:scale-105"
               style={{
@@ -200,7 +232,7 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
 }
 
 /* Card positions generator (spherical/spiral like 21st demo) */
-function calcPositions(count) {
+function calcPositions(count: number) {
   const positions = [];
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
   for (let i = 0; i < count; i++) {
@@ -216,7 +248,7 @@ function calcPositions(count) {
 }
 
 /* Room modal (selected) */
-function RoomModal3D({ room, onClose, isOwner, onOpen, onEditRoom }) {
+function RoomModal3D({ room, onClose, isOwner, onOpen, onEditRoom }: RoomModal3DProps) {
   if (!room) return null;
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -274,7 +306,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, 
   const isOwner = propsIsOwner ?? true;
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
-  const handleOpenRoom = (room, e) => {
+  const handleOpenRoom = (room:Room, e:React.MouseEvent<HTMLDivElement>) => {
     const rect = e?.currentTarget?.getBoundingClientRect?.() || {
       left: window.innerWidth / 2 - 120,
       top: window.innerHeight / 2 - 160,
@@ -289,7 +321,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, 
     });
   };
 
-  const handleCardClick = (room, e) => {
+  const handleCardClick = (room:Room, e:React.MouseEvent<HTMLDivElement>) => {
     if (centeredRoom?.id === room.id) {
       handleOpenRoom(room, e);
     } else {
@@ -297,7 +329,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, 
     }
   };
 
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e:React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && centeredRoom) {
       setCenteredRoom(null);
     }
@@ -402,16 +434,17 @@ export function StackedRoomCards({
   onStackSelect,
   selectedStack: propsSelectedStack,
   on3DViewToggle,
-  isOwner = false
+  isOwner = false,
+  onClose,
 }: StackedRoomCardsProps) {
   // Organize rooms by type
-  const roomStacks = useMemo(() => {
-    const stacks: Record<string, Room[]> = {
-      voice: [],
-      memes: [],
-      general: [],
-      announcements: [],
-    };
+const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
+  const stacks: Record<StackType, Room[]> = {
+    voice: [],
+    memes: [],
+    general: [],
+    announcements: [],
+  };
 
     rooms.forEach(room => {
       const type = room.type;
@@ -437,10 +470,16 @@ export function StackedRoomCards({
     return stacks;
   }, [rooms]);
 
-  const [internalSelectedStack, setInternalSelectedStack] = useState<keyof typeof roomStacks | null>(null);
-  const selectedStack = propsSelectedStack !== undefined ? propsSelectedStack : internalSelectedStack;
+  const [internalSelectedStack, setInternalSelectedStack] =
+  useState<StackType | null>(null);
+
+  const selectedStack: StackType | null =
+  propsSelectedStack !== undefined
+    ? propsSelectedStack
+    : internalSelectedStack;
+
   
-  const setSelectedStack = (stack: any) => {
+  const setSelectedStack = (stack: StackType | null) => {
     if (onStackSelect) {
       onStackSelect(stack);
     } else {
@@ -470,7 +509,7 @@ export function StackedRoomCards({
       onRoomSelect(room);
       return;
     }
-
+    
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const targetX = rect.left + rect.width / 2;
     const targetY = rect.top + rect.height / 2;
@@ -525,7 +564,7 @@ export function StackedRoomCards({
             </div>
           )}
           
-          {(Object.keys(roomStacks) as Array<keyof typeof roomStacks>).map((stackType) => {
+          {(Object.keys(roomStacks) as StackType[]).map((stackType) => {
             const config = stackConfig[stackType];
             const stackRooms = roomStacks[stackType];
             const Icon = config.icon;
@@ -635,13 +674,9 @@ export function StackedRoomCards({
         >
           {/* Close Button */}
           <button
-            onClick={() => {
-              if (centeredRoom) {
-                setCenteredRoom(null);
-              } else if (onClose) {
-                onClose();
-              }
-            }}
+           onClick={() => {
+             onClose?.();
+           }}
             className="absolute top-4 right-4 z-50 p-3 rounded-full transition-all duration-200 hover:scale-110"
             style={{
               background: 'rgba(0, 0, 0, 0.6)',

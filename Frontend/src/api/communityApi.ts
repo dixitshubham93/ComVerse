@@ -214,3 +214,11 @@ export const deleteCommunity = async (id: number): Promise<{ message: string }> 
     throw error;
   }
 };
+
+
+export const parseCommunityType = (type: string): CommunityType => {
+  if (Object.values(CommunityType).includes(type as CommunityType)) {
+    return type as CommunityType;
+  }
+  return CommunityType.OTHER;
+};
