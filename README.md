@@ -23,7 +23,7 @@ ComVerse reimagines online community interaction by breaking away from tradition
 
 This experimental yet production-oriented platform combines real-time systems (WebRTC, WebSockets) with 3D-inspired UI paradigms to deliver a Discord-like feature set with a fundamentally different interaction model.
 
-![ComVerse Main Interface](./screenshots/main-interface.png)
+![ComVerse Main Interface](https://drive.google.com/uc?export=view&id=1aSwZQInvLP57coGt7bZmwIgMa0pfTezo)
 *Screenshot: The ComVerse universe with planetary communities*
 
 ---
@@ -48,7 +48,7 @@ ComVerse explores how 3D metaphors can enhance engagement, discovery, and social
 
 Each community is visualized as a planet in a 3D universe, creating emotional attachment and improving discovery.
 
-![Planet Communities](./screenshots/planet-communities.png)
+![Planet Communities](https://drive.google.com/uc?export=view&id=192i05l5gjRA6F40ZAbOjf29H0Iu4bw-S)
 *Screenshot: Multiple community planets in the ComVerse universe*
 
 **Capabilities:**
@@ -63,7 +63,7 @@ Each community is visualized as a planet in a 3D universe, creating emotional at
 
 **The core innovation of ComVerse.** Posts are arranged in a 3D carousel/spatial feed instead of a traditional vertical scroll.
 
-![3D Feed System](./screenshots/3d-feed.png)
+![3D Feed System](https://drive.google.com/uc?export=view&id=1nkQhSnQsaGbyBhvVj9lycT8SomOYJW4U)
 *Screenshot: 3D post carousel with spatial navigation*
 
 **Features:**
@@ -78,7 +78,7 @@ Each community is visualized as a planet in a 3D universe, creating emotional at
 
 Real-time voice communication with spatial presence awareness.
 
-![Voice Room](./screenshots/voice-room.png)
+![Voice Room](https://drive.google.com/uc?export=view&id=1134Izfe63IgVTLPU712NzCUAVnJ10ajO)
 *Screenshot: Active voice room with participant grid*
 
 **Features:**
@@ -101,7 +101,7 @@ Audio streams never pass through server → Scalable & secure
 
 High-concurrency, low-latency text chat powered by WebSockets.
 
-![Chat Room](./screenshots/chat-room.png)
+![Chat Room](https://drive.google.com/uc?export=view&id=1ixr6x1rlR4uvvvkW0tYYqrtg6rqILCFw)
 *Screenshot: Real-time chat interface*
 
 **Features:**
@@ -116,7 +116,7 @@ High-concurrency, low-latency text chat powered by WebSockets.
 
 Role-restricted communication channel with backend-enforced permissions.
 
-![Announcement Room](./screenshots/announcement-room.png)
+![Announcement Room](https://drive.google.com/uc?export=view&id=1sIUkxKY7wdO-mnOWpn9oPcGeucBIpeEY)
 *Screenshot: Announcement room with role-based access*
 
 **Features:**
@@ -131,7 +131,7 @@ Role-restricted communication channel with backend-enforced permissions.
 
 Personalized user spaces with presence-aware interactions.
 
-![User Profile](./screenshots/user-profile.png)
+![User Profile](https://drive.google.com/uc?export=view&id=1DEyQgqEqng6IC3dxzYXjJKcxEfex0Ahs)
 *Screenshot: User profile with avatar and communities*
 
 **Features:**
@@ -146,7 +146,7 @@ Personalized user spaces with presence-aware interactions.
 
 Comprehensive control panel for community owners and administrators.
 
-![Management Dashboard](./screenshots/dashboard.png)
+![Management Dashboard](https://drive.google.com/uc?export=view&id=1J3iQIyDTGiYM9pHLoZRHVgCoqulatmx_)
 *Screenshot: Community management interface*
 
 **Features:**
@@ -196,7 +196,7 @@ Comprehensive control panel for community owners and administrators.
 
 ### System Architecture Diagram
 
-![System Architecture](./screenshots/architecture-diagram.png)
+![System Architecture](https://drive.google.com/uc?export=view&id=14K2kVHGOXFbFdk3gGQvY5d3Smw54F_45)
 *Diagram: ComVerse system architecture*
 
 ---
@@ -215,15 +215,15 @@ Comprehensive control panel for community owners and administrators.
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- PostgreSQL (v14 or higher)
-- npm or yarn
+- Node.js (v18 )
+- PostgreSQL (v14 )
+- npm or Bun
 
 ### Backend Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/comverse.git
+git clone https://github.com/dixitshubham93/comverse.git
 cd comverse/backend
 
 # Install dependencies
@@ -283,23 +283,6 @@ VITE_SOCKET_URL="http://localhost:5000"
 4. **Engage:** Post in the 3D feed, chat in real-time, or join voice rooms
 5. **Create Your Own:** Start your own community and customize it
 
-![Usage Flow](./screenshots/usage-flow.gif)
-*GIF: User journey through ComVerse*
-
----
-
-## 🎓 GSoC Relevance
-
-ComVerse strongly aligns with Google Summer of Code objectives:
-
-- ✅ **Open-source friendly architecture** with clear contribution guidelines
-- ✅ **Research-oriented UI/UX** experimentation
-- ✅ **Complex real-time system design** with scalable patterns
-- ✅ **Clear scope** for iteration and extension
-- ✅ **Strong learning potential** for mentees and contributors
-
-**This is not a simple clone—it's an exploration of how future social platforms can evolve beyond flat interfaces.**
-
 ---
 
 ## 🛣️ Roadmap
@@ -337,14 +320,6 @@ We welcome contributions! Here's how you can help:
 - Update documentation as needed
 - Ensure all tests pass before submitting PR
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ---
 
 ## 👨‍💻 Author
@@ -354,9 +329,8 @@ Full-Stack Developer | Real-Time Systems | Immersive UI Research
 
 *Designing communities as experiences, not just interfaces.*
 
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourprofile)
-[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/yourhandle)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/dixitshubham93)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/shubhamdt1/)
 
 ---
 
@@ -375,3 +349,4 @@ Full-Stack Developer | Real-Time Systems | Immersive UI Research
 Made with ❤️ for the future of online communities
 
 </div>
+
