@@ -334,14 +334,6 @@ Full-Stack Developer | Real-Time Systems | Immersive UI Research
 
 ---
 
-## 🙏 Acknowledgments
-
-- Inspired by the vision of more immersive and engaging online communities
-- Built with amazing open-source technologies
-- Special thanks to all contributors and testers
-
----
-
 <div align="center">
 
 **⭐ Star this repository if you find it interesting!**
@@ -349,4 +341,5 @@ Full-Stack Developer | Real-Time Systems | Immersive UI Research
 Made with ❤️ for the future of online communities
 
 </div>
+
 
