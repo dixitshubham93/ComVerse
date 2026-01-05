@@ -7,13 +7,14 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      // Whether to polyfill `node:` protocol imports.
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
       protocolImports: true,
     }),
   ],
-  define: {
-    'process.env': {},
-  },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
@@ -57,9 +58,6 @@ export default defineConfig({
       '@radix-ui/react-alert-dialog@1.1.6': '@radix-ui/react-alert-dialog',
       '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
     },
-  },
-  optimizeDeps: {
-    include: ['simple-peer'],
   },
   build: {
     target: 'esnext',

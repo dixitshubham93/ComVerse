@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus, Send, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CreateCommunityModal } from '../components/CreateCommunityModal';
 import { CommunityCard } from '../components/CommunityCard';
