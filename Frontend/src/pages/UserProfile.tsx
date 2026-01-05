@@ -174,7 +174,7 @@ export function UserProfile() {
           id: user.id,
           username: user.username,
           email: user.email,
-          avatarUrl: user.avatarUrl || user.avatar, // Handle both avatarUrl and avatar properties
+          avatarUrl: user.avatarUrl, // Handle both avatarUrl and avatar properties
           bannerUrl: user.bannerUrl || null,
           age: user.age,
         });
@@ -221,7 +221,7 @@ export function UserProfile() {
           id: user.id,
           username: user.username,
           email: user.email,
-          avatarUrl: user.avatarUrl || user.avatar, // Handle both avatarUrl and avatar properties
+          avatarUrl: user.avatarUrl, // Handle both avatarUrl and avatar properties
           bannerUrl: user.bannerUrl || null,
           age: user.age,
         });
@@ -533,7 +533,8 @@ export function UserProfile() {
                         <img 
                           src={post.mediaUrl} 
                           alt="Post media" 
-                          className="w-full h-auto max-h-[500px] object-contain block mx-auto transition-transform duration-500 hover:scale-[1.02]"
+                          className="w-full h-auto max-h-[220px] object-contain mx-auto transition-transform duration-500 hover:scale-[1.02]"
+                        
                         />
                       </div>
                     )}
