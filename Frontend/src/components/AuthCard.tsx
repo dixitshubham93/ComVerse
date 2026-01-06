@@ -4,6 +4,7 @@ import { X, Mail, Lock, User, Calendar, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Slider } from './ui/slider';
 import { useAuth } from '../contexts/AuthContext';
 import { ImageUpload } from './ImageUpload';
 import { signup as signupApi, login as loginApi, ApiResponse } from '../api/authApi';
@@ -217,19 +218,57 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                 : 'Final step to join the universe'}
           </DialogDescription>
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2 glow-text">
-              {mode === 'signin' ? 'Sign In' : signupStep === 1 ? 'Create Account' : 'Complete Sign Up'}
-            </h2>
-            <p className="text-[#747c88] text-sm">
-              {mode === 'signin' 
-                ? 'Welcome back to ComVerse' 
-                : signupStep === 1 
-                  ? 'Start your cosmic journey' 
-                  : 'Final step to join the universe'}
-            </p>
-          </div>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2 glow-text">
+                {mode === 'signin' ? 'Sign In' : signupStep === 1 ? 'Create Account' : 'Complete Sign Up'}
+              </h2>
+              <p className="text-[#747c88] text-sm">
+                {mode === 'signin' 
+                  ? 'Welcome back to ComVerse' 
+                  : signupStep === 1 
+                    ? 'Start your cosmic journey' 
+                    : 'Final step to join the universe'}
+              </p>
+            </div>
+
+            {/* Mode Toggle (Sliding) */}
+            {signupStep === 1 && (
+              <div className="relative p-1 bg-[#2a3444]/50 rounded-full mb-8 flex items-center border border-white/5 shadow-inner">
+                <div
+                  className="absolute h-[calc(100%-8px)] transition-all duration-300 ease-out bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] rounded-full shadow-[0_0_15px_rgba(40,245,204,0.3)]"
+                  style={{
+                    width: 'calc(50% - 4px)',
+                    left: mode === 'signin' ? '4px' : 'calc(50%)',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('signin');
+                    setError('');
+                  }}
+                  className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 ${
+                    mode === 'signin' ? 'text-black' : 'text-[#747c88] hover:text-white'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('signup');
+                    setSignupStep(1);
+                    setError('');
+                  }}
+                  className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 ${
+                    mode === 'signup' ? 'text-black' : 'text-[#747c88] hover:text-white'
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
 
           {/* Error message */}
           {error && (
@@ -333,39 +372,24 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleGoogleAuth}
-                disabled={isLoading}
-                className="w-full py-3 rounded-full border-2 border-[#747c88]/30 text-white hover:border-[#28f5cc] transition-all disabled:opacity-50"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  <span>Continue with Google</span>
-                </div>
-              </button>
-
-              <div className="text-center text-sm text-[#747c88]">
-                Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode('signup');
-                    setSignupStep(1);
-                    setError('');
-                  }}
-                  className="text-[#28f5cc] hover:text-[#04ad7b] font-semibold"
+                  onClick={handleGoogleAuth}
+                  disabled={isLoading}
+                  className="w-full py-3 rounded-full border-2 border-[#747c88]/30 text-white hover:border-[#28f5cc] transition-all disabled:opacity-50"
                 >
-                  Sign up
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                  </div>
                 </button>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
 
           {/* Sign Up Step 1 */}
           {mode === 'signup' && signupStep === 1 && (
@@ -440,52 +464,38 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="age" className="text-[#747c88] mb-2 block">
-                    Age
-                  </Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Calendar className="w-5 h-5 text-[#747c88]" />
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label htmlFor="age" className="text-[#747c88]">
+                        Age
+                      </Label>
+                      <span className="text-[#28f5cc] font-bold text-sm bg-[#28f5cc]/10 px-2 py-0.5 rounded border border-[#28f5cc]/20">
+                        {age || '13'}
+                      </span>
                     </div>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      className="pl-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20"
-                      placeholder="Enter your age"
-                      min="13"
-                      max="120"
-                      required
-                    />
+                    <div className="pt-2 px-1">
+                      <Slider
+                        id="age"
+                        min={13}
+                        max={100}
+                        step={1}
+                        value={[parseInt(age) || 13]}
+                        onValueChange={(vals) => setAge(vals[0].toString())}
+                        className="cursor-pointer"
+                      />
+                    </div>
                   </div>
-                </div>
 
-              <button
-                onClick={handleSignUpStep1}
-                disabled={isLoading || !username || !age || !avatarFile}
-                className="w-full py-3 rounded-full bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
-              >
-                Continue
-              </button>
-
-              <div className="text-center text-sm text-[#747c88]">
-                Already have an account?{' '}
                 <button
-                  type="button"
-                  onClick={() => {
-                    setMode('signin');
-                    setError('');
-                  }}
-                  className="text-[#28f5cc] hover:text-[#04ad7b] font-semibold"
+                  onClick={handleSignUpStep1}
+                  disabled={isLoading || !username || !age || !avatarFile}
+                  className="w-full py-3 rounded-full bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ boxShadow: '0 0 20px rgba(40, 245, 204, 0.4)' }}
                 >
-                  Sign in
+                  Continue
                 </button>
               </div>
-            </div>
-          )}
+            )}
 
             {/* Sign Up Step 2 */}
             {mode === 'signup' && signupStep === 2 && (
@@ -608,21 +618,6 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                 >
                   {isLoading ? 'Creating account...' : 'Create Account'}
                 </button>
-
-                <div className="text-center text-sm text-[#747c88]">
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('signin');
-                      setSignupStep(1);
-                      setError('');
-                    }}
-                    className="text-[#28f5cc] hover:text-[#04ad7b] font-semibold"
-                  >
-                    Sign in
-                  </button>
-                </div>
               </form>
             )}
         </div>

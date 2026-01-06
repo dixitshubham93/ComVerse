@@ -36,26 +36,26 @@ function Slider({
       )}
       {...props}
     >
-      <SliderPrimitive.Track
-        data-slot="slider-track"
-        className={cn(
-          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-4 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
-        )}
-      >
-        <SliderPrimitive.Range
-          data-slot="slider-range"
+        <SliderPrimitive.Track
+          data-slot="slider-track"
           className={cn(
-            "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
+            "bg-[#2a3444]/50 relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-2 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-2 border border-white/5",
           )}
-        />
-      </SliderPrimitive.Track>
-      {Array.from({ length: _values.length }, (_, index) => (
-        <SliderPrimitive.Thumb
-          data-slot="slider-thumb"
-          key={index}
-          className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        />
-      ))}
+        >
+          <SliderPrimitive.Range
+            data-slot="slider-range"
+            className={cn(
+              "bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full shadow-[0_0_10px_rgba(40,245,204,0.3)]",
+            )}
+          />
+        </SliderPrimitive.Track>
+        {Array.from({ length: _values.length }, (_, index) => (
+          <SliderPrimitive.Thumb
+            data-slot="slider-thumb"
+            key={index}
+            className="border-2 border-[#28f5cc] bg-[#04372f] ring-offset-background block size-5 shrink-0 rounded-full shadow-[0_0_15px_rgba(40,245,204,0.5)] transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#28f5cc] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+          />
+        ))}
     </SliderPrimitive.Root>
   );
 }
