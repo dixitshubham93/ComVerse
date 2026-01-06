@@ -523,7 +523,7 @@ export function UserProfile() {
 
                     {/* Post Content */}
                     {post.caption && (
-                      <p className="text-white/90 mb-5 leading-relaxed text-base font-normal tracking-wide">
+                      <p className="text-gray-100/90 mb-5 leading-relaxed text-[17px] font-medium tracking-tight">
                         {post.caption}
                       </p>
                     )}
@@ -533,7 +533,7 @@ export function UserProfile() {
                         <img 
                           src={post.mediaUrl} 
                           alt="Post media" 
-                          className="w-full h-auto max-h-[600px] object-cover transition-all duration-700 group-hover:scale-105"
+                          className="w-full h-auto max-h-[480px] object-cover transition-all duration-700 group-hover:scale-105"
                         
                         />
                       </div>
