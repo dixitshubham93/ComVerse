@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Header } from '../components/Header';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { SpaceSearchBar } from '../components/SpaceSearchBar';
@@ -147,6 +148,13 @@ export function HomePageWithUniverse() {
   // Handle search selection with 3-spin animation
   const handleSearchSelect = (index: number) => {
     if (isAnimating || index >= communities.length) return;
+
+    if (!isAuthenticated) {
+      toast.error("Please sign in to open communities");
+      handleOpenAuth('signin');
+      return;
+    }
+
     setIsAnimating(true);
     setSelectedPlanet(index);
     canvasRef.current?.animateToTarget(communities[index].position3D, true);
@@ -205,6 +213,7 @@ export function HomePageWithUniverse() {
   // Handle join community
   const handleJoinCommunity = async () => {
     if (!isAuthenticated || !user || selectedPlanet === null) {
+      toast.error("Please sign in to join communities");
       setIsAuthModalOpen(true);
       setAuthMode('signin');
       return;
@@ -378,7 +387,8 @@ export function HomePageWithUniverse() {
                 {!isAuthenticated ? (
                   <OpenCommunityButton
                     onClick={() => {
-                      navigate(`/community/${communities[selectedPlanet].id}`);
+                      toast.error("Please sign in to open communities");
+                      handleOpenAuth('signin');
                     }}
                   />
                 ) : isCheckingMembership ? (
