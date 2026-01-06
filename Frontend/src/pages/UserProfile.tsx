@@ -503,23 +503,28 @@ export function UserProfile() {
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                   }}
                 >
-                    {/* Post Header */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <img
-                        src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
-                        alt={userData.username}
-                        className="w-10 h-10 rounded-full"
-                        style={{
-                          border: '2px solid rgba(40, 245, 204, 0.3)',
-                        }}
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-white">{userData.username}</h4>
-                        <p className="text-[#747c88] text-sm">
-                          {formatTime(post.createdAt)}
-                        </p>
+                      {/* Post Header */}
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="relative group/avatar">
+                          <img
+                            src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
+                            alt={userData.username}
+                            className="w-12 h-12 rounded-full object-cover transition-all duration-300 group-hover/avatar:scale-105"
+                            style={{
+                              border: '2px solid rgba(40, 245, 204, 0.4)',
+                              boxShadow: '0 0 15px rgba(40, 245, 204, 0.2)',
+                            }}
+                          />
+                          <div className="absolute inset-0 rounded-full bg-[#28f5cc]/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-white font-semibold tracking-tight text-lg leading-tight">{userData.username}</h4>
+                          <p className="text-[#747c88] text-xs mt-0.5 font-medium tracking-wide flex items-center gap-1.5">
+                            <span className="w-1 h-1 rounded-full bg-[#28f5cc]/40" />
+                            {formatTime(post.createdAt)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
                     {/* Post Content */}
                     {post.caption && (
@@ -632,22 +637,24 @@ export function UserProfile() {
                               </div>
                             ) : (
                               <div className="space-y-3">
-                                {(postComments[post.id] || []).map((comment) => (
-                                  <div key={comment.id} className="flex gap-3">
-                                    <img
-                                      src={comment.user?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.user?.username}
-                                      alt={comment.user?.username}
-                                      className="w-8 h-8 rounded-full flex-shrink-0"
-                                    />
-                                    <div className="flex-1 bg-white/5 rounded-xl p-3">
-                                      <div className="flex items-center justify-between mb-1">
-                                        <span className="text-white text-xs font-semibold">{comment.user?.username}</span>
-                                        <span className="text-[#747c88] text-[10px]">{formatTime(comment.createdAt)}</span>
+                                  {(postComments[post.id] || []).map((comment) => (
+                                    <div key={comment.id} className="flex gap-3 group/comment">
+                                      <div className="relative">
+                                        <img
+                                          src={comment.user?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.user?.username}
+                                          alt={comment.user?.username}
+                                          className="w-9 h-9 rounded-full flex-shrink-0 object-cover border border-[#28f5cc]/20 transition-all duration-300 group-hover/comment:border-[#28f5cc]/40"
+                                        />
                                       </div>
-                                      <p className="text-white/80 text-xs">{comment.content}</p>
+                                      <div className="flex-1 bg-white/5 rounded-2xl p-4 transition-all duration-300 group-hover/comment:bg-white/[0.08] border border-transparent group-hover/comment:border-white/5">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                          <span className="text-white text-sm font-bold tracking-tight">{comment.user?.username}</span>
+                                          <span className="text-[#747c88] text-[10px] font-medium uppercase tracking-widest opacity-60">{formatTime(comment.createdAt)}</span>
+                                        </div>
+                                        <p className="text-gray-100/80 text-[13.5px] leading-relaxed">{comment.content}</p>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
                                 {(postComments[post.id] || []).length === 0 && (
                                   <p className="text-center text-[#747c88] text-xs py-2">No comments yet</p>
                                 )}
