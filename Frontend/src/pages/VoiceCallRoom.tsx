@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Phone, PhoneOff, Volume2 } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';

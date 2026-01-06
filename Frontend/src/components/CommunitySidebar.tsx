@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Home, Users, Shield, LogOut, ArrowLeft, Sparkles } from 'lucide-react';

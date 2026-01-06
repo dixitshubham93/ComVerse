@@ -1,3 +1,4 @@
+import React from 'react';
 import { useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeElements } from '@react-three/fiber';
 import { Html } from '@react-three/drei';

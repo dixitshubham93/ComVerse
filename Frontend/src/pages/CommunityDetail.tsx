@@ -1,3 +1,4 @@
+import React from 'react';
 import { ArrowLeft, Users, Clock, Plus, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import { CreateRoomModal } from '../components/CreateRoomModal';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 import { MoreVertical, Reply, Smile, Trash2, Shield } from 'lucide-react';

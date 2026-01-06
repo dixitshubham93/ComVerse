@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { UniverseCanvas, UniverseCanvasRef } from '../components/UniverseCanvas';

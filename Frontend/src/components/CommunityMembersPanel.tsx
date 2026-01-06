@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { X, Users, UserMinus } from 'lucide-react';
 import { getCommunityMembers, MemberInfo, kickMember } from '../api/membershipApi';

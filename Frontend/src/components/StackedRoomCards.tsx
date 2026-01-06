@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useRef, Suspense } from 'react';
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -595,7 +596,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
                   {stackRooms.map((room, index) => (
                     <div
                       key={room.id}
-                      className="absolute w-full h-[200px] rounded-2xl transition-all duration-[360ms]"
+                      className="absolute w-full h-[200px] rounded-2xl transition-all duration-300"
                       style={{
                         left: index === 0 ? '0' : `${index * 12}px`,
                         top: index === 0 ? '0' : `${index * 12}px`,
@@ -666,7 +667,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
       {/* Expanded Stack View */}
       {selectedStack && (
         <div
-          className="absolute inset-0 animate-in fade-in zoom-in-95 duration-[500ms]"
+          className="absolute inset-0 animate-in fade-in zoom-in-95 duration-500"
           style={{
             animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
             zIndex: 30,
@@ -700,7 +701,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
       {/* Background Blur/Dim when stack selected */}
       {selectedStack && (
         <div
-          className="fixed inset-0 pointer-events-none animate-in fade-in duration-[320ms]"
+          className="fixed inset-0 pointer-events-none animate-in fade-in duration-300"
           style={{
             background: 'rgba(0, 0, 0, 0.5)',
             backdropFilter: 'blur(6px)',
@@ -712,7 +713,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
       {/* Rocket Cursor */}
       {isRocketFlying && rocketPosition && (
         <div
-          className="fixed pointer-events-none z-50 transition-all duration-[420ms]"
+          className="fixed pointer-events-none z-50 transition-all duration-500"
           style={{
             left: rocketPosition.x,
             top: rocketPosition.y,

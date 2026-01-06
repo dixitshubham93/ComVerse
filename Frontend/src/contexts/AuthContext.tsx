@@ -1,3 +1,4 @@
+import React from 'react';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { login as loginApi, signup as signupApi } from '../api/authApi';
 import { toast } from 'sonner';
@@ -141,7 +142,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
     const loginWithGoogle = () => {
       // Redirect to Google OAuth
-      let apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8081';
+      let apiUrl = (import.meta as any).env?.VITE_API_URL;
       
       // Clean up the URL to prevent double /api issues
       apiUrl = apiUrl.replace(/\/$/, ''); // Remove trailing slash

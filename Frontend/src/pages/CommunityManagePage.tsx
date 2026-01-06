@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Plus, Pencil, Trash2, TrendingUp, Activity, Hash, Shield, Crown, MoreVertical } from 'lucide-react';

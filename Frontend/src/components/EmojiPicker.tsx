@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Smile } from 'lucide-react';

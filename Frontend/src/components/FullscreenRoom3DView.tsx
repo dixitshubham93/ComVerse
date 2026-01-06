@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useRef, Suspense } from 'react';
 import { X, Users, Speaker, MessageCircle, Zap, Edit2 } from 'lucide-react';
 import * as THREE from "three";

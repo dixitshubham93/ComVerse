@@ -193,18 +193,18 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-md p-0 border-0 overflow-hidden"
-        style={{
-          background: 'rgba(4, 55, 47, 0.25)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(40, 245, 204, 0.3)',
-          boxShadow: '0 0 30px rgba(40, 245, 204, 0.2), 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 60px rgba(40, 245, 204, 0.1)',
-        }}
-        onEscapeKeyDown={onClose}
-      >
-        <div className="relative p-8">
+                <DialogContent
+            className="max-w-md p-0 border-0 overflow-hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
+            style={{
+              background: 'rgba(4, 55, 47, 0.25)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(40, 245, 204, 0.3)',
+              boxShadow: '0 0 30px rgba(40, 245, 204, 0.2), 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 60px rgba(40, 245, 204, 0.1)',
+            }}
+            onEscapeKeyDown={onClose}
+          >
+        <div className=" relative p-8">
           {/* Close button */}
           <button
             onClick={onClose}

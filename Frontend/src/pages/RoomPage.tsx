@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Send, Smile, Paperclip, Phone, PhoneOff } from 'lucide-react';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
