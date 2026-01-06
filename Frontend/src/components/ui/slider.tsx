@@ -45,7 +45,9 @@ function Slider({
           <SliderPrimitive.Range
             data-slot="slider-range"
             className={cn(
-              "bg-gradient-to-r from-[#04ad7b] to-[#28f5cc] absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full shadow-[0_0_10px_rgba(40,245,204,0.3)]",
+              "absolute shadow-[0_0_10px_rgba(40,245,204,0.3)]",
+              "data-[orientation=horizontal]:h-full data-[orientation=horizontal]:bg-gradient-to-r data-[orientation=horizontal]:from-[#04ad7b] data-[orientation=horizontal]:to-[#28f5cc]",
+              "data-[orientation=vertical]:w-full data-[orientation=vertical]:bg-gradient-to-b data-[orientation=vertical]:from-[#04ad7b] data-[orientation=vertical]:to-[#28f5cc]"
             )}
           />
         </SliderPrimitive.Track>

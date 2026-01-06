@@ -41,6 +41,28 @@ html {
   background: rgba(40, 245, 204, 0.55);
 }
 
+/* Cyberpunk Vertical Scrollbar for Overflow */
+.cyber-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cyber-scrollbar::-webkit-scrollbar-track {
+  background: rgba(4, 55, 47, 0.1);
+  border-radius: 10px;
+  margin: 4px 0;
+}
+
+.cyber-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #04ad7b, #28f5cc);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(40, 245, 204, 0.3);
+}
+
+.cyber-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #05c28a, #3df6d3);
+  box-shadow: 0 0 15px rgba(40, 245, 204, 0.6);
+}
+
 
 h1 {
   font-size: 3.5rem;

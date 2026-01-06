@@ -195,7 +195,7 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent
-            className="max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-2xl p-0 shadow-lg"
+            className="max-w-lg w-full max-h-[90vh] overflow-y-auto cyber-scrollbar rounded-2xl p-0 shadow-lg"
             style={{
               background: 'rgba(4, 55, 47, 0.25)',
               backdropFilter: 'blur(20px)',
