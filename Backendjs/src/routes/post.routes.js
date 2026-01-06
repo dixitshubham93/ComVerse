@@ -4,6 +4,7 @@ import { authenticate } from "../middlewares/jwt.middleware.js";
 import {
   createPost,
   getPostsByRoom,
+  deletePost,
   like,
   unlike,
 } from "../controllers/post.controller.js";
@@ -18,6 +19,7 @@ const router = express.Router();
 // POSTS
 router.post("/:roomId", authenticate, createPost);
 router.get("/:roomId", getPostsByRoom);
+router.delete("/:postId", authenticate, deletePost);
 
 // COMMENTS
 router.post("/comment/:postId", authenticate, createComment);

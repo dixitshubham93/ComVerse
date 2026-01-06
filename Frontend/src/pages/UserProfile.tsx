@@ -1,14 +1,14 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus, Send, Loader2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CreateCommunityModal } from '../components/CreateCommunityModal';
 import { CommunityCard } from '../components/CommunityCard';
 import { useAuth } from '../contexts/AuthContext';
 import { getUser, getUserCommunitiesWithDetails } from '../api/userApi';
-import { getUserPosts, getUserRecentPosts, likePost, unlikePost, getComments, createComment, CommentDto } from '../api/postApi';
+import { getUserPosts, getUserRecentPosts, likePost, unlikePost, getComments, createComment, deletePost, CommentDto } from '../api/postApi';
 import { UserCommunityDto } from '../api/communityApi';
 import { PostDto } from '../api/postApi';
 
@@ -37,11 +37,12 @@ export function UserProfile() {
   const [expandedComments, setExpandedComments] = useState<number | null>(null);
   const [postComments, setPostComments] = useState<Record<number, CommentDto[]>>({});
   const [loadingComments, setLoadingComments] = useState<number | null>(null);
-  const [newComments, setNewComments] = useState<Record<number, string>>({});
-  const [submittingComment, setSubmittingComment] = useState<number | null>(null);
-  const [likeLoading, setLikeLoading] = useState<number | null>(null);
-
-  const currentUserId = authUser?.id ? (typeof authUser.id === 'string' ? parseInt(authUser.id, 10) : authUser.id) : 0;
+    const [newComments, setNewComments] = useState<Record<number, string>>({});
+    const [submittingComment, setSubmittingComment] = useState<number | null>(null);
+    const [likeLoading, setLikeLoading] = useState<number | null>(null);
+    const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
+  
+    const currentUserId = authUser?.id ? (typeof authUser.id === 'string' ? parseInt(authUser.id, 10) : authUser.id) : 0;
 
   const formatTime = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -118,37 +119,54 @@ export function UserProfile() {
     }
   };
 
-  const handleSubmitComment = async (postId: number) => {
-    const commentText = newComments[postId]?.trim();
-    if (!commentText || submittingComment === postId) return;
-    
-    setSubmittingComment(postId);
-    try {
-      const comment = await createComment(postId, commentText);
-      if (comment) {
-        setPostComments(prev => ({
-          ...prev,
-          [postId]: [...(prev[postId] || []), comment]
-        }));
-        
-        const updatePosts = (prev: PostDto[]) => prev.map(p => 
-          p.id === postId 
-            ? { ...p, commentCount: (p.commentCount || 0) + 1 }
-            : p
-        );
-        
-        setUserPosts(updatePosts);
-        setRecentPosts(updatePosts);
-        setNewComments(prev => ({ ...prev, [postId]: '' }));
+    const handleSubmitComment = async (postId: number) => {
+      const commentText = newComments[postId]?.trim();
+      if (!commentText || submittingComment === postId) return;
+      
+      setSubmittingComment(postId);
+      try {
+        const comment = await createComment(postId, commentText);
+        if (comment) {
+          setPostComments(prev => ({
+            ...prev,
+            [postId]: [...(prev[postId] || []), comment]
+          }));
+          
+          const updatePosts = (prev: PostDto[]) => prev.map(p => 
+            p.id === postId 
+              ? { ...p, commentCount: (p.commentCount || 0) + 1 }
+              : p
+          );
+          
+          setUserPosts(updatePosts);
+          setRecentPosts(updatePosts);
+          setNewComments(prev => ({ ...prev, [postId]: '' }));
+        }
+      } catch (err) {
+        console.error('Failed to submit comment:', err);
+      } finally {
+        setSubmittingComment(null);
       }
-    } catch (err) {
-      console.error('Failed to submit comment:', err);
-    } finally {
-      setSubmittingComment(null);
-    }
-  };
-
-  // Fetch user data on mount
+    };
+  
+    const handleDeletePost = async (postId: number) => {
+      if (!window.confirm('Are you sure you want to delete this post?')) return;
+      
+      setDeletingPostId(postId);
+      try {
+        const success = await deletePost(postId);
+        if (success) {
+          setUserPosts(prev => prev.filter(p => p.id !== postId));
+          setRecentPosts(prev => prev.filter(p => p.id !== postId));
+        }
+      } catch (err) {
+        console.error('Failed to delete post:', err);
+      } finally {
+        setDeletingPostId(null);
+      }
+    };
+  
+    // Fetch user data on mount
   useEffect(() => {
     const fetchUserData = async () => {
       if (!authUser?.id) {
@@ -524,6 +542,20 @@ export function UserProfile() {
                             {formatTime(post.createdAt)}
                           </p>
                         </div>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleDeletePost(post.id)}
+                          disabled={deletingPostId === post.id}
+                          className="p-2 rounded-xl text-[#747c88] hover:text-red-400 transition-all duration-200"
+                        >
+                          {deletingPostId === post.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-5 h-5" />
+                          )}
+                        </motion.button>
                       </div>
 
                     {/* Post Content */}

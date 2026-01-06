@@ -1,8 +1,8 @@
 import React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp, Smile } from 'lucide-react';
+import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp, Smile, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment } from '../api/postApi';
+import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, deletePost } from '../api/postApi';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { EmojiPicker } from '../components/EmojiPicker';
 
@@ -136,110 +136,136 @@ const CarouselCard = ({
   radius: number;
   onSelect: () => void;
   isLiked: boolean;
-  onLike: () => void;
-  onComment: () => void;
-  likeLoading: boolean;
-}) => {
-  const anglePerCard = 360 / totalCards;
-  const cardAngle = index * anglePerCard + rotation;
-  const radians = (cardAngle * Math.PI) / 180;
+    onLike: () => void;
+    onComment: () => void;
+    onDelete?: () => void;
+    likeLoading: boolean;
+    isOwner?: boolean;
+    isDeleting?: boolean;
+  }) => {
+    const anglePerCard = 360 / totalCards;
+    const cardAngle = index * anglePerCard + rotation;
+    const radians = (cardAngle * Math.PI) / 180;
+    
+    const x = Math.sin(radians) * radius;
+    const z = Math.cos(radians) * radius;
+    const normalizedZ = (z + radius) / (2 * radius);
+    const scale = 0.6 + normalizedZ * 0.4;
+    const opacity = 0.4 + normalizedZ * 0.6;
+    const isActive = z > radius * 0.8;
+    const formatTime = (dateStr?: string) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
   
-  const x = Math.sin(radians) * radius;
-  const z = Math.cos(radians) * radius;
-  const normalizedZ = (z + radius) / (2 * radius);
-  const scale = 0.6 + normalizedZ * 0.4;
-  const opacity = 0.4 + normalizedZ * 0.6;
-  const isActive = z > radius * 0.8;
-  const formatTime = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m`;
-    if (hours < 24) return `${hours}h`;
-    if (days < 7) return `${days}d`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-  return (
-    <motion.div
-      className="absolute cursor-pointer"
-      style={{
-        transform: `translateX(${x}px) translateZ(${z}px) scale(${scale})`,
-        opacity,
-        zIndex: Math.round(normalizedZ * 100),
-      }}
-      animate={{
-        x,
-        scale,
-        opacity,
-      }}
-      transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-      onClick={onSelect}
-      whileHover={{ scale: scale * 1.05 }}
-    >
-      <div
-        className={`relative w-[350px] h-[520px] rounded-3xl overflow-hidden transition-all duration-500 flex flex-col group ${
-          isActive ? 'shadow-2xl' : ''
-        }`}
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m`;
+      if (hours < 24) return `${hours}h`;
+      if (days < 7) return `${days}d`;
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+    return (
+      <motion.div
+        className="absolute cursor-pointer"
         style={{
-          background: 'linear-gradient(165deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 15, 25, 0.98) 100%)',
-          height:"400px",
-          width:"270px",
-          border: isActive 
-            ? '1px solid rgba(20, 184, 166, 0.4)' 
-            : '1px solid rgba(148, 163, 184, 0.1)',
-          boxShadow: isActive 
-            ? '0 25px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(20, 184, 166, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-            : '0 15px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+          transform: `translateX(${x}px) translateZ(${z}px) scale(${scale})`,
+          opacity,
+          zIndex: Math.round(normalizedZ * 100),
         }}
+        animate={{
+          x,
+          scale,
+          opacity,
+        }}
+        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        onClick={onSelect}
+        whileHover={{ scale: scale * 1.05 }}
       >
-        {/* Premium top glow */}
-        <div className="absolute inset-x-0 top-0 h-32 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(20, 184, 166, 0.2) 0%, transparent 70%)',
-        }} />
-
-        {/* Animated border glow for active card */}
-        {isActive && (
-          <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/0 via-teal-400/40 to-cyan-500/0 animate-pulse" 
-              style={{ filter: 'blur(8px)' }} 
-            />
-          </div>
-        )}
-
-        {/* Header Area */}
-        <div className="px-4 py-3.5 flex items-center gap-3 z-30 backdrop-blur-sm" 
-          style={{ 
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.08)'
+        <div
+          className={`relative w-[350px] h-[520px] rounded-3xl overflow-hidden transition-all duration-500 flex flex-col group ${
+            isActive ? 'shadow-2xl' : ''
+          }`}
+          style={{
+            background: 'linear-gradient(165deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 15, 25, 0.98) 100%)',
+            height:"400px",
+            width:"270px",
+            border: isActive 
+              ? '1px solid rgba(20, 184, 166, 0.4)' 
+              : '1px solid rgba(148, 163, 184, 0.1)',
+            boxShadow: isActive 
+              ? '0 25px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(20, 184, 166, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+              : '0 15px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
           }}
         >
-          <PremiumAvatar 
-            src={post.user?.avatarUrl} 
-            fallback={post.user?.username?.charAt(0).toUpperCase() || '?'}
-            size="sm"
-            showRing={isActive}
-          />
-          <div className="flex-1 min-w-0">
-            <span className="text-white/90 text-sm font-medium truncate block">{post.user?.username}</span>
-            <span className="text-slate-400 text-xs">{formatTime(post.createdAt)}</span>
-          </div>
+          {/* Premium top glow */}
+          <div className="absolute inset-x-0 top-0 h-32 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(20, 184, 166, 0.2) 0%, transparent 70%)',
+          }} />
+
+          {/* Animated border glow for active card */}
           {isActive && (
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20"
-            >
-              <Flame className="w-3 h-3 text-orange-400 " />
-  
-            </motion.div>
+            <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/0 via-teal-400/40 to-cyan-500/0 animate-pulse" 
+                style={{ filter: 'blur(8px)' }} 
+              />
+            </div>
           )}
-        </div>
+
+          {/* Header Area */}
+          <div className="px-4 py-3.5 flex items-center gap-3 z-30 backdrop-blur-sm" 
+            style={{ 
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
+              borderBottom: '1px solid rgba(148, 163, 184, 0.08)'
+            }}
+          >
+            <PremiumAvatar 
+              src={post.user?.avatarUrl} 
+              fallback={post.user?.username?.charAt(0).toUpperCase() || '?'}
+              size="sm"
+              showRing={isActive}
+            />
+            <div className="flex-1 min-w-0">
+              <span className="text-white/90 text-sm font-medium truncate block">{post.user?.username}</span>
+              <span className="text-slate-400 text-xs">{formatTime(post.createdAt)}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {isActive && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20"
+                >
+                  <Flame className="w-3 h-3 text-orange-400 " />
+                </motion.div>
+              )}
+
+              {isOwner && (
+                <motion.button
+                  whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.2)' }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onDelete && window.confirm('Are you sure you want to delete this post?')) {
+                      onDelete();
+                    }
+                  }}
+                  disabled={isDeleting}
+                  className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 transition-all duration-300"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3.5 h-3.5 text-red-400 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  )}
+                </motion.button>
+              )}
+            </div>
+          </div>
 
         {/* Image Area */}
         <div className="relative w-full h-[500px] overflow-hidden bg-slate-900/50 flex items-center justify-center group shrink-0">
@@ -395,7 +421,10 @@ const Carousel3D = ({
   likedPosts: Set<number>;
   onLike: (post: PostDto) => void;
   onComment: (postId: number) => void;
+  onDelete: (postId: number) => void;
   likeLoading: number | null;
+  deletingPostId: number | null;
+  currentUserId: number;
 }) => {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -502,7 +531,10 @@ const Carousel3D = ({
               isLiked={likedPosts.has(post.id)}
               onLike={() => onLike(post)}
               onComment={() => onComment(post.id)}
+              onDelete={() => onDelete(post.id)}
               likeLoading={likeLoading === post.id}
+              isOwner={post.userId === currentUserId}
+              isDeleting={deletingPostId === post.id}
             />
           ))}
         </div>
@@ -998,6 +1030,7 @@ export function MemesPostsPage({
   const [submittingComment, setSubmittingComment] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
   const [likeLoading, setLikeLoading] = useState<number | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadStep, setUploadStep] = useState<'select' | 'details'>('select');
@@ -1119,6 +1152,25 @@ export function MemesPostsPage({
       console.error('Error submitting comment:', error);
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (deletingPostId) return;
+    setDeletingPostId(postId);
+    try {
+      const success = await deletePost(postId);
+      if (success) {
+        setPosts(prev => prev.filter(p => p.id !== postId));
+        if (selectedPost?.id === postId) {
+          setCommentPanelOpen(false);
+          setSelectedPost(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    } finally {
+      setDeletingPostId(null);
     }
   };
 
@@ -1271,14 +1323,17 @@ export function MemesPostsPage({
             </motion.button>
           </motion.div>
         ) : (
-          <Carousel3D
-            posts={posts}
-            onSelectPost={(post) => handleOpenComments(post.id)}
-            likedPosts={likedPosts}
-            onLike={handleLike}
-            onComment={handleOpenComments}
-            likeLoading={likeLoading}
-          />
+            <Carousel3D
+              posts={posts}
+              onSelectPost={(post) => handleOpenComments(post.id)}
+              likedPosts={likedPosts}
+              onLike={handleLike}
+              onComment={handleOpenComments}
+              onDelete={handleDeletePost}
+              likeLoading={likeLoading}
+              deletingPostId={deletingPostId}
+              currentUserId={currentUserId}
+            />
         )}
       </div>
 

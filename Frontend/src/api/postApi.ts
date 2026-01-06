@@ -204,8 +204,26 @@ export const getUserRecentPosts = async (userId: number): Promise<PostDto[]> => 
 
     const result = await response.json();
     return result.data || [];
-  } catch (error) {
+    } catch (error) {
     console.error('Error fetching user recent posts:', error);
     return [];
+  }
+};
+
+export const deletePost = async (postId: number): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete post: ${response.status}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return false;
   }
 };

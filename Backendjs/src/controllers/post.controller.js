@@ -1,9 +1,12 @@
 import {
   createPost as createPostService,
   getPostsByRoom as getPostsByRoomService,
+  getPostById as getPostByIdService,
+  deletePost as deletePostService,
   likePost,
   unlikePost,
 } from "../services/post.service.js";
+import { AppError } from "../utils/AppError.js";
 
 const serializePost = (post) => ({
   id: Number(post.id),
@@ -59,6 +62,26 @@ export const getPostsByRoom = async (req, res, next) => {
 
     const serializedPosts = posts.map(serializePost);
     res.json({ success: true, posts: serializedPosts });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deletePost = async (req, res, next) => {
+  try {
+    const postId = BigInt(req.params.postId);
+    const post = await getPostByIdService(postId);
+
+    if (!post) {
+      throw new AppError("Post not found", 404);
+    }
+
+    if (post.userId !== req.user.id) {
+      throw new AppError("Unauthorized to delete this post", 403);
+    }
+
+    await deletePostService(postId);
+    res.json({ success: true, message: "Post deleted successfully" });
   } catch (err) {
     next(err);
   }

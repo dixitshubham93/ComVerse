@@ -37,6 +37,23 @@ export const getPostsByRoom = async (roomId) => {
   });
 };
 
+export const getPostById = async (id) => {
+  return prisma.post.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      comments: true,
+      likes: true,
+    },
+  });
+};
+
+export const deletePost = async (id) => {
+  return prisma.post.delete({
+    where: { id },
+  });
+};
+
 // ===== LIKES (THIS WAS MISSING) =====
 
 export const likePost = async (postId, userId) => {
