@@ -733,28 +733,30 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
                   >
                     {/* Avatar and Online Status */}
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="relative">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
-                          style={{
-                            background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.2), rgba(4, 55, 47, 0.4))',
-                            border: '2px solid rgba(40, 245, 204, 0.3)',
-                          }}
-                        >
-                          {member.avatar}
-                        </div>
-                        {/* Online Indicator */}
-                        {member.isOnline && (
-                          <div
-                            className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2"
-                            style={{
-                              background: '#04ad7b',
-                              borderColor: 'rgba(0, 0, 0, 0.6)',
-                              boxShadow: '0 0 8px #04ad7b',
-                            }}
-                          />
-                        )}
-                      </div>
+                          <div className="relative group/avatar">
+                            <div
+                              className="w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all duration-300 group-hover/avatar:scale-110"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.2), rgba(4, 55, 47, 0.4))',
+                                border: '2px solid rgba(40, 245, 204, 0.35)',
+                                boxShadow: '0 0 15px rgba(40, 245, 204, 0.2)',
+                              }}
+                            >
+                              {member.avatar}
+                            </div>
+                            <div className="absolute inset-0 rounded-full bg-[#28f5cc]/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                            {/* Online Indicator */}
+                            {member.isOnline && (
+                              <div
+                                className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2"
+                                style={{
+                                  background: '#04ad7b',
+                                  borderColor: 'rgba(0, 0, 0, 0.6)',
+                                  boxShadow: '0 0 8px #04ad7b',
+                                }}
+                              />
+                            )}
+                          </div>
 
                       <div className="flex-1 min-w-0">
                         <h4 className="text-white text-sm truncate">{member.name}</h4>

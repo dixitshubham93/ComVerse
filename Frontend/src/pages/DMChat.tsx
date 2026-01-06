@@ -333,16 +333,17 @@ export function DMChat({
           }}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div
-                  className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#04372f]"
-                  style={{
-                    boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)',
-                  }}
-                >
-                  <img src={targetUser.avatar} alt={targetUser.name} className="w-full h-full object-cover" />
-                </div>
+              <div className="flex items-center gap-4">
+                <div className="relative group/avatar">
+                  <div
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#28f5cc]/40 transition-all duration-300 group-hover/avatar:scale-110"
+                    style={{
+                      boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)',
+                    }}
+                  >
+                    <img src={targetUser.avatar} alt={targetUser.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-[#28f5cc]/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 {targetUser.isOnline !== false && (
                   <div
                     className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#04ad7b] border-2 border-[#2a3444]"
@@ -382,15 +383,15 @@ export function DMChat({
           <ScrollArea className="h-[calc(100vh-180px)]">
             <div ref={scrollRef} className="p-4">
               {/* DM Start Notice */}
-              <div className="flex flex-col items-center justify-center py-8 mb-6">
-                <div
-                  className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-[#28f5cc]/30 mb-4"
-                  style={{
-                    boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)',
-                  }}
-                >
-                  <img src={targetUser.avatar} alt={targetUser.name} className="w-full h-full object-cover" />
-                </div>
+                <div className="flex flex-col items-center justify-center py-8 mb-6">
+                  <div
+                    className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#28f5cc]/30 mb-4 transition-transform duration-500 hover:scale-110"
+                    style={{
+                      boxShadow: '0 0 40px rgba(40, 245, 204, 0.4), 0 0 20px rgba(40, 245, 204, 0.2)',
+                    }}
+                  >
+                    <img src={targetUser.avatar} alt={targetUser.name} className="w-full h-full object-cover" />
+                  </div>
                 <h3 className="text-white text-xl mb-2">{targetUser.name}</h3>
                 <p className="text-[#747c88] text-sm text-center max-w-md">
                   This is the beginning of your direct message history with {targetUser.name}.

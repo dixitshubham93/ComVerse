@@ -63,14 +63,14 @@ export function ChatMessage({
                 className="relative flex-shrink-0 cursor-pointer"
                 onClick={() => onUserClick?.(username, avatar, userId)}
               >
-              <div
-                className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#04372f] hover:ring-[#28f5cc] transition-all duration-200"
-                style={{
-                  boxShadow: '0 0 10px rgba(40, 245, 204, 0.2)',
-                }}
-              >
-                <img src={avatar} alt={username} className="w-full h-full object-cover" />
-              </div>
+                <div
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#28f5cc]/40 hover:border-[#28f5cc]/60 transition-all duration-300 group-hover/chat:scale-105"
+                  style={{
+                    boxShadow: '0 0 15px rgba(40, 245, 204, 0.2)',
+                  }}
+                >
+                  <img src={avatar} alt={username} className="w-full h-full object-cover" />
+                </div>
               {isAdmin && (
                 <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] flex items-center justify-center">
                   <Shield className="w-2.5 h-2.5 text-black" />
@@ -78,18 +78,21 @@ export function ChatMessage({
               )}
             </div>
           </HoverCardTrigger>
-          <HoverCardContent
-            side="right"
-            className="glassmorphism border-[#04372f] p-4 w-64"
-            style={{
-              boxShadow: '0 0 30px rgba(40, 245, 204, 0.3)',
-            }}
-          >
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-[#28f5cc]">
-                  <img src={avatar} alt={username} className="w-full h-full object-cover" />
-                </div>
+            <HoverCardContent
+              side="right"
+              className="glassmorphism border-[#04372f] p-4 w-64"
+              style={{
+                background: 'rgba(4, 55, 47, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(40, 245, 204, 0.3)',
+                boxShadow: '0 0 30px rgba(40, 245, 204, 0.3)',
+              }}
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#28f5cc]/50 shadow-[0_0_20px_rgba(40,245,204,0.3)]">
+                    <img src={avatar} alt={username} className="w-full h-full object-cover" />
+                  </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-white">{username}</p>

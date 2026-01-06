@@ -107,22 +107,23 @@ export function CommunitySidebar({
 
                   {/* User Info Overlay */}
                   <div className="relative z-10 flex items-center gap-3 p-4 h-full">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative flex-shrink-0 group/avatar">
                       {currentUser.avatar.startsWith('http') || currentUser.avatar.startsWith('/') ? (
                         <img
                           src={currentUser.avatar}
                           alt={currentUser.name}
-                          className="w-12 h-12 rounded-full border-2 border-[#28f5cc]"
-                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-[#28f5cc]/40 transition-all duration-300 group-hover/avatar:scale-110"
+                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)' }}
                         />
                       ) : (
                         <div 
-                          className="w-12 h-12 rounded-full border-2 border-[#28f5cc] flex items-center justify-center bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] text-black font-bold text-lg"
-                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}
+                          className="w-12 h-12 rounded-full border-2 border-[#28f5cc]/40 flex items-center justify-center bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] text-black font-bold text-lg transition-all duration-300 group-hover/avatar:scale-110"
+                          style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)' }}
                         >
                           {currentUser.avatar}
                         </div>
                       )}
+                      <div className="absolute inset-0 rounded-full bg-[#28f5cc]/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     </div>
                     <div className="flex-1 min-w-0">
 

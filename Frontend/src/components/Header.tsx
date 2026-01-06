@@ -59,13 +59,14 @@ export function Header({ onOpenAuth, onNavigateToUserSpace, onNavigateToProfile,
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative">
-                  <Avatar className="w-10 h-10 border-2 border-[#28f5cc] cursor-pointer hover:scale-110 transition-transform" style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.4)' }}>
-                    <AvatarImage src={user?.avatar} alt={user?.username} />
+                <button className="relative group/avatar">
+                  <Avatar className="w-10 h-10 border-2 border-[#28f5cc]/40 cursor-pointer hover:scale-110 transition-all duration-300" style={{ boxShadow: '0 0 15px rgba(40, 245, 204, 0.3)' }}>
+                    <AvatarImage src={user?.avatar} alt={user?.username} className="object-cover" />
                     <AvatarFallback className="bg-gradient-to-br from-[#04ad7b] to-[#28f5cc] text-black font-semibold">
                       {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
+                  <div className="absolute inset-0 rounded-full bg-[#28f5cc]/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
