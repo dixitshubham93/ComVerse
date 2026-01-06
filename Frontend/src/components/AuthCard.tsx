@@ -205,15 +205,6 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
             onEscapeKeyDown={onClose}
           >
         <div className=" relative p-8">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-[#747c88] hover:text-[#28f5cc] transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
           {/* Dialog Title and Description for accessibility */}
           <DialogTitle className="sr-only">
             {mode === 'signin' ? 'Sign In' : signupStep === 1 ? 'Create Account' : 'Complete Sign Up'}
