@@ -249,11 +249,11 @@ const CarouselCard = ({
             alt=""
             className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-125"
           />
-          <img
-            src={post.mediaUrl}
-            alt={post.caption || 'Post'}
-            className="relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
+            <img
+              src={post.mediaUrl}
+              alt={post.caption || 'Post'}
+              className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+            />
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20 z-20 pointer-events-none" />
           

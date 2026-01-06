@@ -534,12 +534,17 @@ export function UserProfile() {
                     )}
 
                     {post.mediaUrl && (
-                      <div className="mb-6 rounded-2xl overflow-hidden border border-[rgba(40,245,204,0.15)] bg-black/40 group cursor-pointer shadow-2xl">
+                      <div className="mb-6 rounded-2xl overflow-hidden border border-[rgba(40,245,204,0.15)] bg-black/40 group cursor-pointer shadow-2xl relative h-[480px] flex items-center justify-center">
+                        {/* Premium blurred background for full visibility feel */}
+                        <img 
+                          src={post.mediaUrl} 
+                          alt="" 
+                          className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110"
+                        />
                         <img 
                           src={post.mediaUrl} 
                           alt="Post media" 
-                          className="w-full h-auto max-h-[480px] object-cover transition-all duration-700 group-hover:scale-105"
-                        
+                          className="relative z-10 w-full h-full object-contain transition-all duration-700 group-hover:scale-[1.02]"
                         />
                       </div>
                     )}
