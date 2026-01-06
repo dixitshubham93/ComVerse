@@ -523,17 +523,17 @@ export function UserProfile() {
 
                     {/* Post Content */}
                     {post.caption && (
-                      <p className="text-white mb-4 leading-relaxed">
+                      <p className="text-white/90 mb-5 leading-relaxed text-base font-normal tracking-wide">
                         {post.caption}
                       </p>
                     )}
 
                     {post.mediaUrl && (
-                      <div className="mb-4 rounded-xl overflow-hidden border border-[rgba(40,245,204,0.1)] bg-black/40">
+                      <div className="mb-6 rounded-2xl overflow-hidden border border-[rgba(40,245,204,0.15)] bg-black/40 group cursor-pointer shadow-2xl">
                         <img 
                           src={post.mediaUrl} 
                           alt="Post media" 
-                          className="w-full h-auto max-h-[220px] object-contain mx-auto transition-transform duration-500 hover:scale-[1.02]"
+                          className="w-full h-auto max-h-[600px] object-cover transition-all duration-700 group-hover:scale-105"
                         
                         />
                       </div>
