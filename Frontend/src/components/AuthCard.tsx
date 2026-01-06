@@ -255,7 +255,9 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                   Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="w-5 h-5 text-[#747c88]" />
+                  </div>
                   <Input
                     id="email"
                     type="email"
@@ -264,7 +266,7 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                       setEmail(e.target.value);
                       if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
                     }}
-                    className={`pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                    className={`pl-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
                       fieldErrors.email ? 'border-red-500/50' : ''
                     }`}
                     placeholder="your@email.com"
@@ -276,38 +278,42 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                 )}
               </div>
 
-              <div>
-                <Label htmlFor="password" className="text-[#747c88] mb-2 block">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                    }}
-                    className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                      fieldErrors.password ? 'border-red-500/50' : ''
-                    }`}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+                <div>
+                  <Label htmlFor="password" className="text-[#747c88] mb-2 block">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="w-5 h-5 text-[#747c88]" />
+                    </div>
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                      }}
+                      className={`pl-10 pr-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                        fieldErrors.password ? 'border-red-500/50' : ''
+                      }`}
+                      placeholder="••••••••"
+                      required
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-[#747c88] hover:text-[#28f5cc]"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                  )}
                 </div>
-                {fieldErrors.password && (
-                  <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
-                )}
-              </div>
 
               <div className="flex items-center justify-between text-sm">
                 <button
@@ -415,51 +421,55 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                 />
               </div>
 
-              <div>
-                <Label htmlFor="username" className="text-[#747c88] mb-2 block">
-                  Username
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: '' });
-                    }}
-                    className={`pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                      fieldErrors.username ? 'border-red-500/50' : ''
-                    }`}
-                    placeholder="Choose a username"
-                    required
-                  />
+                <div>
+                  <Label htmlFor="username" className="text-[#747c88] mb-2 block">
+                    Username
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User className="w-5 h-5 text-[#747c88]" />
+                    </div>
+                    <Input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: '' });
+                      }}
+                      className={`pl-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                        fieldErrors.username ? 'border-red-500/50' : ''
+                      }`}
+                      placeholder="Choose a username"
+                      required
+                    />
+                  </div>
+                  {fieldErrors.username && (
+                    <p className="mt-1 text-xs text-red-400">{fieldErrors.username}</p>
+                  )}
                 </div>
-                {fieldErrors.username && (
-                  <p className="mt-1 text-xs text-red-400">{fieldErrors.username}</p>
-                )}
-              </div>
 
-              <div>
-                <Label htmlFor="age" className="text-[#747c88] mb-2 block">
-                  Age
-                </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                  <Input
-                    id="age"
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    className="pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20"
-                    placeholder="Enter your age"
-                    min="13"
-                    max="120"
-                    required
-                  />
+                <div>
+                  <Label htmlFor="age" className="text-[#747c88] mb-2 block">
+                    Age
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Calendar className="w-5 h-5 text-[#747c88]" />
+                    </div>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      className="pl-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20"
+                      placeholder="Enter your age"
+                      min="13"
+                      max="120"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
               <button
                 onClick={handleSignUpStep1}
@@ -500,94 +510,104 @@ export function AuthCard({ isOpen, onClose, initialMode = 'signin' }: AuthCardPr
                   ← Back
                 </button>
 
-                <div>
-                  <Label htmlFor="signup-email" className="text-[#747c88] mb-2 block">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      value={signupEmail}
-                      onChange={(e) => {
-                        setSignupEmail(e.target.value);
-                        if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
-                      }}
-                      className={`pl-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                        fieldErrors.email ? 'border-red-500/50' : ''
-                      }`}
-                      placeholder="your@email.com"
-                      required
-                    />
+                  <div>
+                    <Label htmlFor="signup-email" className="text-[#747c88] mb-2 block">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-[#747c88]" />
+                      </div>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        value={signupEmail}
+                        onChange={(e) => {
+                          setSignupEmail(e.target.value);
+                          if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                        }}
+                        className={`pl-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                          fieldErrors.email ? 'border-red-500/50' : ''
+                        }`}
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                    )}
                   </div>
-                  {fieldErrors.email && (
-                    <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
-                  )}
-                </div>
 
-                <div>
-                  <Label htmlFor="signup-password" className="text-[#747c88] mb-2 block">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                    <Input
-                      id="signup-password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={signupPassword}
-                      onChange={(e) => {
-                        setSignupPassword(e.target.value);
-                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                      }}
-                      className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                        fieldErrors.password ? 'border-red-500/50' : ''
-                      }`}
-                      placeholder="••••••••"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
+                  <div>
+                    <Label htmlFor="signup-password" className="text-[#747c88] mb-2 block">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="w-5 h-5 text-[#747c88]" />
+                      </div>
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={signupPassword}
+                        onChange={(e) => {
+                          setSignupPassword(e.target.value);
+                          if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                        }}
+                        className={`pl-10 pr-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                          fieldErrors.password ? 'border-red-500/50' : ''
+                        }`}
+                        placeholder="••••••••"
+                        required
+                      />
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-[#747c88] hover:text-[#28f5cc]"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+                    {fieldErrors.password && (
+                      <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                    )}
                   </div>
-                  {fieldErrors.password && (
-                    <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
-                  )}
-                </div>
 
-                <div>
-                  <Label htmlFor="confirm-password" className="text-[#747c88] mb-2 block">
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#747c88]" />
-                    <Input
-                      id="confirm-password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                      }}
-                      className={`pl-10 pr-10 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
-                        fieldErrors.password ? 'border-red-500/50' : ''
-                      }`}
-                      placeholder="••••••••"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#747c88] hover:text-[#28f5cc]"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
+                  <div>
+                    <Label htmlFor="confirm-password" className="text-[#747c88] mb-2 block">
+                      Confirm Password
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="w-5 h-5 text-[#747c88]" />
+                      </div>
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                        }}
+                        className={`pl-10 pr-10 h-11 bg-[#2a3444]/50 border-[#747c88]/30 text-white placeholder:text-[#747c88]/50 focus:border-[#28f5cc] focus:ring-[#28f5cc]/20 ${
+                          fieldErrors.password ? 'border-red-500/50' : ''
+                        }`}
+                        placeholder="••••••••"
+                        required
+                      />
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="text-[#747c88] hover:text-[#28f5cc]"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
                 <button
                   type="submit"
