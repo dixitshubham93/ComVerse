@@ -51,52 +51,7 @@ const mockRooms: Room[] = [
     activeMembers: 342,
     tags: ['General', 'Chat'],
     lastActivity: '2 minutes ago',
-  },
-  {
-    id: '2',
-    name: 'Project Showcase',
-    description: 'Share your latest projects, get feedback, and discover amazing work.',
-    totalMembers: 8560,
-    activeMembers: 189,
-    tags: ['Projects', 'Feedback'],
-    lastActivity: '15 minutes ago',
-  },
-  {
-    id: '3',
-    name: 'Learning & Resources',
-    description: 'Educational content, tutorials, and helpful resources for all skill levels.',
-    totalMembers: 9870,
-    activeMembers: 234,
-    tags: ['Education', 'Resources'],
-    lastActivity: '1 hour ago',
-  },
-  {
-    id: '4',
-    name: 'Events & Meetups',
-    description: 'Coordinate virtual and in-person events, workshops, and networking sessions.',
-    totalMembers: 5420,
-    activeMembers: 67,
-    tags: ['Events', 'Networking'],
-    lastActivity: '3 hours ago',
-  },
-  {
-    id: '5',
-    name: 'Off-Topic',
-    description: 'Relax and chat about anything and everything beyond the main topic.',
-    totalMembers: 6780,
-    activeMembers: 156,
-    tags: ['Casual', 'Fun'],
-    lastActivity: '30 minutes ago',
-  },
-  {
-    id: '6',
-    name: 'Support & Help',
-    description: 'Get assistance, troubleshoot issues, and help fellow community members.',
-    totalMembers: 7340,
-    activeMembers: 98,
-    tags: ['Support', 'Q&A'],
-    lastActivity: '10 minutes ago',
-  },
+  }
 ];
 
 // Mock member data
@@ -108,95 +63,7 @@ const mockMembers: Member[] = [
     role: 'Owner',
     joinDate: 'January 2023',
     isOnline: true,
-  },
-  {
-    id: '2',
-    name: 'Sarah Chen',
-    avatar: '👩',
-    role: 'Admin',
-    joinDate: 'March 2023',
-    isOnline: true,
-  },
-  {
-    id: '3',
-    name: 'Marcus Johnson',
-    avatar: '👨',
-    role: 'Admin',
-    joinDate: 'April 2023',
-    isOnline: false,
-  },
-  {
-    id: '4',
-    name: 'Elena Kowalski',
-    avatar: '👩',
-    role: 'Member',
-    joinDate: 'May 2023',
-    isOnline: true,
-  },
-  {
-    id: '5',
-    name: 'David Park',
-    avatar: '👤',
-    role: 'Member',
-    joinDate: 'June 2023',
-    isOnline: true,
-  },
-  {
-    id: '6',
-    name: 'Maya Patel',
-    avatar: '👩',
-    role: 'Member',
-    joinDate: 'June 2023',
-    isOnline: false,
-  },
-  {
-    id: '7',
-    name: 'James Wilson',
-    avatar: '👨',
-    role: 'Member',
-    joinDate: 'July 2023',
-    isOnline: true,
-  },
-  {
-    id: '8',
-    name: 'Sophia Martinez',
-    avatar: '👩',
-    role: 'Member',
-    joinDate: 'August 2023',
-    isOnline: false,
-  },
-  {
-    id: '9',
-    name: 'Ryan O\'Connor',
-    avatar: '👤',
-    role: 'Member',
-    joinDate: 'August 2023',
-    isOnline: true,
-  },
-  {
-    id: '10',
-    name: 'Olivia Taylor',
-    avatar: '👩',
-    role: 'Member',
-    joinDate: 'September 2023',
-    isOnline: false,
-  },
-  {
-    id: '11',
-    name: 'Nathan Brown',
-    avatar: '👨',
-    role: 'Member',
-    joinDate: 'September 2023',
-    isOnline: true,
-  },
-  {
-    id: '12',
-    name: 'Emma Thompson',
-    avatar: '👩',
-    role: 'Member',
-    joinDate: 'October 2023',
-    isOnline: true,
-  },
+  }
 ];
 
 const currentUser = {
@@ -378,7 +245,7 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
                   boxShadow: `0 0 40px ${community.color}66, 0 8px 32px rgba(0,0,0,0.4)`,
                 }}
               >
-                {community.avatar || '🌌'}
+                {community.avatar}
               </div>
 
               {/* Community Details */}
