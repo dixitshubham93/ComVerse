@@ -534,7 +534,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
   };
 
   return (
-    <div className={`relative w-full ${selectedStack ? 'h-full p-0' : 'h-full p-8'}`}>
+    <div className={`relative w-full ${selectedStack ? 'h-full p-0' : 'h-auto p-8'}`}>
       {/* Stacks View */}
       {!selectedStack && (
         <div className="grid grid-cols-2 gap-x-24 gap-y-12 max-w-6xl mx-auto pt-8">

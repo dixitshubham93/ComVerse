@@ -304,7 +304,7 @@ export function CommunityPage() {
 
   // Render main layout
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="relative min-h-screen w-full overflow-y-auto">
       {/* Background */}
       <UserSpaceBackground />
 
@@ -566,7 +566,7 @@ function CommunityMainView({
   return (
     <div className="relative ml-16 lg:ml-20 min-h-screen">
       {!is3DViewOpen && (
-        <div className="px-6 pt-6 mb-2">
+        <div className="px-6 pt-6 mb-2 max-w-6xl mx-auto">
           <div 
             className="relative w-full h-64 overflow-hidden rounded-2xl"
             style={{
@@ -580,7 +580,7 @@ function CommunityMainView({
               <img 
                 src={community.bannerUrl} 
                 alt={`${community.name} banner`}
-                className="absolute inset-0 w-full h-full object-cover object-center"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : null}
             <div 
@@ -620,7 +620,7 @@ function CommunityMainView({
         </div>
       )}
 
-      <div className="relative w-full" style={{ height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'calc(100vh - 18rem)' }}>
+      <div className="relative w-full" style={{ height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'auto' }}>
           <StackedRoomCards 
             onRoomSelect={onRoomSelect}
             rooms={mappedRooms}
