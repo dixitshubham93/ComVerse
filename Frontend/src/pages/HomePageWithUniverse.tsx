@@ -435,20 +435,20 @@ export function HomePageWithUniverse() {
                   />
                 ))}
               </UniverseCanvas>
+            </div>
 
-              {/* Instruction text */}
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                <p className="text-[#747c88] text-sm">
-                  Drag to rotate • Scroll to zoom • Hover planets to explore communities
-                </p>
-              </div>
+            {/* Instruction text */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center pointer-events-none z-30">
+              <p className="text-[#747c88] text-sm">
+                Drag to rotate • Scroll to zoom • Hover planets to explore communities
+              </p>
+            </div>
 
-              {/* Accessibility announcement */}
-              <div role="status" aria-live="polite" className="sr-only">
-                {selectedPlanet !== null && selectedPlanet < communities.length
-                  ? `Centered on ${communities[selectedPlanet].name}. Press Escape to return.`
-                  : ''}
-              </div>
+            {/* Accessibility announcement */}
+            <div role="status" aria-live="polite" className="sr-only">
+              {selectedPlanet !== null && selectedPlanet < communities.length
+                ? `Centered on ${communities[selectedPlanet].name}. Press Escape to return.`
+                : ''}
             </div>
           </>
         )}
