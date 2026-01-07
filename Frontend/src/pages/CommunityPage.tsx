@@ -568,7 +568,7 @@ function CommunityMainView({
       {!is3DViewOpen && (
         <div className="px-6 pt-6 mb-2 max-w-6xl mx-auto">
           <div 
-            className="relative w-full h-64 overflow-hidden rounded-2xl"
+            className="relative w-full h-48 overflow-hidden rounded-2xl"
             style={{
               background: community.bannerUrl 
                 ? 'transparent'

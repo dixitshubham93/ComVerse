@@ -333,7 +333,7 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
           <div className="relative px-12 pt-8 mb-8">
             {/* Banner Background */}
             <div 
-              className="w-full h-80 relative overflow-hidden rounded-3xl"
+              className="w-full h-60 relative overflow-hidden rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, ${community.color}22 0%, #0a0a0a 100%)`,
                 border: '1px solid rgba(40, 245, 204, 0.15)',
