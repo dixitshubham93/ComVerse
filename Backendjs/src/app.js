@@ -17,7 +17,7 @@ const app = express();
 
 // CORS configuration for both HTTP and WebSocket
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001','https://comverse-13dpub1w2-shubham-dixts-projects.vercel.app/'],
+  origin: ['http://localhost:3000', 'http://localhost:3001','https://comverse-13dpub1w2-shubham-dixts-projects.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
