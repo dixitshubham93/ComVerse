@@ -360,8 +360,8 @@ export function UserProfile() {
             />
           </div>
 
-            {/* Avatar - Centered on Banner */}
-            <div className="absolute inset-0 flex items-center justify-center">
+            {/* Avatar - Positioned at bottom edge of banner, centered horizontally */}
+            <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2">
               <div
                 className="w-40 h-40 rounded-full overflow-hidden relative"
                 style={{
@@ -379,7 +379,7 @@ export function UserProfile() {
           </div>
 
           {/* User Info - Below Banner */}
-          <div className="text-center mt-8 mb-12 px-4">
+          <div className="text-center mt-24 mb-12 px-4">
           <h1 className="text-white text-4xl mb-2">{userData.username}</h1>
           <p className="text-[#747c88] text-lg mb-4">{userData.email}</p>
           <div className="flex items-center justify-center gap-6 text-[#747c88] text-sm">
