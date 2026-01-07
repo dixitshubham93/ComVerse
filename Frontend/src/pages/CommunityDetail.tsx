@@ -329,46 +329,46 @@ export function CommunityDetail({ community, onBack, onGoToHome, onGoToUserSpace
           <span className="text-white text-sm">Back to Community</span>
         </button>
 
-        {/* Community Header */}
-        <div className="relative">
-          {/* Banner Background */}
-          <div 
-            className="w-full h-80 relative overflow-hidden"
-            style={{
-              background: `linear-gradient(135deg, ${community.color}15 0%, #0a0a0a 100%)`,
-            }}
-          >
-            {/* Abstract Aurora Pattern */}
+          {/* Community Header */}
+          <div className="relative px-12 pt-8 mb-8">
+            {/* Banner Background */}
             <div 
-              className="absolute inset-0 opacity-30"
+              className="w-full h-80 relative overflow-hidden rounded-3xl"
               style={{
-                background: `radial-gradient(circle at 20% 50%, ${community.color}40, transparent 50%),
-                             radial-gradient(circle at 80% 50%, #28f5cc20, transparent 50%)`,
+                background: `linear-gradient(135deg, ${community.color}22 0%, #0a0a0a 100%)`,
+                border: '1px solid rgba(40, 245, 204, 0.15)',
+                boxShadow: `0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px ${community.color}11`,
               }}
-            />
-            
-            {/* Glow Effects */}
-            <div 
-              className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-20"
-              style={{
-                background: `radial-gradient(circle, ${community.color}, transparent)`,
-              }}
-            />
-            <div 
-              className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-20"
-              style={{
-                background: 'radial-gradient(circle, #28f5cc, transparent)',
-              }}
-            />
-          </div>
+            >
+              {/* Abstract Aurora Pattern */}
+              <div 
+                className="absolute inset-0 opacity-40"
+                style={{
+                  background: `radial-gradient(circle at 20% 30%, ${community.color}55, transparent 70%),
+                               radial-gradient(circle at 80% 70%, #28f5cc33, transparent 70%)`,
+                }}
+              />
+              
+              {/* Glow Effects */}
+              <div 
+                className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20"
+                style={{
+                  background: community.color,
+                }}
+              />
+              
+              {/* Gradient Overlay */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%)',
+                }}
+              />
+            </div>
 
-          {/* Community Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 px-12 pb-8 pt-32"
-            style={{
-              background: 'linear-gradient(to top, #000000 0%, transparent 100%)',
-            }}
-          >
-            <div className="max-w-7xl mx-auto flex items-end gap-6">
+            {/* Community Info Overlay */}
+            <div className="absolute bottom-0 left-12 right-12 px-12 pb-12 pt-32 pointer-events-none">
+              <div className="max-w-7xl mx-auto flex items-end gap-8 pointer-events-auto">
               {/* Community Avatar */}
               <div
                 className="w-32 h-32 rounded-3xl flex items-center justify-center text-5xl flex-shrink-0 transition-transform duration-300 hover:scale-105"

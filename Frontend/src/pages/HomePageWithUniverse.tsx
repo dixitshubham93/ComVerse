@@ -438,8 +438,8 @@ export function HomePageWithUniverse() {
             </div>
 
             {/* Instruction text */}
-            <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none z-30">
-              <p className="text-[#747c88] text-sm">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center pointer-events-none z-30">
+              <p className="text-[#747c88] text-sm text-center">
                 Drag to rotate • Scroll to zoom • Hover planets to explore communities
               </p>
             </div>

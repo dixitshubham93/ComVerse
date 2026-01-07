@@ -566,49 +566,61 @@ function CommunityMainView({
   return (
     <div className="relative ml-16 lg:ml-20 min-h-screen">
       {!is3DViewOpen && (
-        <div className="relative w-full h-32 overflow-hidden rounded-b-2xl">
-          {community.bannerUrl ? (
-            <img 
-              src={community.bannerUrl} 
-              alt={`${community.name} banner`}
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-          ) : (
+        <div className="px-6 pt-6 mb-2">
+          <div 
+            className="relative w-full h-64 overflow-hidden rounded-2xl"
+            style={{
+              background: community.bannerUrl 
+                ? 'transparent'
+                : 'linear-gradient(135deg, rgba(4, 55, 47, 0.6) 0%, rgba(42, 52, 68, 0.6) 100%)',
+              border: '1px solid rgba(40, 245, 204, 0.1)',
+            }}
+          >
+            {community.bannerUrl ? (
+              <img 
+                src={community.bannerUrl} 
+                alt={`${community.name} banner`}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+            ) : null}
             <div 
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(40, 245, 204, 0.15) 0%, rgba(4, 55, 47, 0.25) 100%)',
+                background: 'linear-gradient(180deg, rgba(4, 55, 47, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%)',
               }}
             />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
-          <div className="relative z-10 flex flex-col items-start justify-end h-full px-6 pb-4 pt-8">
-            <h1 className="text-white text-2xl font-bold mb-2">{community.name}</h1>
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: 'rgba(40, 245, 204, 0.25)', border: '1px solid rgba(40, 245, 204, 0.5)', color: '#28f5cc' }}>
-                {mapTypeToCategory(community.type)}
-              </span>
-              <div className="w-px h-3 bg-[#747c88]/40" />
-              {stats && (
-                <>
-                  <div className="flex items-center gap-1 text-white text-xs">
-                    <Users className="w-3 h-3 text-[#747c88]" />
-                    <span className="font-medium">{stats.totalMembers}</span>
-                    <span className="text-[#747c88]">members</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-white text-xs">
-                    <Users className="w-3 h-3 text-[#28f5cc]" />
-                    <span className="font-medium text-[#28f5cc]">{stats.activeMembers}</span>
-                    <span className="text-[#747c88]">online</span>
-                  </div>
-                </>
-              )}
+            <div className="relative z-10 flex flex-col items-start justify-end h-full px-8 pb-8">
+              <h1 className="text-white text-4xl font-bold mb-3" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{community.name}</h1>
+              <div className="flex items-center gap-4 flex-wrap">
+                <span className="px-3 py-1 rounded-full text-sm font-semibold tracking-wide" 
+                  style={{ 
+                    background: 'rgba(40, 245, 204, 0.15)', 
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(40, 245, 204, 0.4)', 
+                    color: '#28f5cc' 
+                  }}>
+                  {mapTypeToCategory(community.type)}
+                </span>
+                <div className="w-px h-4 bg-white/20" />
+                {stats && (
+                  <>
+                    <div className="flex items-center gap-1.5 text-white/90 text-sm font-medium">
+                      <Users className="w-4 h-4 text-[#747c88]" />
+                      <span>{stats.totalMembers.toLocaleString()} members</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-white/90 text-sm font-medium">
+                      <div className="w-2 h-2 rounded-full bg-[#28f5cc] shadow-[0_0_8px_rgba(40,245,204,0.6)]" />
+                      <span>{stats.activeMembers} online</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="relative w-full" style={{ height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'calc(100vh - 8rem)' }}>
+      <div className="relative w-full" style={{ height: is3DViewOpen ? 'calc(100vh - 4rem)' : 'calc(100vh - 18rem)' }}>
           <StackedRoomCards 
             onRoomSelect={onRoomSelect}
             rooms={mappedRooms}

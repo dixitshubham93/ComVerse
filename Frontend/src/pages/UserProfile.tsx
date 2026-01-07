@@ -360,26 +360,26 @@ export function UserProfile() {
             />
           </div>
 
-            {/* Avatar - Positioned at bottom edge of banner, centered horizontally */}
-            <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2">
-              <div
-                className="w-40 h-40 rounded-full overflow-hidden relative"
-                style={{
-                  border: '4px solid rgba(40, 245, 204, 0.5)',
-                  boxShadow: '0 0 30px rgba(40, 245, 204, 0.4), 0 0 60px rgba(40, 245, 204, 0.2)',
-                }}
-              >
-                <img
-                  src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
-                  alt={userData.username}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          {/* Avatar - Overlapping */}
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-20">
+            <div
+              className="w-40 h-40 rounded-full overflow-hidden relative"
+              style={{
+                border: '4px solid rgba(40, 245, 204, 0.5)',
+                boxShadow: '0 0 30px rgba(40, 245, 204, 0.4), 0 0 60px rgba(40, 245, 204, 0.2)',
+              }}
+            >
+              <img
+                src={userData.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.username}
+                alt={userData.username}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
+        </div>
 
-          {/* User Info - Below Banner */}
-          <div className="text-center mt-24 mb-12 px-4">
+        {/* User Info - Below Avatar */}
+        <div className="text-center mt-24 mb-12 px-4">
           <h1 className="text-white text-4xl mb-2">{userData.username}</h1>
           <p className="text-[#747c88] text-lg mb-4">{userData.email}</p>
           <div className="flex items-center justify-center gap-6 text-[#747c88] text-sm">
