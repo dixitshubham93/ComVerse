@@ -396,6 +396,7 @@ export function GeneralChat({
       {/* Sidebar */}
       <CommunitySidebar
         communityName={communityName}
+        communityId={communityId}
         communityAvatar={communityAvatar}
         userRole={userRole}
         currentUser={currentUser}

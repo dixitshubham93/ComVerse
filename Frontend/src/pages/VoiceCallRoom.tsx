@@ -139,7 +139,7 @@ export function VoiceCallRoom({
         if (!audio) {
           audio = document.createElement('audio');
           audio.autoplay = true;
-          audio.playsInline = true;
+          (audio as any).playsInline = true;
           audio.dataset.userId = userId.toString();
           audioElementsRef.current.set(userId, audio);
           if (audioContainerRef.current) {

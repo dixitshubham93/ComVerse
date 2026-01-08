@@ -3,6 +3,8 @@
 
 import { OrbitControlsProps } from "@react-three/drei";
 
+declare module 'simple-peer';
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {
