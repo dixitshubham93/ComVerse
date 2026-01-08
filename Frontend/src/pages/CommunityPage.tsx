@@ -802,6 +802,7 @@ function DMChatRouteWrapper({ community, userRole, currentUser, onBack }: any) {
 
   return (
     <DMChat
+      communityId={community.id}
       communityName={community.name}
       communityAvatar={community.bannerUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=100&fit=crop'}
       targetUser={targetUser}

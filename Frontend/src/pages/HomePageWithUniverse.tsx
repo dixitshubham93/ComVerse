@@ -459,5 +459,4 @@ export function HomePageWithUniverse() {
           </>
         )}
       </section>
-
-     
+      

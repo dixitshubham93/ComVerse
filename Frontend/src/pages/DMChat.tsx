@@ -10,6 +10,7 @@ import { useDMSocket } from '../hooks/useDMSocket';
 import { getDMHistory, markDMsAsRead, sendDM } from '../api/dmApi';
 
 interface DMChatProps {
+  communityId: number;
   communityName: string;
   communityAvatar: string;
   targetUser: {
@@ -54,6 +55,7 @@ interface DirectMessage {
 }
 
 export function DMChat({
+  communityId,
   communityName,
   communityAvatar,
   targetUser,
@@ -310,6 +312,7 @@ export function DMChat({
 
       {/* Sidebar */}
       <CommunitySidebar
+        communityId={communityId}
         communityName={communityName}
         communityAvatar={communityAvatar}
         userRole={userRole}
