@@ -461,13 +461,3 @@ export function HomePageWithUniverse() {
       </section>
 
      
-      {/* Auth Modal */}
-      <AuthCard 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authMode}
-      />
-    </div>
-  );
-}
-
