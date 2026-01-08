@@ -8,6 +8,7 @@ import { getUser } from '../api/userApi';
 interface CommunitySidebarProps {
   communityId: number;
   communityName: string;
+  communityAvatar?: string;
   userRole: 'Owner' | 'Admin' | 'Member';
   currentUser: {
     name: string;
@@ -16,16 +17,23 @@ interface CommunitySidebarProps {
   onShowMembers: () => void;
   onBack?: () => void;
   onLeave?: () => void;
+  onNavigate?: (page: string) => void;
+  onGoToHome?: () => void;
+  onGoToUserSpace?: () => void;
 }
 
 export function CommunitySidebar({
   communityId,
   communityName,
+  communityAvatar,
   userRole,
   currentUser,
   onShowMembers,
   onBack,
   onLeave,
+  onNavigate,
+  onGoToHome,
+  onGoToUserSpace,
 }: CommunitySidebarProps) {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
@@ -156,20 +164,36 @@ export function CommunitySidebar({
 
                 {/* Navigation Buttons - Expanded */}
             <nav className="flex flex-col gap-2 px-3">
-                {/* Home */}
-                <button
-                  onClick={() => navigate('/')}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                >
-                  <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
-                  <span className="text-white text-sm">Home</span>
-                </button>
+                  {/* Home */}
+                  <button
+                    onClick={() => {
+                      if (onGoToHome) {
+                        onGoToHome();
+                      } else if (onNavigate) {
+                        onNavigate('home');
+                      } else {
+                        navigate('/');
+                      }
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                  >
+                    <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
+                    <span className="text-white text-sm">Home</span>
+                  </button>
 
-                {/* User Space */}
-                <button
-                  onClick={() => navigate('/userspace')}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                >
+                  {/* User Space */}
+                  <button
+                    onClick={() => {
+                      if (onGoToUserSpace) {
+                        onGoToUserSpace();
+                      } else if (onNavigate) {
+                        onNavigate('userspace');
+                      } else {
+                        navigate('/userspace');
+                      }
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                  >
                   <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors flex-shrink-0" />
                   <span className="text-white text-sm">User Space</span>
                 </button>
@@ -232,25 +256,41 @@ export function CommunitySidebar({
           </>
         ) : (
           <>
-                {/* Collapsed View - Icons Only */}
-                <nav className="flex flex-col gap-2 px-2 mt-2">
-                  {/* Home */}
-                  <button
-                    onClick={() => navigate('/')}
-                    className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                    title="Home"
-                  >
-                    <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-                  </button>
+                  {/* Navigation Buttons - Collapsed */}
+                  <nav className="flex flex-col gap-2 px-2 mt-2">
+                    {/* Home */}
+                    <button
+                      onClick={() => {
+                        if (onGoToHome) {
+                          onGoToHome();
+                        } else if (onNavigate) {
+                          onNavigate('home');
+                        } else {
+                          navigate('/');
+                        }
+                      }}
+                      className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                      title="Home"
+                    >
+                      <Home className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                    </button>
 
-                  {/* User Space */}
-                  <button
-                    onClick={() => navigate('/userspace')}
-                    className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
-                    title="User Space"
-                  >
-                    <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
-                  </button>
+                    {/* User Space */}
+                    <button
+                      onClick={() => {
+                        if (onGoToUserSpace) {
+                          onGoToUserSpace();
+                        } else if (onNavigate) {
+                          onNavigate('userspace');
+                        } else {
+                          navigate('/userspace');
+                        }
+                      }}
+                      className="w-full h-12 flex items-center justify-center rounded-lg hover:bg-[rgba(40,245,204,0.15)] transition-all duration-200 group"
+                      title="User Space"
+                    >
+                      <Sparkles className="w-5 h-5 text-[#747c88] group-hover:text-[#28f5cc] transition-colors" />
+                    </button>
 
                 {/* Members */}
                 <button

@@ -267,6 +267,7 @@ export function AnnouncementChat({
 
       {/* Sidebar */}
       <CommunitySidebar
+        communityId={communityId}
         communityName={communityName}
         communityAvatar={communityAvatar}
         userRole={userRole}
