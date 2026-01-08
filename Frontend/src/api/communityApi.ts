@@ -44,6 +44,14 @@ export interface CommunityDto {
 }
 
 /**
+ * User Community DTO (Community with user-specific details)
+ */
+export interface UserCommunityDto extends CommunityDto {
+  memberCount: number;
+  userRole: MembershipRole;
+}
+
+/**
  * Create Community Request DTO
  */
 export interface CreateCommunityRequest {

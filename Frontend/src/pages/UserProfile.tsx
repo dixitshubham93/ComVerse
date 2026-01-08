@@ -255,28 +255,6 @@ export function UserProfile() {
     }
   };
 
-  const getRoleBadgeStyle = (role: string) => {
-    if (role === 'Owner') {
-      return {
-        background: 'rgba(40, 245, 204, 0.15)',
-        border: '1px solid rgba(40, 245, 204, 0.4)',
-        color: '#28f5cc',
-      };
-    } else if (role === 'Admin') {
-      return {
-        background: 'rgba(4, 173, 123, 0.15)',
-        border: '1px solid rgba(4, 173, 123, 0.4)',
-        color: '#04ad7b',
-      };
-    } else {
-      return {
-        background: 'rgba(116, 124, 136, 0.15)',
-        border: '1px solid rgba(116, 124, 136, 0.3)',
-        color: '#747c88',
-      };
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="relative min-h-screen w-full overflow-y-auto">
@@ -548,13 +526,13 @@ export function UserProfile() {
                           </p>
                         </div>
                         
-                        <motion.button
-                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDeletePost(post.id)}
-                          disabled={deletingPostId === post.id}
-                          className="p-2 rounded-xl text-[#747c88] hover:text-red-400 transition-all duration-200"
-                        >
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDeletePost(post.id)}
+                            disabled={deletingPostId === post.id}
+                            className="p-2 rounded-xl text-[#747c88] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                          >
                           {deletingPostId === post.id ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
