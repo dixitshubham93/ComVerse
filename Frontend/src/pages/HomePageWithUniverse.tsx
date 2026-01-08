@@ -6,11 +6,13 @@ import { Header } from '../components/Header';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { SpaceSearchBar } from '../components/SpaceSearchBar';
 import { UniverseCanvas, UniverseCanvasRef } from '../components/UniverseCanvas';
+import { WebGLErrorBoundary } from '../components/WebGLErrorBoundary';
 import { Planet3D } from '../components/Planet3D';
 import { OpenCommunityButton } from '../components/OpenCommunityButton';
 import { JoinCommunityButton } from '../components/JoinCommunityButton';
 import { AuthCard } from '../components/AuthCard';
 import { useAuth } from '../contexts/AuthContext';
+import { ArrowButton } from '../components/ui/ArrowButton';
 import { getAllCommunities, CommunityDto, CommunityType ,parseCommunityType} from '../api/communityApi';
 import { checkMembership, joinCommunity } from '../api/membershipApi';
 
@@ -46,6 +48,8 @@ const mapTypeToCategory = (type: CommunityType): string => {
   };
   return typeMap[type] || 'Other';
 };
+
+
 
 // Helper function to generate visual properties for communities
 const generateVisualProperties = (dto: CommunityDto, index: number): Omit<CommunityWithVisuals, 'id' | 'name' | 'description'> => {
@@ -343,41 +347,7 @@ export function HomePageWithUniverse() {
         {/* 3D Space Section - Full screen snap */}
         <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
           {/* Back to Hero Arrow - Top Right */}
-          <button
-            onClick={() => handleSlowScroll('hero-section')}
-            className="absolute top-24 right-8 z-30 p-4 rounded-full transition-all duration-300 hover:scale-110 group"
-            style={{
-              background: 'rgba(4, 55, 47, 0.4)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(40, 245, 204, 0.4)',
-              boxShadow: '0 0 20px rgba(40, 245, 204, 0.1)',
-            }}
-            aria-label="Back to top"
-          >
-            <div className="relative w-6 h-7 flex items-center justify-center">
-              {/* Static Background Arrow (Dim) */}
-              <svg 
-                width="18" 
-                height="22" 
-                viewBox="0 0 24 32" 
-                fill="none" 
-                className="absolute text-[#28f5cc] opacity-20"
-              >
-                <path d="M12 28V4M5 11l7-7 7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {/* Animated Glow Arrow */}
-              <svg 
-                width="18" 
-                height="22" 
-                viewBox="0 0 24 32" 
-                fill="none" 
-                className="absolute text-[#28f5cc] animate-arrow-up-glow"
-                style={{ filter: 'drop-shadow(0 0 8px #28f5cc)' }}
-              >
-                <path d="M12 28V4M5 11l7-7 7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          </button>
+          <ArrowButton onClick={() => handleSlowScroll('hero-section')} />
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -449,26 +419,28 @@ export function HomePageWithUniverse() {
             )}
 
             <div className="relative w-full h-full mx-auto">
-              <UniverseCanvas ref={canvasRef}>
-                {communities.map((community, index) => (
-                  <Planet3D
-                    key={community.id}
-                    name={community.name}
-                    category={community.category}
-                    members={community.members}
-                    description={community.description}
-                    color={community.color}
-                    size={community.size / 100}
-                    position={community.position3D}
-                    orbitSpeed={community.orbitSpeed}
-                    orbitRadius={community.orbitRadius}
-                    isSelected={selectedPlanet === index}
-                    isDimmed={selectedPlanet !== null && selectedPlanet !== index}
-                    isBlurred={selectedPlanet !== null && selectedPlanet !== index}
-                    onClick={() => handlePlanetClick(index)}
-                  />
-                ))}
-              </UniverseCanvas>
+              <WebGLErrorBoundary>
+                <UniverseCanvas ref={canvasRef}>
+                  {communities.map((community, index) => (
+                    <Planet3D
+                      key={community.id}
+                      name={community.name}
+                      category={community.category}
+                      members={community.members}
+                      description={community.description}
+                      color={community.color}
+                      size={community.size / 100}
+                      position={community.position3D}
+                      orbitSpeed={community.orbitSpeed}
+                      orbitRadius={community.orbitRadius}
+                      isSelected={selectedPlanet === index}
+                      isDimmed={selectedPlanet !== null && selectedPlanet !== index}
+                      isBlurred={selectedPlanet !== null && selectedPlanet !== index}
+                      onClick={() => handlePlanetClick(index)}
+                    />
+                  ))}
+                </UniverseCanvas>
+              </WebGLErrorBoundary>
             </div>
 
             {/* Instruction text */}
