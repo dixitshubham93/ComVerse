@@ -22,7 +22,7 @@ interface RoomModal3DProps {
   isOwner: boolean;
   onClose: () => void;
   onOpen: (room: Room) => void;
-  onEditRoom: (room: Room) => void;
+  onEditRoom?: (room: Room) => void;
 }
 
 
@@ -522,17 +522,19 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
     }
   };
 
-  const handleRoomClick = (room: Room, event: React.MouseEvent<HTMLDivElement>) => {
+  const handleRoomClick = (room: Room, event?: React.MouseEvent<HTMLDivElement>) => {
     if (isMotionReduced) {
       onRoomSelect(room);
       return;
     }
     
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const rect = event?.currentTarget 
+      ? (event.currentTarget as HTMLElement).getBoundingClientRect()
+      : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
     const targetX = rect.left + rect.width / 2;
     const targetY = rect.top + rect.height / 2;
 
-    setRocketPosition({ x: event.clientX, y: event.clientY });
+    setRocketPosition({ x: event?.clientX ?? targetX, y: event?.clientY ?? targetY });
     setTargetRoom(room);
     setIsRocketFlying(true);
 
