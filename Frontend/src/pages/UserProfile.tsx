@@ -526,19 +526,17 @@ export function UserProfile() {
                           </p>
                         </div>
                         
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                          <button
                             onClick={() => handleDeletePost(post.id)}
                             disabled={deletingPostId === post.id}
-                            className="p-2 rounded-xl text-[#747c88] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                            className="p-2 rounded-xl text-[#747c88] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 hover:scale-110 active:scale-90"
                           >
                           {deletingPostId === post.id ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
                             <Trash2 className="w-5 h-5" />
                           )}
-                        </motion.button>
+                        </button>
                       </div>
 
                     {/* Post Content */}
@@ -565,58 +563,50 @@ export function UserProfile() {
                     )}
 
                     {/* Post Actions */}
-                    <div className="flex items-center gap-1 pt-4 border-t border-[rgba(40,245,204,0.1)]">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleLike(post)}
-                        disabled={likeLoading === post.id}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
-                        style={{
-                          background: post.likes?.some(l => l.userId === currentUserId) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-                        }}
-                      >
-                        <Heart
-                          className={`w-5 h-5 transition-all duration-300 ${
-                            post.likes?.some(l => l.userId === currentUserId)
-                              ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                              : 'text-[#747c88] hover:text-red-400'
+                      <div className="flex items-center gap-1 pt-4 border-t border-[rgba(40,245,204,0.1)]">
+                        <button
+                          onClick={() => handleLike(post)}
+                          disabled={likeLoading === post.id}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 hover:scale-110 active:scale-90 ${
+                            post.likes?.some(l => l.userId === currentUserId) ? 'bg-red-500/10' : 'bg-transparent'
                           }`}
-                        />
-                        <span className={`text-sm font-medium ${
-                          post.likes?.some(l => l.userId === currentUserId) ? 'text-red-400' : 'text-[#747c88]'
-                        }`}>
-                          {post.likeCount || 0}
-                        </span>
-                      </motion.button>
+                        >
+                          <Heart
+                            className={`w-5 h-5 transition-all duration-300 ${
+                              post.likes?.some(l => l.userId === currentUserId)
+                                ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+                                : 'text-[#747c88] hover:text-red-400'
+                            }`}
+                          />
+                          <span className={`text-sm font-medium ${
+                            post.likes?.some(l => l.userId === currentUserId) ? 'text-red-400' : 'text-[#747c88]'
+                          }`}>
+                            {post.likeCount || 0}
+                          </span>
+                        </button>
 
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleToggleComments(post.id)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
-                        style={{
-                          background: expandedComments === post.id ? 'rgba(40, 245, 204, 0.1)' : 'transparent',
-                        }}
-                      >
-                        <MessageCircle className={`w-5 h-5 transition-colors ${
-                          expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88] hover:text-[#28f5cc]'
-                        }`} />
-                        <span className={`text-sm font-medium ${
-                          expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88]'
-                        }`}>
-                          {post.commentCount || 0}
-                        </span>
-                      </motion.button>
+                        <button
+                          onClick={() => handleToggleComments(post.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 hover:scale-110 active:scale-90 ${
+                            expandedComments === post.id ? 'bg-[#28f5cc]/10' : 'bg-transparent'
+                          }`}
+                        >
+                          <MessageCircle className={`w-5 h-5 transition-colors ${
+                            expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88] hover:text-[#28f5cc]'
+                          }`} />
+                          <span className={`text-sm font-medium ${
+                            expandedComments === post.id ? 'text-[#28f5cc]' : 'text-[#747c88]'
+                          }`}>
+                            {post.commentCount || 0}
+                          </span>
+                        </button>
 
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 ml-auto"
-                      >
-                        <Share2 className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
-                      </motion.button>
-                    </div>
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 ml-auto hover:scale-110 active:scale-90"
+                        >
+                          <Share2 className="w-5 h-5 text-[#747c88] hover:text-[#28f5cc] transition-colors" />
+                        </button>
+                      </div>
 
                     <AnimatePresence>
                       {expandedComments === post.id && (
@@ -636,19 +626,17 @@ export function UserProfile() {
                                 placeholder="Add a comment..."
                                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-[#28f5cc]/30 transition-colors"
                               />
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleSubmitComment(post.id)}
-                                disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
-                                className="p-2.5 rounded-xl bg-[#28f5cc] text-black disabled:opacity-30 transition-all duration-200"
-                              >
-                                {submittingComment === post.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Send className="w-4 h-4" />
-                                )}
-                              </motion.button>
+                                <button
+                                  onClick={() => handleSubmitComment(post.id)}
+                                  disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
+                                  className="p-2.5 rounded-xl bg-[#28f5cc] text-black disabled:opacity-30 transition-all duration-200 hover:scale-105 active:scale-95"
+                                >
+                                  {submittingComment === post.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Send className="w-4 h-4" />
+                                  )}
+                                </button>
                             </div>
 
                             {loadingComments === post.id ? (
