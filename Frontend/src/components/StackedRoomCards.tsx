@@ -29,11 +29,11 @@ interface RoomModal3DProps {
 interface FloatingRoomCard3DProps {
   room: Room; // <-- your room type
   pos: { x: number; y: number; z: number };
-  onSelect: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void;
+  onSelect: (room: Room, e?: React.MouseEvent<any>) => void;
   isOwner: boolean;
   isCentered: boolean;
   isOtherCentered: boolean;
-  onOpenRoom: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void;
+  onOpenRoom: (room: Room, e?: React.MouseEvent<any>) => void;
   onEditRoom?: (room: Room) => void;
 }
 
@@ -108,7 +108,7 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
     }
   });
 
-  const handleCardAction = (e:React.MouseEvent<HTMLDivElement>) => {
+  const handleCardAction = (e:React.MouseEvent<any>) => {
     e.stopPropagation();
     // If already focused, open the room right away; otherwise focus it first
     if (isCentered) {
@@ -118,7 +118,7 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
     }
   };
 
-  const handlePointerMove = (e:React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e:React.MouseEvent<any>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -314,7 +314,7 @@ export function ExpandedRoom3D({
 }: { 
   title: string, 
   rooms: Room[], 
-  onRoomOpen: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void, 
+  onRoomOpen: (room: Room, e?: React.MouseEvent<any>) => void, 
   onClose?: () => void, 
   onEditRoom?: (room: Room) => void, 
   isOwner?: boolean 
@@ -323,8 +323,8 @@ export function ExpandedRoom3D({
   const isOwner = propsIsOwner ?? true;
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
-  const handleOpenRoom = (room:Room, e?:React.MouseEvent<HTMLDivElement>) => {
-    const rect = e?.currentTarget?.getBoundingClientRect?.() || {
+  const handleOpenRoom = (room:Room, e?:React.MouseEvent<any>) => {
+    const rect = (e?.currentTarget as HTMLElement)?.getBoundingClientRect?.() || {
       left: window.innerWidth / 2 - 120,
       top: window.innerHeight / 2 - 160,
       width: 240,
@@ -339,7 +339,7 @@ export function ExpandedRoom3D({
     } as any);
   };
 
-  const handleCardClick = (room:Room, e?:React.MouseEvent<HTMLDivElement>) => {
+  const handleCardClick = (room:Room, e?:React.MouseEvent<any>) => {
     if (centeredRoom?.id === room.id) {
       handleOpenRoom(room, e);
     } else {
@@ -347,7 +347,7 @@ export function ExpandedRoom3D({
     }
   };
 
-  const handleBackdropClick = (e:React.MouseEvent<HTMLDivElement>) => {
+  const handleBackdropClick = (e:React.MouseEvent<any>) => {
     if (e.target === e.currentTarget && centeredRoom) {
       setCenteredRoom(null);
     }
@@ -522,7 +522,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
     }
   };
 
-  const handleRoomClick = (room: Room, event?: React.MouseEvent<HTMLDivElement>) => {
+  const handleRoomClick = (room: Room, event?: React.MouseEvent<any>) => {
     if (isMotionReduced) {
       onRoomSelect(room);
       return;
