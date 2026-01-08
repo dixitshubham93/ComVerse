@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRef, useState } from 'react';
-import { useFrame, useThree, type ThreeElements } from '@react-three/fiber';
+import * as THREE from 'three';
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 
 interface Planet3DProps {
@@ -36,7 +37,7 @@ export function Planet3D({
   onClick,
   isUserSpace,
 }: Planet3DProps) {
-  const meshRef = useRef<ThreeElements['mesh']>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
   const { camera } = useThree();
@@ -61,7 +62,7 @@ export function Planet3D({
       
       // Scale on hover or selection - smooth lerp
       const targetScale = (hovered || isSelected) ? 1.15 : 1;
-      meshRef.current.scale.lerp({ x: targetScale, y: targetScale, z: targetScale } as any, 0.1);
+      meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
   });
 
@@ -83,15 +84,15 @@ export function Planet3D({
       <mesh
         ref={meshRef}
         position={position}
-        onPointerOver={(e) => {
+        onPointerOver={(e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
           setHovered(true);
         }}
-        onPointerOut={(e) => {
+        onPointerOut={(e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
           setHovered(false);
         }}
-        onClick={(e) => {
+        onClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
           onClick();
         }}
