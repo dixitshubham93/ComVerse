@@ -271,20 +271,12 @@ const CarouselCard = ({
           </div>
 
         {/* Image Area */}
-        <div className="relative w-full h-[500px] overflow-hidden bg-slate-900/50 flex items-center justify-center group shrink-0">
-          {/* Aesthetic blur background */}
-          <img
-            src={post.mediaUrl}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-125"
-          />
+        <div className="relative w-full flex-1 overflow-hidden bg-slate-900/50 flex items-center justify-center group shrink-0">
             <img
               src={post.mediaUrl}
               alt={post.caption || 'Post'}
-              className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+              className="relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-          {/* Premium gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20 z-20 pointer-events-none" />
           
           {/* Trending indicator */}
           {post.likeCount > 5 && (
@@ -765,45 +757,29 @@ const CommentPanel = ({
                   borderBottom: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                {/* Image Preview */}
-                <div
-                  style={{
-                    position: 'relative',
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    marginBottom: 12,
-                    height: 180,
-                    background: '#000',
-                  }}
-                >
-                  {/* Blurred backdrop */}
-                  <img
-                    src={post.mediaUrl}
-                    alt=""
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      filter: 'blur(18px)',
-                      opacity: 0.35,
-                      transform: 'scale(1.1)',
-                    }}
-                  />
-
-                  {/* Main image */}
-                  <img
-                    src={post.mediaUrl}
-                    alt=""
+                  {/* Image Preview */}
+                  <div
                     style={{
                       position: 'relative',
-                      zIndex: 2,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
+                      borderRadius: 16,
+                      overflow: 'hidden',
+                      marginBottom: 12,
+                      height: 180,
+                      background: '#000',
                     }}
-                  />
+                  >
+                    {/* Main image */}
+                    <img
+                      src={post.mediaUrl}
+                      alt=""
+                      style={{
+                        position: 'relative',
+                        zIndex: 2,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
 
                   {/* Likes badge */}
                   <div
@@ -1495,56 +1471,39 @@ export function MemesPostsPage({
                               "
                               style={{ border: '1px solid rgba(40, 245, 204, 0.18)' }}
                             >
-                              {/* Soft blurred backdrop */}
-                              <img
-                                src={uploadPreview}
-                                alt=""
-                                className="
-                                  absolute inset-0
-                                  w-full h-full
-                                  object-cover
-                                  blur-lg
-                                  opacity-25
-                                "
-                              />
+                                {/* Actual preview image */}
+                                <img
+                                  src={uploadPreview}
+                                  alt="Preview"
+                                  className="
+                                    relative z-10
+                                    w-full h-full
+                                    object-cover
+                                    rounded-lg
+                                  "
+                                />
 
-                              {/* Actual preview image */}
-                              <img
-                                src={uploadPreview}
-                                alt="Preview"
-                                className="
-                                  relative z-10
-                                  max-w-full
-                                  max-h-full
-                                  object-contain
-                                  rounded-lg
-                                "
-                              />
-
-                              {/* Remove button */}
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => {
-                                  setUploadFile(null);
-                                  setUploadPreview(null);
-                                  setUploadStep('select');
-                                }}
-                                className="
-                                  absolute top-2 right-2
-                                  w-7 h-7
-                                  rounded-lg
-                                  flex items-center justify-center
-                                  bg-black/70
-                                  backdrop-blur
-                                  z-20
-                                "
-                              >
-                                <X className="w-3.5 h-3.5 text-white" />
-                              </motion.button>
-
-                              {/* Bottom gradient for depth */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10" />
+                                {/* Remove button */}
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => {
+                                    setUploadFile(null);
+                                    setUploadPreview(null);
+                                    setUploadStep('select');
+                                  }}
+                                  className="
+                                    absolute top-2 right-2
+                                    w-7 h-7
+                                    rounded-lg
+                                    flex items-center justify-center
+                                    bg-black/70
+                                    backdrop-blur
+                                    z-20
+                                  "
+                                >
+                                  <X className="w-3.5 h-3.5 text-white" />
+                                </motion.button>
                             </motion.div>
                             )}
 
