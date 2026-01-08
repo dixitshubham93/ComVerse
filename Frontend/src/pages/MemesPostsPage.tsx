@@ -968,11 +968,11 @@ const CommentPanel = ({
                     }}
                   />
 
-                  <EmojiPicker
-                    onSelectEmoji={(emoji) =>
-                      setNewComment((prev) => (prev + emoji))
-                    }
-                  />
+                    <EmojiPicker
+                      onSelectEmoji={(emoji) =>
+                        setNewComment(newComment + emoji)
+                      }
+                    />
                 </div>
 
                 {/* Send Button */}
