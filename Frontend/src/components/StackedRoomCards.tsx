@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useMemo, useRef, Suspense } from 'react';
 import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/drei";
 import {  Users, Speaker, Zap, Edit2 } from "lucide-react";
 import { Phone, Image, MessageCircle, Megaphone, X, Plus, ArrowLeft } from 'lucide-react';
@@ -29,11 +29,11 @@ interface RoomModal3DProps {
 interface FloatingRoomCard3DProps {
   room: Room; // <-- your room type
   pos: { x: number; y: number; z: number };
-  onSelect: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void;
+  onSelect: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void;
   isOwner: boolean;
   isCentered: boolean;
   isOtherCentered: boolean;
-  onOpenRoom: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void;
+  onOpenRoom: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void;
   onEditRoom?: (room: Room) => void;
 }
 
@@ -137,7 +137,7 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
 
   return (
     <group ref={groupRef} position={[pos.x, pos.y, pos.z]}>
-      <Plane args={[4.5, 6]} onClick={(e) => { e.stopPropagation(); onSelect(room); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
+      <Plane args={[4.5, 6]} onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect(room); }} onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
         <meshBasicMaterial transparent opacity={0} />
       </Plane>
 
@@ -314,7 +314,7 @@ export function ExpandedRoom3D({
 }: { 
   title: string, 
   rooms: Room[], 
-  onRoomOpen: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void, 
+  onRoomOpen: (room: Room, e?: React.MouseEvent<HTMLDivElement>) => void, 
   onClose?: () => void, 
   onEditRoom?: (room: Room) => void, 
   isOwner?: boolean 
@@ -323,7 +323,7 @@ export function ExpandedRoom3D({
   const isOwner = propsIsOwner ?? true;
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
-  const handleOpenRoom = (room:Room, e:React.MouseEvent<HTMLDivElement>) => {
+  const handleOpenRoom = (room:Room, e?:React.MouseEvent<HTMLDivElement>) => {
     const rect = e?.currentTarget?.getBoundingClientRect?.() || {
       left: window.innerWidth / 2 - 120,
       top: window.innerHeight / 2 - 160,
@@ -339,7 +339,7 @@ export function ExpandedRoom3D({
     } as any);
   };
 
-  const handleCardClick = (room:Room, e:React.MouseEvent<HTMLDivElement>) => {
+  const handleCardClick = (room:Room, e?:React.MouseEvent<HTMLDivElement>) => {
     if (centeredRoom?.id === room.id) {
       handleOpenRoom(room, e);
     } else {
@@ -398,17 +398,17 @@ export function ExpandedRoom3D({
 
             {/* floating room cards */}
             {rooms.map((r, i) => (
-              <FloatingRoomCard3D 
-                key={r.id} 
-                room={r} 
-                pos={positions[i]} 
-                onSelect={handleCardClick} 
-                isOwner={isOwner}
-                isCentered={centeredRoom?.id === r.id}
-                isOtherCentered={centeredRoom && centeredRoom.id !== r.id}
-                onOpenRoom={handleOpenRoom}
-                onEditRoom={onEditRoom}
-              />
+                <FloatingRoomCard3D 
+                  key={r.id} 
+                  room={r} 
+                  pos={positions[i]} 
+                  onSelect={handleCardClick} 
+                  isOwner={isOwner}
+                  isCentered={centeredRoom?.id === r.id}
+                  isOtherCentered={!!(centeredRoom && centeredRoom.id !== r.id)}
+                  onOpenRoom={handleOpenRoom}
+                  onEditRoom={onEditRoom}
+                />
             ))}
 
             <OrbitControls 
