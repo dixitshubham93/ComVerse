@@ -253,19 +253,18 @@ export function HomePageWithUniverse() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleSlowScroll = () => {
+  const handleSlowScroll = (targetId: string) => {
     const container = containerRef.current;
-    const target = document.getElementById('space-section');
+    const target = document.getElementById(targetId);
     if (!container || !target) return;
 
-    // Temporarily disable scroll-snap to allow smooth custom animation
     const originalSnap = container.style.scrollSnapType;
     container.style.scrollSnapType = 'none';
 
     const start = container.scrollTop;
     const targetPosition = target.offsetTop;
     const distance = targetPosition - start;
-    const duration = 2000; // Slower, more cinematic scroll
+    const duration = 2000;
     let startTime: number | null = null;
 
     const easeInOutCubic = (t: number): number => {
@@ -282,7 +281,6 @@ export function HomePageWithUniverse() {
       if (timeElapsed < duration) {
         requestAnimationFrame(animation);
       } else {
-        // Re-enable scroll-snap after animation is complete
         container.style.scrollSnapType = originalSnap;
       }
     };
@@ -306,8 +304,8 @@ export function HomePageWithUniverse() {
         }}
       />
 
-      {/* Hero Section - Full screen snap */}
-      <section className="relative z-10 h-screen flex flex-col justify-center items-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+        {/* Hero Section - Full screen snap */}
+        <section id="hero-section" className="relative z-10 h-screen flex flex-col justify-center items-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="glow-text mb-4">
             Explore Your Universe
@@ -328,9 +326,9 @@ export function HomePageWithUniverse() {
 
         {/* My Space Button with Navigation - Only show when logged in */}
         {isAuthenticated && (
-          <div className="mt-8">
-            <button
-              onClick={handleSlowScroll}
+            <div className="mt-8">
+              <button
+                onClick={() => handleSlowScroll('space-section')}
               className="glassmorphism px-8 py-4 rounded-full hover:border-[#28f5cc] transition-all duration-300 hover:scale-105"
               style={{
                 boxShadow: '0 0 15px rgba(40, 245, 204, 0.2)',
@@ -342,8 +340,34 @@ export function HomePageWithUniverse() {
         )}
       </section>
 
-      {/* 3D Space Section - Full screen snap */}
-      <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+        {/* 3D Space Section - Full screen snap */}
+        <section id="space-section" className="relative z-10 h-screen w-full flex items-center justify-center px-4" style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+          {/* Back to Hero Arrow - Top Right */}
+          <button
+            onClick={() => handleSlowScroll('hero-section')}
+            className="absolute top-24 right-8 z-30 p-3 rounded-full transition-all duration-300 hover:scale-110 group"
+            style={{
+              background: 'rgba(4, 55, 47, 0.4)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(40, 245, 204, 0.3)',
+            }}
+            aria-label="Back to top"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              className="text-[#28f5cc] group-hover:text-white transition-colors"
+            >
+              <path d="m18 15-6-6-6 6"/>
+            </svg>
+          </button>
         {/* Loading State */}
         {isLoadingCommunities && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -414,7 +438,7 @@ export function HomePageWithUniverse() {
               </div>
             )}
 
-            <div className="relative w-full h-full max-w-7xl mx-auto">
+            <div className="relative w-full h-full mx-auto">
               <UniverseCanvas ref={canvasRef}>
                 {communities.map((community, index) => (
                   <Planet3D
