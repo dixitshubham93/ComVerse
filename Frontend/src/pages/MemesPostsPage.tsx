@@ -127,7 +127,10 @@ const CarouselCard = ({
   isLiked,
   onLike,
   onComment,
+  onDelete,
   likeLoading,
+  isOwner,
+  isDeleting,
 }: {
   post: PostDto;
   index: number;
@@ -136,13 +139,13 @@ const CarouselCard = ({
   radius: number;
   onSelect: () => void;
   isLiked: boolean;
-    onLike: () => void;
-    onComment: () => void;
-    onDelete?: () => void;
-    likeLoading: boolean;
-    isOwner?: boolean;
-    isDeleting?: boolean;
-  }) => {
+  onLike: () => void;
+  onComment: () => void;
+  onDelete?: () => void;
+  likeLoading: boolean;
+  isOwner?: boolean;
+  isDeleting?: boolean;
+}) => {
     const anglePerCard = 360 / totalCards;
     const cardAngle = index * anglePerCard + rotation;
     const radians = (cardAngle * Math.PI) / 180;
@@ -408,24 +411,27 @@ const CarouselCard = ({
 
 
 // 3D Carousel Component
-const Carousel3D = ({
-  posts,
-  onSelectPost,
-  likedPosts,
-  onLike,
-  onComment,
-  likeLoading,
-}: {
-  posts: PostDto[];
-  onSelectPost: (post: PostDto) => void;
-  likedPosts: Set<number>;
-  onLike: (post: PostDto) => void;
-  onComment: (postId: number) => void;
-  onDelete: (postId: number) => void;
-  likeLoading: number | null;
-  deletingPostId: number | null;
-  currentUserId: number;
-}) => {
+  const Carousel3D = ({
+    posts,
+    onSelectPost,
+    likedPosts,
+    onLike,
+    onComment,
+    onDelete,
+    likeLoading,
+    deletingPostId,
+    currentUserId,
+  }: {
+    posts: PostDto[];
+    onSelectPost: (post: PostDto) => void;
+    likedPosts: Set<number>;
+    onLike: (post: PostDto) => void;
+    onComment: (postId: number) => void;
+    onDelete: (postId: number) => void;
+    likeLoading: number | null;
+    deletingPostId: number | null;
+    currentUserId: number;
+  }) => {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
