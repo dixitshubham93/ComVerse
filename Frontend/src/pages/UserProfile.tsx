@@ -2,7 +2,6 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Heart, MessageCircle, Share2, Plus, Send, Loader2, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
 import { CreateCommunityModal } from '../components/CreateCommunityModal';
 import { CommunityCard } from '../components/CommunityCard';
@@ -608,70 +607,65 @@ export function UserProfile() {
                         </button>
                       </div>
 
-                    <AnimatePresence>
-                      {expandedComments === post.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="mt-4 overflow-hidden"
-                        >
-                          <div className="pt-4 border-t border-[rgba(40,245,204,0.06)]">
-                            <div className="flex items-center gap-3 mb-4">
-                              <input
-                                type="text"
-                                value={newComments[post.id] || ''}
-                                onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
-                                placeholder="Add a comment..."
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-[#28f5cc]/30 transition-colors"
-                              />
-                                <button
-                                  onClick={() => handleSubmitComment(post.id)}
-                                  disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
-                                  className="p-2.5 rounded-xl bg-[#28f5cc] text-black disabled:opacity-30 transition-all duration-200 hover:scale-105 active:scale-95"
-                                >
-                                  {submittingComment === post.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Send className="w-4 h-4" />
-                                  )}
-                                </button>
-                            </div>
+                    <div 
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        expandedComments === post.id ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="pt-4 border-t border-[rgba(40,245,204,0.06)]">
+                        <div className="flex items-center gap-3 mb-4">
+                          <input
+                            type="text"
+                            value={newComments[post.id] || ''}
+                            onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment(post.id)}
+                            placeholder="Add a comment..."
+                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-[#28f5cc]/30 transition-colors"
+                          />
+                            <button
+                              onClick={() => handleSubmitComment(post.id)}
+                              disabled={!newComments[post.id]?.trim() || submittingComment === post.id}
+                              className="p-2.5 rounded-xl bg-[#28f5cc] text-black disabled:opacity-30 transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                              {submittingComment === post.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Send className="w-4 h-4" />
+                              )}
+                            </button>
+                        </div>
 
-                            {loadingComments === post.id ? (
-                              <div className="flex justify-center py-4">
-                                <Loader2 className="w-6 h-6 text-[#28f5cc] animate-spin" />
-                              </div>
-                            ) : (
-                              <div className="space-y-3">
-                                  {(postComments[post.id] || []).map((comment) => (
-                                    <div key={comment.id} className="flex gap-3 group/comment">
-                                      <div className="relative">
-                                        <img
-                                          src={comment.user?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.user?.username}
-                                          alt={comment.user?.username}
-                                          className="w-9 h-9 rounded-full flex-shrink-0 object-cover border border-[#28f5cc]/20 transition-all duration-300 group-hover/comment:border-[#28f5cc]/40"
-                                        />
-                                      </div>
-                                      <div className="flex-1 bg-white/5 rounded-2xl p-4 transition-all duration-300 group-hover/comment:bg-white/[0.08] border border-transparent group-hover/comment:border-white/5">
-                                        <div className="flex items-center justify-between mb-1.5">
-                                          <span className="text-white text-sm font-bold tracking-tight">{comment.user?.username}</span>
-                                          <span className="text-[#747c88] text-[10px] font-medium uppercase tracking-widest opacity-60">{formatTime(comment.createdAt)}</span>
-                                        </div>
-                                        <p className="text-gray-100/80 text-[13.5px] leading-relaxed">{comment.content}</p>
-                                      </div>
+                        {loadingComments === post.id ? (
+                          <div className="flex justify-center py-4">
+                            <Loader2 className="w-6 h-6 text-[#28f5cc] animate-spin" />
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                              {(postComments[post.id] || []).map((comment) => (
+                                <div key={comment.id} className="flex gap-3 group/comment">
+                                  <div className="relative">
+                                    <img
+                                      src={comment.user?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + comment.user?.username}
+                                      alt={comment.user?.username}
+                                      className="w-9 h-9 rounded-full flex-shrink-0 object-cover border border-[#28f5cc]/20 transition-all duration-300 group-hover/comment:border-[#28f5cc]/40"
+                                    />
+                                  </div>
+                                  <div className="flex-1 bg-white/5 rounded-2xl p-4 transition-all duration-300 group-hover/comment:bg-white/[0.08] border border-transparent group-hover/comment:border-white/5">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                      <span className="text-white text-sm font-bold tracking-tight">{comment.user?.username}</span>
+                                      <span className="text-[#747c88] text-[10px] font-medium uppercase tracking-widest opacity-60">{formatTime(comment.createdAt)}</span>
                                     </div>
-                                  ))}
-                                {(postComments[post.id] || []).length === 0 && (
-                                  <p className="text-center text-[#747c88] text-xs py-2">No comments yet</p>
-                                )}
-                              </div>
+                                    <p className="text-gray-100/80 text-[13.5px] leading-relaxed">{comment.content}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            {(postComments[post.id] || []).length === 0 && (
+                              <p className="text-center text-[#747c88] text-xs py-2">No comments yet</p>
                             )}
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        )}
+                      </div>
+                    </div>
 
                 </div>
               ))}
