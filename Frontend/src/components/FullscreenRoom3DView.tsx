@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useMemo, useRef, Suspense } from 'react';
 import { X, Users, Speaker, MessageCircle, Zap, Edit2 } from 'lucide-react';
 import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html, Plane, Sphere, Environment } from "@react-three/drei";
 
 interface Room {
@@ -36,11 +36,11 @@ function iconForType(type: string) {
 function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherCentered, onOpenRoom }: {
   room: Room;
   pos: { x: number; y: number; z: number };
-  onSelect: (room: Room, e: any) => void;
+  onSelect: (room: Room, e: ThreeEvent<MouseEvent> | React.MouseEvent) => void;
   isOwner?: boolean;
   isCentered: boolean;
   isOtherCentered: boolean;
-  onOpenRoom: (room: Room, e: any) => void;
+  onOpenRoom: (room: Room, e: ThreeEvent<MouseEvent> | React.MouseEvent) => void;
 }) {
   const groupRef = useRef<any>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -59,7 +59,7 @@ function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherC
     }
   });
 
-  const handleCardAction = (e: any) => {
+  const handleCardAction = (e: React.MouseEvent) => {
     e.stopPropagation();
     // If already focused, open the room right away; otherwise focus it first
     if (isCentered) {
@@ -69,7 +69,7 @@ function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherC
     }
   };
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -88,7 +88,7 @@ function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherC
 
   return (
     <group ref={groupRef} position={[pos.x, pos.y, pos.z]}>
-      <Plane args={[4.5, 6]} onClick={(e) => { e.stopPropagation(); onSelect(room, e); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
+      <Plane args={[4.5, 6]} onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect(room, e); }} onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }} onPointerOut={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = "auto"; }}>
         <meshBasicMaterial transparent opacity={0} />
       </Plane>
 
@@ -151,7 +151,7 @@ function FloatingRoomCard3D({ room, pos, onSelect, isOwner, isCentered, isOtherC
           {/* Open Room CTA - appears when centered */}
           {isCentered && (
             <button
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onOpenRoom(room, e);
               }}
@@ -200,12 +200,12 @@ function calcPositions(count: number): Position[] {
 }
 
 /* ExpandedRoom3D component (use this where the grid was) */
-export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: { title: string; rooms: Room[]; onRoomOpen: any; isOwner?: boolean; onClose?: () => void }) {
+export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: { title: string; rooms: Room[]; onRoomOpen: (room: Room, e: any) => void; isOwner?: boolean; onClose?: () => void }) {
   const [centeredRoom, setCenteredRoom] = useState<Room | null>(null);
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
 
-  const handleOpenRoom = (room: Room, e: any) => {
-    const rect = e?.currentTarget?.getBoundingClientRect?.() || {
+  const handleOpenRoom = (room: Room, e: ThreeEvent<MouseEvent> | React.MouseEvent) => {
+    const rect = (e as React.MouseEvent)?.currentTarget?.getBoundingClientRect?.() || {
       left: window.innerWidth / 2 - 120,
       top: window.innerHeight / 2 - 160,
       width: 240,
@@ -214,12 +214,12 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: {
 
     onRoomOpen(room, {
       currentTarget: { getBoundingClientRect: () => rect },
-      clientX: e?.clientX ?? rect.left + rect.width / 2,
-      clientY: e?.clientY ?? rect.top + rect.height / 2,
+      clientX: (e as React.MouseEvent)?.clientX ?? rect.left + rect.width / 2,
+      clientY: (e as React.MouseEvent)?.clientY ?? rect.top + rect.height / 2,
     });
   };
 
-  const handleCardClick = (room: Room, e: any) => {
+  const handleCardClick = (room: Room, e: ThreeEvent<MouseEvent> | React.MouseEvent) => {
     if (centeredRoom?.id === room.id) {
       handleOpenRoom(room, e);
     } else {
@@ -227,7 +227,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: {
     }
   };
 
-  const handleBackdropClick = (e: any) => {
+  const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget && centeredRoom) {
       setCenteredRoom(null);
     }
@@ -311,7 +311,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: {
 
         {/* Close button for 3D view */}
         <button
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             if (onClose) {
               onClose();
