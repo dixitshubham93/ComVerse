@@ -29,12 +29,12 @@ interface RoomModal3DProps {
 interface FloatingRoomCard3DProps {
   room: Room; // <-- your room type
   pos: { x: number; y: number; z: number };
-  onSelect: (room: Room) => void;
+  onSelect: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void;
   isOwner: boolean;
   isCentered: boolean;
   isOtherCentered: boolean;
-  onOpenRoom: (room: Room) => void;
-  onEditRoom: (room: Room) => void;
+  onOpenRoom: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void;
+  onEditRoom?: (room: Room) => void;
 }
 
 
@@ -72,10 +72,11 @@ const roomStacks: Record<StackType, Room[]> = {
 };
 
 /** Small helper to pick icon */
-function iconForType( type:any) {
+function iconForType(type: Room['type'] | string) {
   switch (type) {
     case "voice":
       return <Speaker className="w-4 h-4" />;
+    case "general":
     case "chat":
       return <MessageCircle className="w-4 h-4" />;
     case "memes":
@@ -111,9 +112,9 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
     e.stopPropagation();
     // If already focused, open the room right away; otherwise focus it first
     if (isCentered) {
-      onOpenRoom(room);
+      onOpenRoom(room, e);
     } else {
-      onSelect(room);
+      onSelect(room, e);
     }
   };
 
@@ -207,13 +208,14 @@ function FloatingRoomCard3D({ room , pos, onSelect, isOwner, isCentered, isOther
           </div>
 
           {/* Open Room CTA - appears when centered */}
-          {isCentered && (
+            {isCentered && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenRoom(room);
+                onOpenRoom(room, e);
               }}
               className="absolute top-4 right-4 px-3.5 py-2 rounded-lg transition-all duration-200 hover:scale-105"
+
               style={{
                 background: "linear-gradient(135deg,#04ad7b,#28f5cc)",
                 color: "#041f1a",
@@ -302,7 +304,21 @@ function RoomModal3D({ room, onClose, isOwner, onOpen, onEditRoom }: RoomModal3D
 }
 
 /* ExpandedRoom3D component (use this where the grid was) */
-export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, isOwner: propsIsOwner }: { title: string, rooms: Room[], onRoomOpen: (room: Room, e: any) => void, onClose?: () => void, onEditRoom?: (room: any) => void, isOwner?: boolean }) {
+export function ExpandedRoom3D({ 
+  title, 
+  rooms, 
+  onRoomOpen, 
+  onClose, 
+  onEditRoom, 
+  isOwner: propsIsOwner 
+}: { 
+  title: string, 
+  rooms: Room[], 
+  onRoomOpen: (room: Room, e: React.MouseEvent<HTMLDivElement>) => void, 
+  onClose?: () => void, 
+  onEditRoom?: (room: Room) => void, 
+  isOwner?: boolean 
+}) {
   const [centeredRoom, setCenteredRoom] = useState<Room | null>(null);
   const isOwner = propsIsOwner ?? true;
   const positions = useMemo(() => calcPositions(rooms.length), [rooms.length]);
@@ -316,10 +332,11 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, onClose, onEditRoom, 
     };
 
     onRoomOpen(room, {
+      ...e,
       currentTarget: { getBoundingClientRect: () => rect },
       clientX: e?.clientX ?? rect.left + rect.width / 2,
       clientY: e?.clientY ?? rect.top + rect.height / 2,
-    });
+    } as any);
   };
 
   const handleCardClick = (room:Room, e:React.MouseEvent<HTMLDivElement>) => {
@@ -505,7 +522,7 @@ const roomStacks = useMemo<Record<StackType, Room[]>>(() => {
     }
   };
 
-  const handleRoomClick = (room: Room, event?: any) => {
+  const handleRoomClick = (room: Room, event: React.MouseEvent<HTMLDivElement>) => {
     if (isMotionReduced) {
       onRoomSelect(room);
       return;
