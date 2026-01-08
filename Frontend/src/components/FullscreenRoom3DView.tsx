@@ -285,7 +285,7 @@ export function ExpandedRoom3D({ title, rooms, onRoomOpen, isOwner, onClose }: {
                 onSelect={handleCardClick}
                 isOwner={isOwner}
                 isCentered={centeredRoom?.id === r.id}
-                isOtherCentered={centeredRoom && centeredRoom.id !== r.id}
+                  isOtherCentered={!!(centeredRoom && centeredRoom.id !== r.id)}
                 onOpenRoom={handleOpenRoom}
               />
             ))}
