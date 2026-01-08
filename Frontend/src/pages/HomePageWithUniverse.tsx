@@ -345,28 +345,38 @@ export function HomePageWithUniverse() {
           {/* Back to Hero Arrow - Top Right */}
           <button
             onClick={() => handleSlowScroll('hero-section')}
-            className="absolute top-24 right-8 z-30 p-3 rounded-full transition-all duration-300 hover:scale-110 group"
+            className="absolute top-24 right-8 z-30 p-4 rounded-full transition-all duration-300 hover:scale-110 group"
             style={{
               background: 'rgba(4, 55, 47, 0.4)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(40, 245, 204, 0.3)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(40, 245, 204, 0.4)',
+              boxShadow: '0 0 20px rgba(40, 245, 204, 0.1)',
             }}
             aria-label="Back to top"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              className="text-[#28f5cc] group-hover:text-white transition-colors"
-            >
-              <path d="m18 15-6-6-6 6"/>
-            </svg>
+            <div className="relative w-6 h-7 flex items-center justify-center">
+              {/* Static Background Arrow (Dim) */}
+              <svg 
+                width="18" 
+                height="22" 
+                viewBox="0 0 24 32" 
+                fill="none" 
+                className="absolute text-[#28f5cc] opacity-20"
+              >
+                <path d="M12 28V4M5 11l7-7 7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {/* Animated Glow Arrow */}
+              <svg 
+                width="18" 
+                height="22" 
+                viewBox="0 0 24 32" 
+                fill="none" 
+                className="absolute text-[#28f5cc] animate-arrow-up-glow"
+                style={{ filter: 'drop-shadow(0 0 8px #28f5cc)' }}
+              >
+                <path d="M12 28V4M5 11l7-7 7 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
           </button>
         {/* Loading State */}
         {isLoadingCommunities && (
