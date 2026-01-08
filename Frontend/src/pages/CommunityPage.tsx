@@ -61,12 +61,13 @@ export function CommunityPage() {
   const [userRole, setUserRole] = useState<MembershipRole | null>(null);
   const [stats, setStats] = useState<CommunityStatsDto | null>(null);
 
-  // Helper to convert MembershipRole to string for components that expect string
-  const getRoleString = (): 'Owner' | 'Admin' | 'Member' => {
-    if (userRole === MembershipRole.OWNER) return 'Owner';
-    if (userRole === MembershipRole.ADMIN) return 'Admin';
-    return 'Member';
-  };
+    // Helper to convert MembershipRole to string for components that expect string
+    const getRoleString = (): 'Owner' | 'Admin' | 'Moderator' | 'Member' => {
+      if (userRole === MembershipRole.OWNER) return 'Owner';
+      if (userRole === MembershipRole.ADMIN) return 'Admin';
+      if (userRole === MembershipRole.MODERATOR) return 'Moderator';
+      return 'Member';
+    };
   
   if (!id || isNaN(communityId)) {
     return (

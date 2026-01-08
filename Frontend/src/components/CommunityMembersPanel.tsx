@@ -26,8 +26,13 @@ export function CommunityMembersPanel({ communityId, userRole, onClose }: Commun
         const membersData = await getCommunityMembers(communityId);
         // Sort members: Owner first, then Admin, then Member
         const sorted = membersData.sort((a, b) => {
-          const order = { [MembershipRole.OWNER]: 0, [MembershipRole.ADMIN]: 1, [MembershipRole.MEMBER]: 2 };
-          return (order[a.role] ?? 3) - (order[b.role] ?? 3);
+          const order: Record<MembershipRole, number> = { 
+            [MembershipRole.OWNER]: 0, 
+            [MembershipRole.ADMIN]: 1, 
+            [MembershipRole.MODERATOR]: 2,
+            [MembershipRole.MEMBER]: 3 
+          };
+          return (order[a.role] ?? 4) - (order[b.role] ?? 4);
         });
         setMembers(sorted);
       } catch (err) {
@@ -54,6 +59,12 @@ export function CommunityMembersPanel({ communityId, userRole, onClose }: Commun
         border: '1px solid rgba(4, 173, 123, 0.5)',
         color: '#04ad7b',
       };
+    } else if (role === MembershipRole.MODERATOR) {
+      return {
+        background: 'rgba(59, 130, 246, 0.2)',
+        border: '1px solid rgba(59, 130, 246, 0.5)',
+        color: '#3b82f6',
+      };
     } else {
       return {
         background: 'rgba(116, 124, 136, 0.2)',
@@ -66,6 +77,7 @@ export function CommunityMembersPanel({ communityId, userRole, onClose }: Commun
   const getRoleLabel = (role: MembershipRole): string => {
     if (role === MembershipRole.OWNER) return 'Owner';
     if (role === MembershipRole.ADMIN) return 'Admin';
+    if (role === MembershipRole.MODERATOR) return 'Moderator';
     return 'Member';
   };
 
@@ -77,13 +89,18 @@ export function CommunityMembersPanel({ communityId, userRole, onClose }: Commun
     // Can't kick yourself
     if (member.userId === currentUserId) return false;
     
-    // Owner can kick Admins and Members
+    // Owner can kick everyone else
     if (userRole === MembershipRole.OWNER) {
-      return member.role === MembershipRole.ADMIN || member.role === MembershipRole.MEMBER;
+      return member.role !== MembershipRole.OWNER;
     }
     
-    // Admin can kick Members only
+    // Admin can kick Moderators and Members
     if (userRole === MembershipRole.ADMIN) {
+      return member.role === MembershipRole.MODERATOR || member.role === MembershipRole.MEMBER;
+    }
+
+    // Moderator can kick Members only
+    if (userRole === MembershipRole.MODERATOR) {
       return member.role === MembershipRole.MEMBER;
     }
     
@@ -101,10 +118,15 @@ export function CommunityMembersPanel({ communityId, userRole, onClose }: Commun
       await kickMember(member.userId, communityId);
       // Refresh members list
       const membersData = await getCommunityMembers(communityId);
-      const sorted = membersData.sort((a, b) => {
-        const order = { [MembershipRole.OWNER]: 0, [MembershipRole.ADMIN]: 1, [MembershipRole.MEMBER]: 2 };
-        return (order[a.role] ?? 3) - (order[b.role] ?? 3);
-      });
+        const sorted = membersData.sort((a, b) => {
+          const order: Record<MembershipRole, number> = { 
+            [MembershipRole.OWNER]: 0, 
+            [MembershipRole.ADMIN]: 1, 
+            [MembershipRole.MODERATOR]: 2,
+            [MembershipRole.MEMBER]: 3 
+          };
+          return (order[a.role] ?? 4) - (order[b.role] ?? 4);
+        });
       setMembers(sorted);
     } catch (err) {
       console.error('Error kicking member:', err);

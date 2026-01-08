@@ -9,7 +9,7 @@ interface CommunitySidebarProps {
   communityId: number;
   communityName: string;
   communityAvatar?: string;
-  userRole: 'Owner' | 'Admin' | 'Member';
+  userRole: 'Owner' | 'Admin' | 'Moderator' | 'Member';
   currentUser: {
     name: string;
     avatar: string;
@@ -138,22 +138,26 @@ export function CommunitySidebar({
                     <p className="text-white text-sm font-bold truncate">{currentUser.name}</p>
                     <span
                       className="text-xs px-2 py-0.5 rounded-full inline-block mt-1"
-                      style={{
-                        background:
-                          userRole === 'Owner'
-                            ? 'rgba(40, 245, 204, 0.2)'
-                            : userRole === 'Admin'
-                            ? 'rgba(4, 173, 123, 0.2)'
-                            : 'rgba(116, 124, 136, 0.2)',
-                        border:
-                          userRole === 'Owner'
-                            ? '1px solid rgba(40, 245, 204, 0.5)'
-                            : userRole === 'Admin'
-                            ? '1px solid rgba(4, 173, 123, 0.5)'
-                            : '1px solid rgba(116, 124, 136, 0.3)',
-                        color:
-                          userRole === 'Owner' ? '#28f5cc' : userRole === 'Admin' ? '#04ad7b' : '#747c88',
-                      }}
+                        style={{
+                          background:
+                            userRole === 'Owner'
+                              ? 'rgba(40, 245, 204, 0.2)'
+                              : userRole === 'Admin'
+                              ? 'rgba(4, 173, 123, 0.2)'
+                              : userRole === 'Moderator'
+                              ? 'rgba(59, 130, 246, 0.2)'
+                              : 'rgba(116, 124, 136, 0.2)',
+                          border:
+                            userRole === 'Owner'
+                              ? '1px solid rgba(40, 245, 204, 0.5)'
+                              : userRole === 'Admin'
+                              ? '1px solid rgba(4, 173, 123, 0.5)'
+                              : userRole === 'Moderator'
+                              ? '1px solid rgba(59, 130, 246, 0.5)'
+                              : '1px solid rgba(116, 124, 136, 0.3)',
+                          color:
+                            userRole === 'Owner' ? '#28f5cc' : userRole === 'Admin' ? '#04ad7b' : userRole === 'Moderator' ? '#3b82f6' : '#747c88',
+                        }}
                     >
                       {userRole}
                     </span>

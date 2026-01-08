@@ -48,9 +48,10 @@ export function CommunityManagePage() {
   const [deleteCommunityConfirm, setDeleteCommunityConfirm] = useState(false);
   const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
 
-  const getRoleString = (): 'Owner' | 'Admin' | 'Member' => {
+  const getRoleString = (): 'Owner' | 'Admin' | 'Moderator' | 'Member' => {
     if (userRole === MembershipRole.OWNER) return 'Owner';
     if (userRole === MembershipRole.ADMIN) return 'Admin';
+    if (userRole === MembershipRole.MODERATOR) return 'Moderator';
     return 'Member';
   };
 
@@ -164,11 +165,18 @@ export function CommunityManagePage() {
     
     if (member.userId === currentUserId) return false;
     
+    // Owner can kick everyone else
     if (userRole === MembershipRole.OWNER) {
-      return member.role === MembershipRole.ADMIN || member.role === MembershipRole.MEMBER;
+      return member.role !== MembershipRole.OWNER;
     }
     
+    // Admin can kick Moderators and Members
     if (userRole === MembershipRole.ADMIN) {
+      return member.role === MembershipRole.MODERATOR || member.role === MembershipRole.MEMBER;
+    }
+
+    // Moderator can kick Members only
+    if (userRole === MembershipRole.MODERATOR) {
       return member.role === MembershipRole.MEMBER;
     }
     
@@ -583,37 +591,45 @@ export function CommunityManagePage() {
                   </div>
                 ) : (
                   members.map((member) => {
-                    const getRoleBadgeStyle = (role: MembershipRole) => {
-                      if (role === MembershipRole.OWNER) {
-                        return {
-                          background: 'rgba(40, 245, 204, 0.15)',
-                          border: '1px solid rgba(40, 245, 204, 0.4)',
-                          color: '#28f5cc',
+                        const getRoleBadgeStyle = (role: MembershipRole) => {
+                          if (role === MembershipRole.OWNER) {
+                            return {
+                              background: 'rgba(40, 245, 204, 0.15)',
+                              border: '1px solid rgba(40, 245, 204, 0.4)',
+                              color: '#28f5cc',
+                            };
+                          } else if (role === MembershipRole.ADMIN) {
+                            return {
+                              background: 'rgba(4, 173, 123, 0.15)',
+                              border: '1px solid rgba(4, 173, 123, 0.4)',
+                              color: '#04ad7b',
+                            };
+                          } else if (role === MembershipRole.MODERATOR) {
+                            return {
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              border: '1px solid rgba(59, 130, 246, 0.4)',
+                              color: '#3b82f6',
+                            };
+                          } else {
+                            return {
+                              background: 'rgba(116, 124, 136, 0.12)',
+                              border: '1px solid rgba(116, 124, 136, 0.25)',
+                              color: '#9ca3af',
+                            };
+                          }
                         };
-                      } else if (role === MembershipRole.ADMIN) {
-                        return {
-                          background: 'rgba(4, 173, 123, 0.15)',
-                          border: '1px solid rgba(4, 173, 123, 0.4)',
-                          color: '#04ad7b',
+                        const getRoleLabel = (role: MembershipRole): string => {
+                          if (role === MembershipRole.OWNER) return 'Owner';
+                          if (role === MembershipRole.ADMIN) return 'Admin';
+                          if (role === MembershipRole.MODERATOR) return 'Moderator';
+                          return 'Member';
                         };
-                      } else {
-                        return {
-                          background: 'rgba(116, 124, 136, 0.12)',
-                          border: '1px solid rgba(116, 124, 136, 0.25)',
-                          color: '#9ca3af',
+                        const getRoleIcon = (role: MembershipRole) => {
+                          if (role === MembershipRole.OWNER) return <Crown className="w-3 h-3" />;
+                          if (role === MembershipRole.ADMIN) return <Shield className="w-3 h-3" />;
+                          if (role === MembershipRole.MODERATOR) return <Shield className="w-3 h-3 opacity-70" />;
+                          return null;
                         };
-                      }
-                    };
-                    const getRoleLabel = (role: MembershipRole): string => {
-                      if (role === MembershipRole.OWNER) return 'Owner';
-                      if (role === MembershipRole.ADMIN) return 'Admin';
-                      return 'Member';
-                    };
-                    const getRoleIcon = (role: MembershipRole) => {
-                      if (role === MembershipRole.OWNER) return <Crown className="w-3 h-3" />;
-                      if (role === MembershipRole.ADMIN) return <Shield className="w-3 h-3" />;
-                      return null;
-                    };
                     return (
                       <div
                         key={member.id}

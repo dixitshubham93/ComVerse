@@ -27,6 +27,7 @@ const mapRoleToDisplay = (role: MembershipRole): string => {
   const roleMap: Record<MembershipRole, string> = {
     [MembershipRole.OWNER]: 'Owner',
     [MembershipRole.ADMIN]: 'Admin',
+    [MembershipRole.MODERATOR]: 'Moderator',
     [MembershipRole.MEMBER]: 'Member',
   };
   return roleMap[role] || 'Member';
@@ -44,6 +45,12 @@ const getRoleBadgeStyle = (role: MembershipRole) => {
       background: 'rgba(4, 173, 123, 0.15)',
       border: '1px solid rgba(4, 173, 123, 0.4)',
       color: '#04ad7b',
+    };
+  } else if (role === MembershipRole.MODERATOR) {
+    return {
+      background: 'rgba(59, 130, 246, 0.15)',
+      border: '1px solid rgba(59, 130, 246, 0.4)',
+      color: '#3b82f6',
     };
   } else {
     return {
