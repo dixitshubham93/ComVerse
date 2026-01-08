@@ -1,8 +1,0 @@
-{
-  "projectId": "91ab7de2-bb0b-47d8-a241-851c362613f1",
-  "createdAt": 1767870503000,
-  "startupCommands": [
-    "cd Backendjs && bun install && bun run server",
-    "cd Frontend && bun install && bun run dev"
-  ]
-}
