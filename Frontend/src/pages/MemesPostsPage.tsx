@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Heart, MessageCircle, X, Send, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp, Smile, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, X, ImagePlus, Loader2, ArrowLeft, Bookmark, Sparkles, ChevronLeft, ChevronRight, Flame, TrendingUp, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PostDto, CommentDto, getPostsByRoom, createPost, likePost, unlikePost, getComments, createComment, deletePost } from '../api/postApi';
 import { UserSpaceBackground } from '../components/UserSpaceBackground';
@@ -26,7 +26,7 @@ const PremiumAvatar = ({
   showRing = true,
   showGlow = false 
 }: { 
-  src?: string; 
+  src?: string | null; 
   fallback: string; 
   size?: 'sm' | 'md' | 'lg';
   showRing?: boolean;
@@ -95,8 +95,10 @@ const PremiumButton = ({
     lg: 'px-8 py-3.5 text-base'
   };
 
+  const MotionButton = motion.button as any;
+
   return (
-    <motion.button
+    <MotionButton
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       onClick={onClick}
@@ -112,7 +114,7 @@ const PremiumButton = ({
       )}
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
       <span className="relative z-10">{children}</span>
-    </motion.button>
+    </MotionButton>
   );
 };
 
@@ -171,8 +173,12 @@ const CarouselCard = ({
       if (days < 7) return `${days}d`;
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
+
+    const MotionDiv = motion.div as any;
+    const MotionButton = motion.button as any;
+
     return (
-      <motion.div
+      <MotionDiv
         className="absolute cursor-pointer"
         style={{
           transform: `translateX(${x}px) translateZ(${z}px) scale(${scale})`,
@@ -189,13 +195,11 @@ const CarouselCard = ({
         whileHover={{ scale: scale * 1.05 }}
       >
         <div
-          className={`relative w-[350px] h-[520px] rounded-3xl overflow-hidden transition-all duration-500 flex flex-col group ${
+          className={`relative w-[270px] h-[400px] rounded-3xl overflow-hidden transition-all duration-500 flex flex-col group ${
             isActive ? 'shadow-2xl' : ''
           }`}
           style={{
             background: 'linear-gradient(165deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 15, 25, 0.98) 100%)',
-            height:"400px",
-            width:"270px",
             border: isActive 
               ? '1px solid rgba(20, 184, 166, 0.4)' 
               : '1px solid rgba(148, 163, 184, 0.1)',
@@ -238,20 +242,20 @@ const CarouselCard = ({
             
             <div className="flex items-center gap-2">
               {isActive && (
-                <motion.div 
+                <MotionDiv 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20"
                 >
                   <Flame className="w-3 h-3 text-orange-400 " />
-                </motion.div>
+                </MotionDiv>
               )}
 
               {isOwner && (
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.2)' }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     if (onDelete && window.confirm('Are you sure you want to delete this post?')) {
                       onDelete();
@@ -265,7 +269,7 @@ const CarouselCard = ({
                   ) : (
                     <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   )}
-                </motion.button>
+                </MotionButton>
               )}
             </div>
           </div>
@@ -280,7 +284,7 @@ const CarouselCard = ({
           
           {/* Trending indicator */}
           {post.likeCount > 5 && (
-            <motion.div 
+            <MotionDiv 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md"
@@ -288,7 +292,7 @@ const CarouselCard = ({
             >
               <TrendingUp className="w-3 h-3 text-amber-400" />
               <span className="text-xs text-amber-200 font-medium">Trending</span>
-            </motion.div>
+            </MotionDiv>
           )}
         </div>
 
@@ -338,10 +342,10 @@ const CarouselCard = ({
 
           {/* Actions */}
           <div className="px-4 pb-4 flex items-center gap-3 mt-auto">
-            <motion.button
+            <MotionButton
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); onLike(); }}
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); onLike(); }}
               disabled={likeLoading}
               className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300"
               style={{
@@ -364,12 +368,12 @@ const CarouselCard = ({
               <span className={`text-xs font-semibold ${isLiked ? 'text-red-300' : 'text-slate-400'}`}>
                 {post.likeCount || 0}
               </span>
-            </motion.button>
+            </MotionButton>
 
-            <motion.button
+            <MotionButton
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); onComment(); }}
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); onComment(); }}
               className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -378,12 +382,12 @@ const CarouselCard = ({
             >
               <MessageCircle className="w-4 h-4 text-slate-400" />
               <span className="text-xs font-semibold text-slate-400">{post.commentCount || 0}</span>
-            </motion.button>
+            </MotionButton>
 
-            <motion.button
+            <MotionButton
               whileHover={{ scale: 1.1, backgroundColor: 'rgba(20, 184, 166, 0.1)' }}
               whileTap={{ scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               className="ml-auto p-2 rounded-xl transition-all duration-300"
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -391,39 +395,39 @@ const CarouselCard = ({
               }}
             >
               <Bookmark className="w-4 h-4 text-slate-400 hover:text-teal-400 transition-colors" />
-            </motion.button>
+            </MotionButton>
           </div>
 
         </div>
         
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 };
 
 
 // 3D Carousel Component
-  const Carousel3D = ({
-    posts,
-    onSelectPost,
-    likedPosts,
-    onLike,
-    onComment,
-    onDelete,
-    likeLoading,
-    deletingPostId,
-    currentUserId,
-  }: {
-    posts: PostDto[];
-    onSelectPost: (post: PostDto) => void;
-    likedPosts: Set<number>;
-    onLike: (post: PostDto) => void;
-    onComment: (postId: number) => void;
-    onDelete: (postId: number) => void;
-    likeLoading: number | null;
-    deletingPostId: number | null;
-    currentUserId: number;
-  }) => {
+const Carousel3D = ({
+  posts,
+  onSelectPost,
+  likedPosts,
+  onLike,
+  onComment,
+  onDelete,
+  likeLoading,
+  deletingPostId,
+  currentUserId,
+}: {
+  posts: PostDto[];
+  onSelectPost: (post: PostDto) => void;
+  likedPosts: Set<number>;
+  onLike: (post: PostDto) => void;
+  onComment: (postId: number) => void;
+  onDelete: (postId: number) => void;
+  likeLoading: number | null;
+  deletingPostId: number | null;
+  currentUserId: number;
+}) => {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
@@ -491,6 +495,9 @@ const CarouselCard = ({
   const activeIndex = Math.round(-rotation / anglePerCard) % posts.length;
   const normalizedActiveIndex = ((activeIndex % posts.length) + posts.length) % posts.length;
 
+  const MotionDiv = motion.div as any;
+  const MotionButton = motion.button as any;
+
   return (
     <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
       {/* Background glow */}
@@ -539,7 +546,7 @@ const CarouselCard = ({
       </div>
 
       {/* Navigation arrows */}
-      <motion.button
+      <MotionButton
         whileHover={{ scale: 1.1, backgroundColor: 'rgba(40, 245, 204, 0.2)' }}
         whileTap={{ scale: 0.9 }}
         onClick={() => navigateCarousel('prev')}
@@ -551,9 +558,9 @@ const CarouselCard = ({
         }}
       >
         <ChevronLeft className="w-6 h-6 text-primary" />
-      </motion.button>
+      </MotionButton>
 
-      <motion.button
+      <MotionButton
         whileHover={{ scale: 1.1, backgroundColor: 'rgba(40, 245, 204, 0.2)' }}
         whileTap={{ scale: 0.9 }}
         onClick={() => navigateCarousel('next')}
@@ -565,12 +572,12 @@ const CarouselCard = ({
         }}
       >
         <ChevronRight className="w-6 h-6 text-primary" />
-      </motion.button>
+      </MotionButton>
 
       {/* Dots indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         {posts.slice(0, Math.min(posts.length, 10)).map((_, index) => (
-          <motion.button
+          <MotionButton
             key={index}
             onClick={() => setRotation(-index * anglePerCard)}
             className={`w-2 h-2 rounded-full transition-all ${
@@ -629,12 +636,15 @@ const CommentPanel = ({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const MotionDiv = motion.div as any;
+  const MotionButton = motion.button as any;
+
   return (
     <AnimatePresence>
       {isOpen && post && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -643,7 +653,7 @@ const CommentPanel = ({
           />
 
           {/* Panel */}
-          <motion.div
+          <MotionDiv
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
@@ -655,7 +665,6 @@ const CommentPanel = ({
               boxShadow: '-20px 0 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
             }}
           >
-              {/* Header */}
               {/* Header */}
             <div
               style={{
@@ -728,7 +737,7 @@ const CommentPanel = ({
               </div>
 
               {/* Close button */}
-              <motion.button
+              <MotionButton
                 whileHover={{ scale: 1.08, rotate: 90 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClose}
@@ -745,7 +754,7 @@ const CommentPanel = ({
                 }}
               >
                 <X size={18} color="rgba(255,255,255,0.7)" />
-              </motion.button>
+              </MotionButton>
             </div>
 
 
@@ -845,7 +854,7 @@ const CommentPanel = ({
                 </div>
               ) : (
                 comments.map((comment, idx) => (
-                  <motion.div
+                  <MotionDiv
                     key={comment.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -873,7 +882,7 @@ const CommentPanel = ({
                       </div>
                       <p className="text-white/70 text-sm">{comment.content}</p>
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 ))
               )}
             </div>
@@ -884,7 +893,7 @@ const CommentPanel = ({
               style={{
                 position: 'sticky',
                 bottom: 0,
-                padding: '16px 16px 20px', // extra bottom padding
+                padding: '16px 16px 20px',
                 borderTop: '1px solid rgba(255,255,255,0.06)',
                 background:
                   'linear-gradient(180deg, rgba(5,20,20,0.85) 0%, rgba(5,20,20,0.98) 100%)',
@@ -896,7 +905,7 @@ const CommentPanel = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  marginBottom: 3, // 👈 lifts input slightly above bottom
+                  marginBottom: 3,
                 }}
               >
                 {/* User Avatar */}
@@ -959,7 +968,6 @@ const CommentPanel = ({
                     }}
                   />
 
-                  {/* Emoji Picker (RESTORED ✅) */}
                   <EmojiPicker
                     onSelectEmoji={(emoji) =>
                       setNewComment((prev) => (prev + emoji))
@@ -989,7 +997,7 @@ const CommentPanel = ({
               </div>
             </div>
 
-          </motion.div>
+          </MotionDiv>
         </>
       )}
     </AnimatePresence>
@@ -1032,7 +1040,6 @@ export function MemesPostsPage({
       const data = await getPostsByRoom(roomId);
       setPosts(data);
       
-      // Initialize liked posts
       const liked = new Set<number>();
       data.forEach(post => {
         if (post.likes?.some(l => Number(l.userId) === currentUserId)) {
@@ -1057,7 +1064,6 @@ export function MemesPostsPage({
 
     const alreadyLiked = likedPosts.has(post.id);
     
-    // Optimistic update
     setLikedPosts(prev => {
       const newSet = new Set(prev);
       if (alreadyLiked) {
@@ -1086,7 +1092,6 @@ export function MemesPostsPage({
       }
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Revert on error
       fetchPosts();
     } finally {
       setLikeLoading(null);
@@ -1199,13 +1204,16 @@ export function MemesPostsPage({
     setUploadStep('select');
   };
 
+  const MotionHeader = motion.header as any;
+  const MotionButton = motion.button as any;
+  const MotionDiv = motion.div as any;
+
   return (
     <div className="h-screen overflow-hidden relative ml-16 lg:ml-20 flex flex-col bg-black">
-      {/* Aurora Background */}
       <UserSpaceBackground />
 
       {/* Header */}
-      <motion.header
+      <MotionHeader
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex-shrink-0 relative z-20"
@@ -1219,7 +1227,7 @@ export function MemesPostsPage({
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.button
+              <MotionButton
                 whileHover={{ scale: 1.05, backgroundColor: 'rgba(40, 245, 204, 0.1)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onBack}
@@ -1227,7 +1235,7 @@ export function MemesPostsPage({
                 style={{ border: '1px solid rgba(40, 245, 204, 0.15)' }}
               >
                 <ArrowLeft className="w-5 h-5 text-primary" />
-              </motion.button>
+              </MotionButton>
               <div>
                 <h1 className="text-white text-xl font-bold tracking-tight">{roomName}</h1>
                 <p className="text-primary/50 text-sm font-medium">{communityName}</p>
@@ -1235,15 +1243,15 @@ export function MemesPostsPage({
             </div>
 
             <div className="flex items-center gap-4">
-              <motion.div
+              <MotionDiv
                 className="flex items-center gap-2 px-4 py-2 rounded-full"
                 style={{ background: 'rgba(40, 245, 204, 0.08)', border: '1px solid rgba(40, 245, 204, 0.15)' }}
               >
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-primary text-sm font-medium">{posts.length} posts</span>
-              </motion.div>
+              </MotionDiv>
 
-              <motion.button
+              <MotionButton
                 whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowUploadModal(true)}
@@ -1256,11 +1264,11 @@ export function MemesPostsPage({
               >
                 <ImagePlus className="w-4 h-4" />
                 Create Post
-              </motion.button>
+              </MotionButton>
             </div>
           </div>
         </div>
-      </motion.header>
+      </MotionHeader>
 
       {/* Main content */}
       <div className="relative z-10 flex-1 flex flex-col justify-center min-h-0 overflow-hidden">
@@ -1275,7 +1283,7 @@ export function MemesPostsPage({
             <p className="text-white/40 text-sm">Loading posts...</p>
           </div>
         ) : posts.length === 0 ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-20 px-8"
@@ -1291,7 +1299,7 @@ export function MemesPostsPage({
             </div>
             <h3 className="text-white text-xl font-semibold mb-2">No posts yet</h3>
             <p className="text-white/40 text-sm mb-8">Be the first to share something amazing!</p>
-            <motion.button
+            <MotionButton
               whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(40, 245, 204, 0.4)' }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowUploadModal(true)}
@@ -1302,8 +1310,8 @@ export function MemesPostsPage({
               }}
             >
               Create First Post
-            </motion.button>
-          </motion.div>
+            </MotionButton>
+          </MotionDiv>
         ) : (
             <Carousel3D
               posts={posts}
@@ -1318,9 +1326,6 @@ export function MemesPostsPage({
             />
         )}
       </div>
-
-      {/* Active post info */}
-     
 
       {/* Comment Panel */}
       <CommentPanel
@@ -1340,7 +1345,7 @@ export function MemesPostsPage({
       {/* Upload Modal */}
       <AnimatePresence>
         {showUploadModal && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1348,7 +1353,7 @@ export function MemesPostsPage({
             style={{ background: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)' }}
             onClick={() => !uploading && resetUpload()}
           >
-            <motion.div
+            <MotionDiv
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1359,13 +1364,13 @@ export function MemesPostsPage({
                 border: '1px solid rgba(40, 245, 204, 0.15)',
                 boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(40, 245, 204, 0.1)',
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-5 flex-shrink-0" style={{ borderBottom: '1px solid rgba(40, 245, 204, 0.1)' }}>
                 <h3 className="text-white font-semibold text-lg">Create Post</h3>
                 <div className="flex items-center gap-3">
                   {uploadStep === 'details' && (
-                    <motion.button
+                    <MotionButton
                       whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(40, 245, 204, 0.3)' }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleUpload}
@@ -1377,9 +1382,9 @@ export function MemesPostsPage({
                       }}
                     >
                       {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Share'}
-                    </motion.button>
+                    </MotionButton>
                   )}
-                  <motion.button
+                  <MotionButton
                     whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={resetUpload}
@@ -1387,14 +1392,14 @@ export function MemesPostsPage({
                     className="p-2 rounded-xl transition-colors"
                   >
                     <X className="w-5 h-5 text-white/60" />
-                  </motion.button>
+                  </MotionButton>
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto">
                 {uploadStep === 'select' ? (
                   <div className="p-10 flex flex-col items-center justify-center min-h-[350px]">
-                    <motion.div
+                    <MotionDiv
                       initial={{ scale: 0.8 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', damping: 15 }}
@@ -1410,7 +1415,7 @@ export function MemesPostsPage({
                       >
                         <ImagePlus className="w-10 h-10 text-primary" />
                       </div>
-                    </motion.div>
+                    </MotionDiv>
                     <h3 className="text-white text-xl font-semibold mb-2">Share Your Moment</h3>
                     <p className="text-white/40 text-sm mb-8 text-center max-w-xs">Upload photos to share with your community</p>
                     <input
@@ -1420,7 +1425,7 @@ export function MemesPostsPage({
                       accept="image/*"
                       className="hidden"
                     />
-                    <motion.button
+                    <MotionButton
                       whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(40, 245, 204, 0.4)' }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => fileInputRef.current?.click()}
@@ -1432,7 +1437,7 @@ export function MemesPostsPage({
                       }}
                     >
                       Choose Photo
-                    </motion.button>
+                    </MotionButton>
                   </div>
                 ) : (
                   <div className="p-5">
@@ -1456,7 +1461,7 @@ export function MemesPostsPage({
                           autoFocus
                         />
                             {uploadPreview && (
-                            <motion.div
+                            <MotionDiv
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
                               className="
@@ -1471,7 +1476,6 @@ export function MemesPostsPage({
                               "
                               style={{ border: '1px solid rgba(40, 245, 204, 0.18)' }}
                             >
-                                {/* Actual preview image */}
                                 <img
                                   src={uploadPreview}
                                   alt="Preview"
@@ -1483,8 +1487,7 @@ export function MemesPostsPage({
                                   "
                                 />
 
-                                {/* Remove button */}
-                                <motion.button
+                                <MotionButton
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => {
@@ -1503,8 +1506,8 @@ export function MemesPostsPage({
                                   "
                                 >
                                   <X className="w-3.5 h-3.5 text-white" />
-                                </motion.button>
-                            </motion.div>
+                                </MotionButton>
+                            </MotionDiv>
                             )}
 
                       </div>
@@ -1514,7 +1517,7 @@ export function MemesPostsPage({
               </div>
 
               {uploading && (
-                <motion.div
+                <MotionDiv
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="absolute inset-0 flex flex-col items-center justify-center gap-4"
@@ -1527,10 +1530,10 @@ export function MemesPostsPage({
                     </div>
                   </div>
                   <p className="text-white font-medium">Sharing your post...</p>
-                </motion.div>
+                </MotionDiv>
               )}
-            </motion.div>
-          </motion.div>
+            </MotionDiv>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>
