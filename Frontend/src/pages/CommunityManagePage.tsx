@@ -35,7 +35,7 @@ export function CommunityManagePage() {
   
   const communityId = id ? parseInt(id, 10) : 0;
   const [userRole, setUserRole] = useState<MembershipRole | null>(null);
-  const [community, setCommunity] = useState<any>(null);
+  const [community, setCommunity] = useState<CommunityDto | null>(null);
   const [stats, setStats] = useState<CommunityStatsDto | null>(null);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [members, setMembers] = useState<MemberInfo[]>([]);

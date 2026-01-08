@@ -79,7 +79,7 @@ const generateVisualProperties = (dto: CommunityDto, index: number): Omit<Commun
   };
   
   return {
-    category: mapTypeToCategory(parseCommunityType(dto.type)),
+    category: mapTypeToCategory(dto.type),
     members: 1000 + (index % 50) * 1000, // Placeholder member count
     color,
     size,

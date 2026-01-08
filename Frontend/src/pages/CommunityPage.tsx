@@ -21,18 +21,18 @@ import { getUserRole } from '../api/membershipApi';
 import { MembershipRole } from '../api/communityApi';
 
 // Helper to map CommunityType to category string
-const mapTypeToCategory = (type: string): string => {
+const mapTypeToCategory = (type: CommunityType | string): string => {
   const typeMap: Record<string, string> = {
-    'GAMING': 'Gaming',
-    'ART': 'Art & Design',
-    'MUSIC': 'Music',
-    'TECHNOLOGY': 'Technology',
-    'SPORTS': 'Sports',
-    'FINANCE': 'Finance',
-    'LIFESTYLE': 'Lifestyle',
-    'TRAVEL': 'Travel',
-    'EDUCATION': 'Education',
-    'OTHER': 'Other',
+    [CommunityType.GAMING]: 'Gaming',
+    [CommunityType.ART]: 'Art & Design',
+    [CommunityType.MUSIC]: 'Music',
+    [CommunityType.TECHNOLOGY]: 'Technology',
+    [CommunityType.SPORTS]: 'Sports',
+    [CommunityType.FINANCE]: 'Finance',
+    [CommunityType.LIFESTYLE]: 'Lifestyle',
+    [CommunityType.TRAVEL]: 'Travel',
+    [CommunityType.EDUCATION]: 'Education',
+    [CommunityType.OTHER]: 'Other',
   };
   return typeMap[type] || 'Other';
 };
@@ -98,13 +98,7 @@ export function CommunityPage() {
     const [roomToEdit, setRoomToEdit] = useState<RoomDto | null>(null);
 
     // State for fetched data
-  const [community, setCommunity] = useState<{
-    id: number;
-    name: string;
-    description: string | null;
-    bannerUrl: string | null;
-    type: string;
-  } | null>(null);
+  const [community, setCommunity] = useState<CommunityDto | null>(null);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

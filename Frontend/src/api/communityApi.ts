@@ -40,7 +40,7 @@ export interface CommunityDto {
   name: string;
   description: string | null;
   bannerUrl: string | null;
-  type: string;
+  type: CommunityType;
 }
 
 /**
@@ -58,7 +58,7 @@ export interface CreateCommunityRequest {
   name: string;
   description?: string;
   bannerUrl?: string;
-  type: string;
+  type: CommunityType;
 }
 
 /**
