@@ -125,35 +125,29 @@ export function AnnouncementChat({
     };
   };
 
-  // WebSocket connection
-  const { isConnected, error: wsError, sendMessage, joinChat } = useRoomSocket(roomId, communityId, {
-    onMessage: (message: MessageDto) => {
-      setMessages((prev) => [...prev, convertMessageDto(message)]);
-    },
-    onMessageUpdated: (message: MessageDto) => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
-      );
-    },
-    onMessageDeleted: (messageId: number) => {
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId.toString()));
-    },
-    onError: (error: string) => {
-      setSocketError(error);
-    },
-  });
+    // WebSocket connection
+    const { isConnected, error: wsError, sendMessage } = useRoomSocket(roomId, communityId, {
+      onMessage: (message: MessageDto) => {
+        setMessages((prev) => [...prev, convertMessageDto(message)]);
+      },
+      onMessageUpdated: (message: MessageDto) => {
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === message.id.toString() ? convertMessageDto(message) : msg))
+        );
+      },
+      onMessageDeleted: (messageId: number) => {
+        setMessages((prev) => prev.filter((msg) => msg.id !== messageId.toString()));
+      },
+      onError: (error: string) => {
+        setSocketError(error);
+      },
+    });
 
-  useEffect(() => {
-    if (isConnected) {
-      joinChat();
-    }
-  }, [isConnected, joinChat]);
-
-  useEffect(() => {
-    if (wsError) {
-      setSocketError(wsError);
-    }
-  }, [wsError]);
+    useEffect(() => {
+      if (wsError) {
+        setSocketError(wsError);
+      }
+    }, [wsError]);
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
